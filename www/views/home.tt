@@ -16,6 +16,17 @@
 
 <div id="page">
 
+    <!-- Permettra une mise en forme plus propre. -->
+    <% IF creationSuccess == 1 %>
+        <p>
+            Le domaine "<% domainName %>" a bien été créée.
+        </p>
+    <% ELSIF creationFailure == 1 %>
+        <p>
+            Le domaine "<% domainName %>" n'a pas été créée.
+        </p>
+    <% END %>
+
 <% IF domains && domains.size %>
     <h3>Vos domaines :</h3>
     <br />
