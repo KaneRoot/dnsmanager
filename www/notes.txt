@@ -1,0 +1,20 @@
+Développement web : 
+
+1. Créer la page d'accueil
+    - doit fournir un lien vers la page de login ;
+    - permet la recherche d'un nom de domaine ;
+		- s'il n'est pas disponible, proposer des choix alternatifs (secondaire) ;
+
+2. Page de login
+    - doit vérifier si l'utilisateur existe bien dans la base de donnée ; 
+        - cf méthode dnsmanager::auth ;
+    - si l'utilisateur est un administrateur, fournir un lien supplémentaire vers la page d'administration ;
+        - cf lire le résultat renvoyé par auth (contient la liste des données de l'utilisateur stockés en bdd ;
+        - la page d'administration doit refuser un non administrateur ;
+
+3. Permettre à l'utilisateur de pouvoir visualiser ses zones, d'en demander de nouvelles ;
+    - cf get_zone function ;
+    - add_zone (doit envoyer une demande aux admins) ;
+
+4. Créer la page d'administration
+    - doit fournir la possibilité de valider la création d'un utilisateur ;

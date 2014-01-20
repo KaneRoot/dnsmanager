@@ -1,20 +1,31 @@
-# FR
-## trame du projet
+## FR trame du projet / TODO / brainstorming / brouillon
 
-> "Faire le projet en POO, pour le rendre un peu modulable (au cas où on change certaines parties en cours de route). Il y aura 2 types d'utilisateurs, l'admin + un utilisateur de base. L'admin peut créer une zone, pas l'utilisateur. L'utilisateur peut juste la modifier."
+### page d'inscription
 
-> "L'inscription : l'utilisateur va envoyer une demande pour réserver un ndd en .netlib.re et il faut que ça vérifie que le ndd n'existe pas déjà puis que ça envoie un mail aux admins. De préférence, une page web testera si le ndd est libre, indiquera une erreur à l'utilisateur s'il ne l'est pas et on rajoute un captcha pour éviter des bots." 
-> "Côté admin : il faut que l'ajout d'une zone soit aussi automatique, pas qu'on ait à aller l'ajouter nous-même (mais ça c'est pour plus tard à la limite). J'ai trouvé quelques modules Perl qui font une partie du travail + je peux faire le site avec Dancer, du coup tout sera fait avec le même langage." 
+* login
+* captcha -- todo
+
+### utilisateurs
+    * un login
+    * des domaines
+    * un mdp chiffré -- todo
+    * peuvent modifier leurs zones -- todo
+    * leur compte doit être activé par un admin -- todo
+    * réservation d'un ou plusieurs ndd en X.DOMAIN.TLD -- todo
+    * vérifier qu'ils ne sont pas déjà réservés ou attribués -- todo
+
+### admins
+    * Valident les comptes des utilisateurs. -- todo
+    * en activant une zone d'un utilisateur. -- todo
+    * Doit être automatisé. -- todo
+    * Créent et suppriment d'autres administrateurs. -- todo
+    * Possèdent une page pour voir les comptes non activés. -- todo
 
 ## outils
-* [Dancer](http://perldancer.org/)
-* [Net::DNS](https://metacpan.org/module/NLNETLABS/Net-DNS-0.72/lib/Net/DNS.pm)
-* [Net::DNS::ZoneParse](https://metacpan.org/module/BTIETZ/Net-DNS-ZoneParse-0.103/lib/Net/DNS/ZoneParse.pm)
-* [Bootstrap](http://twitter.github.io/bootstrap/)
-* [DBD::mysql](https://metacpan.org/module/DBD::mysql)
-
-## TODO
-+ "Vérifier si les modules cités dans 'outils' correspondent à ce que l'on cherche."
-	+ "Aller sur #perlfr pour demander conseil."
-	+ "Faire des tests d'exemple sur ces modules."
-+ "Rajouter les modules qu'il nous manque (ex: pour le chiffrement du mot de passe avant l'ajout d'un utilisateur/admin)."
+    * [Dancer](http://perldancer.org/)
+    * [DNS::ZoneParse](http://search.cpan.org/~mschilli/DNS-ZoneParse-1.10/lib/DNS/ZoneParse.pm)
+    * [Bootstrap](http://twitter.github.io/bootstrap/) -- todo
+    * [DBD::mysql](https://metacpan.org/module/DBD::mysql)
+    * [Net::HTTPS::Any](https://metacpan.org/module/IVAN/Net-HTTPS-Any-0.10/lib/Net/HTTPS/Any.pm) -- todo
+    * [Moose](https://metacpan.org/module/ETHER/Moose-2.0802/lib/Moose.pm)
+    * voir pour le chiffrement

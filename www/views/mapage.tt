@@ -1,0 +1,37 @@
+<div id="sidebar">
+	Welcome <% login %> !
+    <form action='logout' method="get" accept-charset="utf-8">
+        <input type="submit" name="logout" value="Déconnexion">
+    </form>
+	<% IF admin == 1 %>
+		<a href='administration'>Page d'administration</a>
+	<% END %>
+	<a href='/'>Accueil</a>
+</div>
+
+<div id="page">
+	<% IF domains && domains.size %>
+        <h3>Vos domaines :</h3>
+        <br />
+        <table>
+            <% FOREACH domain in domains %>
+            <tr>
+                <td>
+                    <%domain%>
+                </td>
+                <td>
+                    <a href="domaindel/<%domain%>">Supprimer</a>
+                </td>
+            </tr>
+            <% END %>
+        </table>
+		<br/>
+	<% ELSE %>
+        Vous n'avez pas encore de noms de domaines… Voulez-vous en réserver un ?
+	<% END %>
+    <h3>Ajouter un nouveau domaine.</h3>
+    <form action='domainadd'>
+        <input type='text' name='domain'/>
+        <input type='submit' name='submit'/>
+    </form>
+</div>
