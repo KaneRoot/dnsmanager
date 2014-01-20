@@ -14,8 +14,7 @@ has [ qw/zname zdir/ ] => qw/is ro required 1/;
 sub get {
     my ($self) = @_;
     my $file = $self->zdir.'/'.$self->zname;
-    my $zonefile = DNS::ZoneParse->new($file, $self->zname);
-    return $zonefile;
+    return DNS::ZoneParse->new($file, $self->zname);
 }
 
 =pod

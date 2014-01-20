@@ -20,7 +20,6 @@ sub addzone {
         $command .= "'{ type master; file \"$zdir/$zname\"; };'"
     }
 
-
     $command .= " 2>/dev/null 1>/dev/null";
     system($command);
 
