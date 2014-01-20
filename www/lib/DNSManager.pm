@@ -137,6 +137,10 @@ prefix '/domain' => sub {
         else
         {
 
+            # Add tld
+            my $domain = param('domain').$cfg->param('tld');
+            $domain =~ s/\.{2,}/\./g;
+            # create domain
             my $app = initco();
             $app->add_domain( session('login'), param('domain') );
             redirect '/home';
