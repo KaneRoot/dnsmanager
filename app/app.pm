@@ -92,6 +92,12 @@ sub delete_domain {
     $ze->del();
 }
 
+sub update_domain_raw {
+    my ($self, $login, $zone, $domain) = @_; 
+    my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
+    $ze->update_raw($zone);
+}
+
 sub update_domain {
     my ($self, $login, $zone, $domain) = @_; 
     my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);

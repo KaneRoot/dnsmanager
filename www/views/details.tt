@@ -1,105 +1,25 @@
 <div id="sidebar">
-	Welcome <% login %> !
-    <form action='logout' method="get" accept-charset="utf-8">
+    Welcome <% login %> !
+    <form action='logout' method="post" accept-charset="utf-8">
         <input type="submit" name="logout" value="Déconnexion">
     </form>
-	<% IF admin == 1 %>
-		<a href='administration'>Page d'administration</a>
-	<% END %>
-	<a href='/'>Accueil</a>
+    <% IF admin == 1 %>
+        <a href='administration'>Page d'administration</a>
+    <% END %>
+    <a href='/'>Accueil</a>
 </div>
 
 <div id="page">
-	<% IF domain && domain.size %>
-			<table border='1px'>
-				<caption>Les zones de <%domain%></caption>
-			<tr>
-				<th>Host</th>
-				<th>Adress</th>
-				<th>Type</th>
-				<th>Domain</th>
-			</tr>
-		<% FOREACH zone in zones %>
-			<tr>
-				<td>
-				<% IF zone.host %>
-				<% zone.host %>
-				<%END%>
-				</td>
-				<td>
-				<% IF zone.addr %>
-				<% zone.addr %>
-				<% END %>
-				</td>
-				<td>
-				<% IF zone.type %>
-				<% zone.type %>
-				<%END%>
-				</td>
-				<td>
-				<% IF zone.domain %>
-				<% zone.domain %>
-				<%END%>
-				</td>
-			</tr>
-			<% END %>
-			</table>
-		<br/>
-		<table border='1px'>
-			<caption>Domain Properties</caption>
-			<tr>
-				<th>Admin de la zone</th>
-				<th>Serial</th>
-				<th>Primary</th>
-				<th>Retry</th>
-				<th>Domain</th>
-				<th>Refresh</th>
-				<th>Address</th>
-				<th>Expire</th>
-			</tr>
-			<tr>
-				<td>
-					<% IF zone_properties.admin %>
-					<%zone_properties.admin%><br/>
-					<%END%>
-				<td>
-					<% IF zone_properties.serial %>
-					<%zone_properties.serial%>
-					<%END%>
-				</td>
-				<td>
-					<% IF zone_properties.primary %>
-					<%zone_properties.primary%>
-					<%END%>
-				</td>
-				<td>
-					<% IF zone_properties.retry %>
-					<%zone_properties.retry%>
-					<%END%>
-				</td>
-				<td>
-					<% IF zone_properties.domain %>
-					<%zone_properties.domain%>
-					<%END%>
-				</td>
-				<td>
-					<% IF zone_properties.refresh %>
-					<%zone_properties.refresh%>
-					<%END%>
-				</td>
-				<td>
-					<% IF zone_properties.addr %>
-					<%zone_properties.addr%>
-					<%END%>
-				</td>
-				<td>
-					<% IF zone_properties.expire %>
-					<%zone_properties.expire%>
-					<%END%>
-				</td>
-			</tr>
-		</table>
-	<% ELSE %>
-	Vous n'avez pas encore de noms de domaines… Voulez-vous en réserver un ?
-	<% END %>
+
+    <h3>Fichier de zone de <% domain %></h3>
+
+    <form action='/domainupdate/<% domain %>' method="post" >
+        <label for='zone'>Votre zone :</label>
+	<br />
+        <textarea id='zone' name="zoneupdated" rows="20" cols="100"><% domain_zone %></textarea>
+	<br />
+        <input type="submit" value="Mettre à jour la zone">
+    </form>
+
 </div>
+

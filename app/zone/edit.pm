@@ -70,6 +70,27 @@ sub update {
     $rndc->reload($self->zname);
 }
 
+=pod
+    udpate via the raw content of the zonefile
+=cut
+
+sub update_raw {
+    my ($self, $zonetext) = @_;
+
+    my $file = '/tmp/'.$self->zname;
+
+    # write the updated zone file to disk 
+    my $newzone;
+    open($newzone, '>', $file) or die "error";
+    print $newzone $zonetext;
+    close $newzone;
+
+    my $zonefile = DNS::ZoneParse->new($file, $self->zname);
+    unlink($file);
+
+    $self->update($zonefile);
+}
+
 # sera utile plus tard, pour l'interface
 sub new_tmp {
     my ($self) = @_;

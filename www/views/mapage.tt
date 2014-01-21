@@ -17,7 +17,7 @@
             <% FOREACH domain in domains %>
             <tr>
                 <td>
-                    <%domain%>
+                    <a href="details/<%domain%>" ><%domain%></a> 
                 </td>
                 <td>
                     <a href="domaindel/<%domain%>">Supprimer</a>

@@ -108,7 +108,8 @@ get '/mapage' => sub {
     }
 };
 
-get '/details' => sub {
+any ['post', 'get'] => '/domainupdate/:domain' => sub {
+
     # check if user is logged & if domain parameter is set
     unless( session('login') && param('domain'))
     {
@@ -117,30 +118,41 @@ get '/details' => sub {
     else
     {
         my $app = initco();
-        my ($auth_ok, $user, $isadmin) = $app->auth( param('login') );
-        my @zones = ();
-        my $zone_properties;
-        #say 'dump : ' . dump $user->get_zone( param('domain') );
+        my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+            param('password') );
 
-        for( $user->get_zone( param('domain') ) ) 
-        {
+        $app->update_domain_raw(session('login')
+            , param('zoneupdated')
+            , param('domain'));
 
-            if( ref($_) eq 'HASH' and exists $_->{addr} ) {
-                push( @zones, $_ )    when $_->{addr} ne '@';
-                $zone_properties = $_ when $_->{addr} eq '@';
-            }
-
-        }
-
-        template details => { 
-            login           => session('login')
-            , domain          => param('domain')
-            , zones           => \@zones
-            , zone_properties => $zone_properties };
+        redirect '/mapage';
     }
 
 };
 
+get '/details/:domain' => sub {
+
+    # check if user is logged & if domain parameter is set
+    unless( session('login') && param('domain'))
+    {
+        redirect '/';
+    }
+    else
+    {
+        my $app = initco();
+        my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+            param('password') );
+
+        my $zone = $app->get_domain(session('login') , param('domain'));
+
+        template details => {
+            login           => session('login')
+            , domain        => param('domain')
+            , domain_zone   => $zone->output() };
+
+    }
+
+};
 
 any ['get', 'post'] => '/administration' => sub {
     unless( session('login') )
