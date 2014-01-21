@@ -1,14 +1,16 @@
 <div id="sidebar">
 
     <% IF logged == 1 %>
-        Welcome <% login %> !
-        <form action='logout' method="get" accept-charset="utf-8">
-            <input type="submit" name="logout" value="Déconnexion">
-        </form>
 
-        <a href='mapage'>Votre page de configuration</a><br />
+        Welcome <% login %> !
+        <br />
+        <a href="/user/logout">Déconnexion</a>
+
+	<br />
+        <a href='/home'>Votre page de configuration</a><br />
         <% IF admin == 1 %>
-            <a href='administration'>Page d'administration</a><br />
+            <a href='/admin'>Page d'administration</a>
+            <br />
         <% END %>
 
         <% IF domains %>
@@ -19,9 +21,10 @@
         <% END %>
 
     <% ELSE %>
-        <form action="login" method="post" accept-charset="utf-8">
+        <form action="/user/login" method="post" accept-charset="utf-8">
             <label for="login">Votre login : </label>
             <input type="text" name="login" value="" />
+
             <label for="password">Votre mot de passe : </label>
             <input type="password" name="password" value="" />
             <p><input type="submit" value="Connexion &rarr;" /></p>

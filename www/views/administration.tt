@@ -1,5 +1,14 @@
 <div id="sidebar">
+    Welcome <% login %> !
+
+    <a href="/user/logout">Déconnexion</a>
+
+    <br />
+    <a href='/admin'>Page d'administration</a>
+    <br />
+
     <a href='/'>Accueil</a>
+
 </div>
 
 <div id="page">

@@ -1,19 +1,27 @@
 <div id="sidebar">
     Welcome <% login %> !
-    <form action='logout' method="post" accept-charset="utf-8">
-        <input type="submit" name="logout" value="Déconnexion">
-    </form>
+
+    <br />
+    <a href="/user/logout">Déconnexion</a>
+
+    <br />
+    <a href="/home">Ma page</a>
+
+    <br />
     <% IF admin == 1 %>
-        <a href='administration'>Page d'administration</a>
+        <a href='/admin'>Page d'administration</a>
+        <br />
     <% END %>
+
     <a href='/'>Accueil</a>
+
 </div>
 
 <div id="page">
 
     <h3>Fichier de zone de <% domain %></h3>
 
-    <form action='/domainupdate/<% domain %>' method="post" >
+    <form action='/domain/update/<% domain %>' method="post" >
         <label for='zone'>Votre zone :</label>
 	<br />
         <textarea id='zone' name="zoneupdated" rows="20" cols="100"><% domain_zone %></textarea>

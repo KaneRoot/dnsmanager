@@ -54,38 +54,9 @@ get '/' => sub {
     }
 };
 
-post '/login' => sub {
 
-    # Check if user is already logged
-    unless ( session('login') )
-    {
-        # Check user login and password
-        if ( param('login') && param('password') )
-        {
-            my $app = initco();
-            my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
-                param('password') );
-            if( $auth_ok )
-            {
+get '/home' => sub {
 
-                session login => param('login');
-                # TODO : change password storage…
-                session password => param('password');
-                session user  => freeze( $user );
-                session admin => $isadmin;
-
-            }
-            else
-            {
-                # User login and/or password are incorrect
-            }
-        }
-    }
-    redirect '/';
-};
-
-
-get '/mapage' => sub {
     unless( session('login') )
     {
         redirect '/';
@@ -98,7 +69,7 @@ get '/mapage' => sub {
 
         my @d = @{$app->get_domains( session('login') )};
 
-        template mapage => { 
+        template home => { 
             login           => session('login')
             , domains         => $app->get_domains(session('login'))
             , zones_domains   => \%domains
@@ -108,53 +79,85 @@ get '/mapage' => sub {
     }
 };
 
-any ['post', 'get'] => '/domainupdate/:domain' => sub {
+prefix '/domain' => sub {
 
-    # check if user is logged & if domain parameter is set
-    unless( session('login') && param('domain'))
-    {
-        redirect '/';
-    }
-    else
-    {
+    any ['post', 'get'] => '/update/:domain' => sub {
+
+        # check if user is logged & if domain parameter is set
+        unless( session('login') && param('domain'))
+        {
+            redirect '/';
+        }
+        else
+        {
+            my $app = initco();
+            my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+                param('password') );
+
+            $app->update_domain_raw(session('login')
+                , param('zoneupdated')
+                , param('domain'));
+
+            redirect '/domain/details/' . param('domain');
+        }
+
+    };
+
+    get '/details/:domain' => sub {
+
+        # check if user is logged & if domain parameter is set
+        unless( session('login') && param('domain'))
+        {
+            redirect '/';
+        }
+        else
+        {
+            my $app = initco();
+            my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+                param('password') );
+
+            my $zone = $app->get_domain(session('login') , param('domain'));
+
+            template details => {
+                login           => session('login')
+                , domain        => param('domain')
+                , domain_zone   => $zone->output() };
+
+        }
+
+    };
+
+    post '/add/' => sub {
+
+        # check if user is logged & if domain parameter is set
+        unless( session('login') && param('domain'))
+        {
+            redirect '/';
+        }
+        else
+        {
+
+            my $app = initco();
+            $app->add_domain( session('login'), param('domain') );
+            redirect '/home';
+
+        }
+
+    };
+
+    get '/del/:domain' => sub {
+
+        # TODO tests des droits
         my $app = initco();
-        my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
-            param('password') );
+        $app->delete_domain(session('login'), param('domain'));
+        redirect '/home';
 
-        $app->update_domain_raw(session('login')
-            , param('zoneupdated')
-            , param('domain'));
+    };
 
-        redirect '/mapage';
-    }
 
 };
 
-get '/details/:domain' => sub {
-
-    # check if user is logged & if domain parameter is set
-    unless( session('login') && param('domain'))
-    {
-        redirect '/';
-    }
-    else
-    {
-        my $app = initco();
-        my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
-            param('password') );
-
-        my $zone = $app->get_domain(session('login') , param('domain'));
-
-        template details => {
-            login           => session('login')
-            , domain        => param('domain')
-            , domain_zone   => $zone->output() };
-
-    }
-
-};
-
-any ['get', 'post'] => '/administration' => sub {
+any ['get', 'post'] => '/admin' => sub {
     unless( session('login') )
     {
         redirect '/';
@@ -167,37 +170,44 @@ any ['get', 'post'] => '/administration' => sub {
     }
 };
 
-any ['post', 'get'] => '/logout' => sub {
-    session->destroy;
-    redirect '/';
-};
+prefix '/user' => sub {
 
-get '/domainadd' => sub {
-    # check if user is logged & if domain parameter is set
-    unless( session('login') )
-    {
+    get '/logout' => sub {
+        session->destroy;
         redirect '/';
-    }
-    else
-    {
+    };
 
-        my $app = initco();
+    post '/login' => sub {
 
-        if( param('domain') )
+        # Check if user is already logged
+        unless ( session('login') )
         {
-            # create domain
-            $app->add_domain( session('login'), param('domain') );
-            # Then, redirect to mapage
-            redirect '/mapage';
+            # Check user login and password
+            if ( param('login') && param('password') )
+            {
+
+                my $app = initco();
+                my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+                    param('password') );
+                if( $auth_ok )
+                {
+
+                    session login => param('login');
+                    # TODO : change password storage…
+                    session password => param('password');
+                    session user  => freeze( $user );
+                    session admin => $isadmin;
+
+                }
+                else
+                {
+                    # User login and/or password are incorrect
+                }
+            }
         }
 
-    }
+        redirect '/home';
+
+    };
 
 };
-
-get qr{/domaindel/(.*)} => sub {
-    my ($domainToDelete) = splat;
-    my $app = initco();
-    $app->delete_domain(session('login'), $domainToDelete);
-    redirect '/mapage';
-}
