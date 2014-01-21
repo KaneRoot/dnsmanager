@@ -67,15 +67,35 @@ get '/home' => sub {
         my %domains = ();
         my %zone_properties = ();
 
-        my @d = @{$app->get_domains( session('login') )};
+        # my @d = @{$app->get_domains( session('login') )};
 
-        template home => { 
-            login           => session('login')
-            , domains         => $app->get_domains(session('login'))
-            , zones_domains   => \%domains
-            , zone_properties => \%zone_properties
-            , admin           => session('admin') };
-
+        if( session('creationSuccess') || session('creationFailure') )
+        {
+            my $cs = session('creationSuccess');
+            session 'creationSuccess' => '';
+            my $cf = session('creationFailure');
+            session 'creationFailure' => '';
+            my $dn = session('domainName');
+            session 'domainName' => '';
+            template home =>
+            { 'login'           => session('login'),
+              'domains'         => $app->get_domains(session('login')),
+              'zones_domains'   => \%domains,
+              'zone_properties' => \%zone_properties,
+              'admin'           => session('admin'),
+              'creationSuccess' => $cs,
+              'creationFailure' => $cf,
+              'domainName'      => $dn  };
+        }
+        else
+        {
+            template home =>
+            { 'login'           => session('login'),
+              'domains'         => $app->get_domains(session('login')),
+              'zones_domains'   => \%domains,
+              'zone_properties' => \%zone_properties,
+              'admin'           => session('admin')  };
+        }
     }
 };
 
@@ -137,8 +157,32 @@ prefix '/domain' => sub {
         else
         {
 
-            my $app = initco();
-            $app->add_domain( session('login'), param('domain') );
+            my $creationSuccess = false;
+            my $creationFailure = false;
+            if( param('domain') =~ /^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$|^[a-zA-Z0-9]+$/ )
+            {
+
+    			my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
+                my $domain = param('domain').$cfg->param('tld');
+                # $domain =~ s/\.{2,}/\./g;
+                # say "domain after sed : $domain";
+                # create domain
+            	my $app = initco();
+            	# Add tld
+            	# create domain
+                $app->add_domain( session('login'), $domain );
+                $creationSuccess = true;
+
+            }
+            else
+            {
+                # say param('domain')." contains a char not valid";
+                $creationFailure = true;
+            }
+
+            session 'creationSuccess' => $creationSuccess;
+            session 'creationFailure' => $creationFailure;
+            session 'domainName' => param('domain');
             redirect '/home';
 
         }
