@@ -82,9 +82,9 @@ get '/home' => sub {
             my $cf = session('creationFailure');
             my $dn = session('domainName');
 
-            session 'creationSuccess' => '';
-            session 'creationFailure' => '';
-            session 'domainName' => '';
+            session creationSuccess => '';
+            session creationFailure => '';
+            session domainName => '';
 
             template home => {
               login             => session('login')
@@ -243,6 +243,44 @@ prefix '/user' => sub {
     get '/logout' => sub {
         session->destroy;
         redirect '/';
+    };
+
+    post '/add/' => sub {
+
+        if ( param('login') && param('password') )
+        {
+
+            my $app = initco();
+            $app->register_user(param('login'), param('password'));
+            session login => param('login');
+            session password => param('password');
+            redirect '/home';
+
+        }
+        else {
+            session errmsg => q/login ou password non renseignés/;
+            redirect '/user/subscribe';
+        }
+
+    };
+
+    get '/subscribe' => sub {
+
+        if( defined session('login') )
+        {
+            redirect '/home';
+        }
+        else {
+
+            my $errmsg = session 'errmsg' ;
+            session errmsg => '';
+
+            template subscribe => {
+                errmsg => $errmsg
+            };
+        }
+
+
     };
 
     get '/del/:user' => sub {

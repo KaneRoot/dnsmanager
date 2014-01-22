@@ -1,0 +1,29 @@
+<div id="sidebar">
+    Welcome <% login %> !
+
+    <br />
+    <a href="/user/logout">Déconnexion</a>
+
+    <br />
+    <% IF admin == 1 %>
+        <a href='/admin'>Page d'administration</a>
+        <br />
+    <% END %>
+
+    <a href='/'>Accueil</a>
+
+</div>
+
+<div id="page">
+
+<% errmsg %> <br />
+
+<form action='/user/add/' method="post" >
+    <label for='login'>login : </label>
+    <input type='text' name='login' id='login' />
+    <label for='password'>password : </label>
+    <input type='password' name='password' id='password' />
+    <input type='submit' name='submit'/>
+</form>
+
+</div>
