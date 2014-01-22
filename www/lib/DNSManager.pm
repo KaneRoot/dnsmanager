@@ -46,8 +46,7 @@ get '/' => sub {
         if( $success ) {
 
             template index => {
-                logged  => true
-                , login   => session('login')
+                login   => session('login')
                 , admin   => session('admin')
                 , domains => [ @domains ] };
         }
@@ -222,7 +221,6 @@ any ['get', 'post'] => '/admin' => sub {
 
         unless ( $auth_ok && $isadmin ) {
             redirect '/ ';
-            return;
         }
         else {
 

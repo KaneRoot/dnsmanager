@@ -1,0 +1,42 @@
+<div id="sidebar">
+
+    <% IF login.defined %>
+
+        Salut <% login %> !
+        <br />
+        <a href="/user/logout">Déconnexion</a>
+	<br />
+
+        <a href='/home'>Ma page</a><br />
+	<br />
+
+        <% IF admin == 1 %>
+            <a href='/admin'>Page d'administration</a>
+            <br />
+        <% END %>
+
+        <% IF domains %>
+            Liens rapides :<br />
+            <% FOREACH domain IN domains %>
+                <a href="/domain/details/<% domain %>"><% domain %></a><br />
+            <% END %>
+        <% END %>
+
+    <% ELSE %>
+        Se connecter : <br />
+        <form action="/user/login" method="post" accept-charset="utf-8">
+            <label for="login">Votre login : </label>
+            <input type="text" name="login" value="" />
+
+            <label for="password">Votre mot de passe : </label>
+            <input type="password" name="password" value="" />
+            <p><input type="submit" value="Connexion &rarr;" /></p>
+        </form>
+
+    <% END %>
+
+        <br />
+        <a href='/'>Accueil</a>
+        <br />
+
+</div>
