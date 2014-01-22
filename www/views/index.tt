@@ -7,7 +7,8 @@
         <a href="/user/logout">Déconnexion</a>
 
 	<br />
-        <a href='/home'>Votre page de configuration</a><br />
+        <a href='/home'>Ma page</a><br />
+
         <% IF admin == 1 %>
             <a href='/admin'>Page d'administration</a>
             <br />
@@ -16,7 +17,7 @@
         <% IF domains %>
             Liens rapides :<br />
             <% FOREACH domain IN domains %>
-                <a href="details/<% domain %>"><% domain %></a><br />
+                <a href="/domain/details/<% domain %>"><% domain %></a><br />
             <% END %>
         <% END %>
 

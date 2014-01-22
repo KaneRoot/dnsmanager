@@ -41,12 +41,20 @@ get '/' => sub {
     if( session('login') )
     {
         my $app = initco();
-        $app->get_domains( session('login') );
-        template index => { 
-            logged  => true
-            , login   => session('login')
-            , admin   => session('admin')
-            , domains => $app->get_domains(session('login')) };
+        my ($success, @domains) = $app->get_domains( session('login') );
+
+        if( $success ) {
+
+            template index => {
+                logged  => true
+                , login   => session('login')
+                , admin   => session('admin')
+                , domains => [ @domains ] };
+        }
+        else {
+            session->destroy;
+            template 'index';
+        }
     }
     else
     {
@@ -64,38 +72,36 @@ get '/home' => sub {
     else
     {
         my $app = initco();
-        my %domains = ();
-        my %zone_properties = ();
 
-        # my @d = @{$app->get_domains( session('login') )};
+        my ($success, @domains) = $app->get_domains( session('login') );
 
-        if( session('creationSuccess') || session('creationFailure') )
-        {
+        if( $success ) {
+
+            my (%zone_properties, %domains);
             my $cs = session('creationSuccess');
-            session 'creationSuccess' => '';
             my $cf = session('creationFailure');
-            session 'creationFailure' => '';
             my $dn = session('domainName');
+
+            session 'creationSuccess' => '';
+            session 'creationFailure' => '';
             session 'domainName' => '';
-            template home =>
-            { 'login'           => session('login'),
-              'domains'         => $app->get_domains(session('login')),
-              'zones_domains'   => \%domains,
-              'zone_properties' => \%zone_properties,
-              'admin'           => session('admin'),
-              'creationSuccess' => $cs,
-              'creationFailure' => $cf,
-              'domainName'      => $dn  };
+
+            template home => {
+              login             => session('login')
+              , admin           => session('admin')
+              , domains         => [@domains]
+              , zones_domains   => \%domains
+              , zone_properties => \%zone_properties
+              , creationSuccess => $cs
+              , creationFailure => $cf
+              , domainName      => $dn  };
+
         }
-        else
-        {
-            template home =>
-            { 'login'           => session('login'),
-              'domains'         => $app->get_domains(session('login')),
-              'zones_domains'   => \%domains,
-              'zone_properties' => \%zone_properties,
-              'admin'           => session('admin')  };
+        else {
+            session->destroy;
+            redirect '/ ';
         }
+
     }
 };
 
@@ -162,14 +168,14 @@ prefix '/domain' => sub {
             if( param('domain') =~ /^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$|^[a-zA-Z0-9]+$/ )
             {
 
-    			my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
+                my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
                 my $domain = param('domain').$cfg->param('tld');
                 # $domain =~ s/\.{2,}/\./g;
                 # say "domain after sed : $domain";
                 # create domain
-            	my $app = initco();
-            	# Add tld
-            	# create domain
+                my $app = initco();
+                # Add tld
+                # create domain
                 $app->add_domain( session('login'), $domain );
                 $creationSuccess = true;
 
@@ -194,7 +200,8 @@ prefix '/domain' => sub {
         # TODO tests des droits
         my $app = initco();
         $app->delete_domain(session('login'), param('domain'));
-        redirect '/home';
+
+        redirect request->referer;
 
     };
 
@@ -202,15 +209,32 @@ prefix '/domain' => sub {
 };
 
 any ['get', 'post'] => '/admin' => sub {
+
     unless( session('login') )
     {
         redirect '/';
     }
     else
     {
-        template administration => { 
-            login => session('login')
-            , admin => session('admin')  };
+        my $app = initco();
+        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+            session('password') );
+
+        unless ( $auth_ok && $isadmin ) {
+            redirect '/ ';
+            return;
+        }
+        else {
+
+            my %alldomains = $app->get_all_domains;
+            my ($success, @domains) = $app->get_domains( session('login') );
+
+            template administration => {
+                login => session('login')
+                , admin => session('admin')
+                , domains => [ @domains ]
+                , alldomains => { %alldomains } };
+        }
     }
 };
 
@@ -219,6 +243,21 @@ prefix '/user' => sub {
     get '/logout' => sub {
         session->destroy;
         redirect '/';
+    };
+
+    get '/del/:user' => sub {
+
+        my $app = initco();
+
+        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+            session('password') );
+
+        if ( $auth_ok && $isadmin || session('login') eq param('user')) {
+            $app->delete_user(param('user'));
+        }
+
+        redirect request->referer;
+
     };
 
     post '/login' => sub {
@@ -233,6 +272,7 @@ prefix '/user' => sub {
                 my $app = initco();
                 my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
                     param('password') );
+
                 if( $auth_ok )
                 {
 
@@ -242,10 +282,16 @@ prefix '/user' => sub {
                     session user  => freeze( $user );
                     session admin => $isadmin;
 
+                    if( $isadmin ) {
+                        redirect '/admin';
+                        return;
+                    }
+
                 }
                 else
                 {
                     # User login and/or password are incorrect
+                    redirect '/';
                 }
             }
         }

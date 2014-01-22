@@ -2,16 +2,57 @@
     Welcome <% login %> !
 
     <a href="/user/logout">Déconnexion</a>
+    <br />
+    <a href="/home">Ma page</a>
 
     <br />
     <a href='/admin'>Page d'administration</a>
     <br />
 
     <a href='/'>Accueil</a>
+    <br />
+
+    <% IF domains %>
+        Liens rapides :<br />
+        <% FOREACH domain IN domains %>
+            <a href="/domain/details/<% domain %>"><% domain %></a><br />
+        <% END %>
+    <% END %>
 
 </div>
 
 <div id="page">
     <h1>Bienvenue sur la page d'administration</h1>
+
+    <div id="waiting_dn">
+        <h3>Les sites en attente</h3>
+
+        <table>
+            <tr>
+                <th>domaine</th>
+                <th>utilisateur</th>
+                <th>supprimer domaine</th>
+                <th>supprimer utilisateur</th>
+            </tr>
+
+        <% FOREACH pair IN alldomains.pairs %>
+            <tr>
+            <td><% pair.key %></td>
+            <td><% pair.value %></td>
+
+            <td>
+                <a href="/domain/del/<% pair.key %>">sup. domaine</a>
+            </td>
+
+            <td>
+                <a href="/user/del/<% pair.value %>">sup. utilisateur</a>
+            </td>
+
+            </tr>
+        <%END%>
+        </table>
+
+    </div>
+
 </div>
 

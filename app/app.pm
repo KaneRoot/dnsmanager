@@ -47,29 +47,34 @@ sub init {
 
 sub auth {
     my ($self, $login, $passwd) = @_;
-    return ${$self->um}->auth($login, $passwd);
+    ${$self->um}->auth($login, $passwd);
 }
 
 sub register_user {
     my ($self, $login, $passwd) = @_;
-    return ${$self->um}->register_user($login, $passwd);
+    ${$self->um}->register_user($login, $passwd);
 }
 
 # TODO
 sub set_admin {
     my ($self, $login) = @_;
-    return ${$self->um}->set_admin($login);
+    ${$self->um}->set_admin($login);
 }
 
 sub update_passwd {
     my ($self, $login, $new) = @_;
-    my $user = ${$self->um}->get_user($login);
-    return $user->passwd($new);
+    my ($success, $user, $isadmin) = ${$self->um}->get_user($login);
+    $user->passwd($new);
 }
 
 sub delete_user {
     my ($self, $login) = @_;
-    return ${$self->um}->delete_user($login);
+    my ($success, @domains) = $self->get_domains($login);
+
+    if($success) {
+        $self->delete_domain($login, $_) foreach(@domains);
+        ${$self->um}->delete_user($login);
+    }
 }
 
 ### domains 
@@ -77,7 +82,12 @@ sub delete_user {
 # return yes or no
 sub add_domain {
     my ($self, $login, $domain) = @_; 
-    my $user = ${$self->um}->get_user($login);
+    my ($success, $user, $isadmin) = ${$self->um}->get_user($login);
+
+    unless($success) {
+        return 0;
+    }
+
     $user->add_domain($domain);
 
     my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
@@ -86,7 +96,7 @@ sub add_domain {
 
 sub delete_domain {
     my ($self, $login, $domain) = @_; 
-    my $user = ${$self->um}->get_user($login);
+    my ($success, $user, $isadmin) = ${$self->um}->get_user($login);
     $user->delete_domain($domain);
     my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
     $ze->del();
@@ -112,13 +122,13 @@ sub get_domain {
 
 sub get_domains {
     my ($self, $login) = @_; 
-
-    my $user = ${$self->um}->get_user($login);
-    return $user->domains;
+    ${$self->um}->get_domains($login);
 }
 
-sub activate_domain {
-    my ($self, $domain) = @_; 
+sub get_all_domains {
+    my ($self) = @_; 
+    # % domain login
+    ${$self->um}->get_all_domains;
 }
 
 sub new_tmp {

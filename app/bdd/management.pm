@@ -16,53 +16,24 @@ has [qw/dbh/] => qw/is rw required 1/;
 # ($success, $user, $admin) auth_user($login, $passwd)
 sub auth {
     my ($self, $login, $passwd) = @_;
-    my ($sth, $user, @domains);
+    my ($sth, $success, $user, $isadmin);
 
     $sth = $self->dbh->prepare('SELECT * FROM user WHERE login=? and passwd=?');
-    unless ( $sth->execute($login, $passwd)) {
+    unless ($sth->execute($login, $passwd)) {
         $sth->finish();
         return 0;
     }
 
     if (my $ref = $sth->fetchrow_arrayref) {
-        $sth = $self->dbh->prepare('SELECT domain FROM domain WHERE login=?');
-        unless ( $sth->execute($login)) {
-            $sth->finish();
-            return 0;
-        }
-
-        # get domains 
-        #push @domains, @$_[0] while($sth->fetchrow_arrayref);
-
-        while(my $ref2 = $sth->fetchrow_arrayref) {
-            push @domains, @$ref2[0];
-        }
-
-
-        # si admin
-        if(@$ref[2]) {
-
-            # TODO : the admin module
-            $user = app::bdd::admin->new(login => @$ref[0]
-                , passwd => @$ref[1]
-                , dbh => $self->dbh
-                , domains => [@domains]); 
-            $sth->finish();
-            return 1, $user, 1;
-
-        }
-        else {
-            $user = app::bdd::lambda->new(login => @$ref[0]
-                , passwd => @$ref[1]
-                , dbh => $self->dbh
-                , domains => [@domains]); 
-            $sth->finish();
-            return 1, $user, 0;
-        }
+        # if this user exists and is auth
+        ($success, $user, $isadmin) = $self->get_user($login);
+    }
+    else {
+        $success = 0;
     }
 
     $sth->finish();
-    return 0;
+    return ($success, $user, $isadmin);
 }
 
 # ($success) register_user
@@ -75,12 +46,14 @@ sub register_user {
         return 0;
     }
 
+    # if an user already exists
     if (my $ref = $sth->fetchrow_arrayref) {
         #say join (', ', @$ref);
         $sth->finish();
         return 0;
     }
 
+    # if not
     $sth = $self->dbh->prepare('insert into user VALUES(?,?,?)');
     unless ($sth->execute($login, $pass, 0)) {
         $sth->finish();
@@ -96,6 +69,14 @@ sub delete_user {
     my ($self, $login) = @_;
     my $sth;
 
+    # TODO non utile
+    $sth = $self->dbh->prepare('delete from domain where login=?');
+    unless ( $sth->execute($login) ) {
+        $sth->finish();
+        return 0;
+    }
+    $sth->finish();
+
     $sth = $self->dbh->prepare('delete from user where login=?');
     unless ( $sth->execute($login) ) {
         $sth->finish();
@@ -103,12 +84,6 @@ sub delete_user {
     }
     $sth->finish();
 
-    $sth = $self->dbh->prepare('delete from domain where login=?');
-    unless ( $sth->execute($login) ) {
-        $sth->finish();
-        return 0;
-    }
-    $sth->finish();
 
     return 1;
 }
@@ -130,9 +105,6 @@ sub get_user {
             return 0;
         }
 
-        # get domains 
-        #push @domains, @$_[0] while($sth->fetchrow_arrayref);
-
         while(my $ref2 = $sth->fetchrow_arrayref) {
             push @domains, @$ref2[0];
         }
@@ -151,11 +123,50 @@ sub get_user {
                 , dbh => $self->dbh
                 , domains => [@domains]); 
         }
+
         $sth->finish();
-        return 1, $user;
+        return (1, $user, @$ref[2]);
     }
 
     $sth->finish();
+    return 0;
+}
+
+sub get_domains {
+    my ($self, $login) = @_; 
+    my ($sth, @domains);
+
+    $sth = $self->dbh->prepare('SELECT domain FROM domain where login=?');
+    unless ($sth->execute($login)) {
+        $sth->finish();
+        return (0, @domains);
+    }
+
+    while(my $ref = $sth->fetchrow_arrayref) {
+        push @domains, @$ref[0];
+    }
+
+    $sth->finish();
+
+    return (1, @domains);
+}
+
+sub get_all_domains {
+    my ($self) = @_; 
+    my ($sth, $user, %domains);
+
+    $sth = $self->dbh->prepare('SELECT domain, login FROM domain');
+    unless ( $sth->execute()) {
+        $sth->finish();
+        undef;
+    }
+
+    while( my $ref = $sth->fetchrow_arrayref) {
+        $domains{@$ref[0]} = @$ref[1];
+    }
+
+    $sth->finish();
+    %domains;
 }
 
 1;
