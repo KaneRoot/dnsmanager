@@ -25,7 +25,7 @@
                 <% END %>
                 </div>
 
-                <% IF domains %>
+                <% IF domains.defined && domains.size > 0 %>
                 <hr />
                 <p>Mes domaines</p>
                 <% FOREACH domain IN domains %>
