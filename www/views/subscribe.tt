@@ -5,11 +5,20 @@
 
 <% errmsg %> <br />
 
-<form action='/user/add/' method="post" >
+<h3>S'enregistrer</h3>
+<hr />
+
+<form class="form" action='/user/add/' method="post" >
     <label for='login'>login : </label>
     <input type='text' name='login' id='login' />
+    <br />
+
     <label for='password'>password : </label>
     <input type='password' name='password' id='password' />
+    <br />
+
+    <label for='password2'>password (pour être sûr): </label>
+    <input type='password' name='password2' id='password2' />
     <input type='submit' name='submit'/>
 </form>
 

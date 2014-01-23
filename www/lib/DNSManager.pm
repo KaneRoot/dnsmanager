@@ -234,13 +234,15 @@ any ['get', 'post'] => '/admin' => sub {
         else {
 
             my %alldomains = $app->get_all_domains;
+            my %allusers = $app->get_all_users;
             my ($success, @domains) = $app->get_domains( session('login') );
 
             template administration => {
                 login => session('login')
                 , admin => session('admin')
                 , domains => [ @domains ]
-                , alldomains => { %alldomains } };
+                , alldomains => { %alldomains }
+                , allusers => { %allusers } };
         }
     }
 };
@@ -287,6 +289,69 @@ prefix '/user' => sub {
             };
         }
 
+    };
+
+    get '/unsetadmin/:user' => sub {
+
+        unless( defined param('user') )
+        {
+
+            # TODO ajouter une erreur à afficher
+            redirect request->referer;
+
+        }
+        elsif(! defined session('login') )
+        {
+
+            redirect '/';
+
+        }
+        else {
+
+            my $app = initco();
+
+            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+                session('password') );
+
+            if ( $auth_ok && $isadmin ) {
+                $app->set_admin(param('user'), 0);
+            }
+
+            redirect request->referer;
+
+        }
+
+    };
+
+    get '/setadmin/:user' => sub {
+
+        unless( defined param('user') )
+        {
+
+            # TODO ajouter une erreur à afficher
+            redirect request->referer;
+
+        }
+        elsif(! defined session('login') )
+        {
+
+            redirect '/';
+
+        }
+        else {
+
+            my $app = initco();
+
+            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+                session('password') );
+
+            if ( $auth_ok && $isadmin ) {
+                $app->set_admin(param('user'), 1);
+            }
+
+            redirect request->referer;
+
+        }
 
     };
 

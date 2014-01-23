@@ -23,12 +23,14 @@
     <table class="table">
     <% FOREACH domain in domains %>
         <tr>
+            <td><% domain %></td>
+
             <td>
-                <a href="/domain/details/<% domain %>" ><% domain %></a> 
+                <a href="/domain/details/<% domain %>" ><button type="button" class="btn btn-primary">Détails</button></a>
             </td>
 
             <td>
-                <a href="/domain/del/<% domain %>">Supprimer</a>
+                <a href="/domain/del/<% domain %>" ><button type="button" class="btn btn-danger">Supprimer</button></a>
             </td>
         </tr>
     <% END %>

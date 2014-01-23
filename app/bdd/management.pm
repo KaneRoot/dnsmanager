@@ -153,7 +153,7 @@ sub get_domains {
 
 sub get_all_domains {
     my ($self) = @_; 
-    my ($sth, $user, %domains);
+    my ($sth, %domains);
 
     $sth = $self->dbh->prepare('SELECT domain, login FROM domain');
     unless ( $sth->execute()) {
@@ -167,6 +167,37 @@ sub get_all_domains {
 
     $sth->finish();
     %domains;
+}
+
+sub get_all_users {
+    my ($self) = @_; 
+    my ($sth, %users);
+
+    $sth = $self->dbh->prepare('SELECT login, admin FROM user');
+    unless ( $sth->execute()) {
+        $sth->finish();
+        undef;
+    }
+
+    while( my $ref = $sth->fetchrow_arrayref) {
+        $users{@$ref[0]} = @$ref[1];
+    }
+
+    $sth->finish();
+    %users;
+}
+
+sub set_admin {
+    my ($self, $login, $val) = @_;
+
+    my $sth = $self->dbh->prepare('update user set admin=? where login=?');
+    unless ( $sth->execute( $val, $login) ) {
+        $sth->finish();
+        return 0;
+    }
+
+    $sth->finish();
+    return 1;
 }
 
 1;

@@ -20,11 +20,43 @@
             <td><% pair.value %></td>
 
             <td>
-                <a href="/domain/del/<% pair.key %>">sup. domaine</a>
+                <a href="/domain/del/<% pair.key %>"><button type="button" class="btn btn-danger">Supprimer le domaine</button></a>
             </td>
 
             <td>
-                <a href="/user/del/<% pair.value %>">sup. utilisateur</a>
+                <a href="/user/del/<% pair.value %>"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
+            </td>
+
+            </tr>
+        <% END %>
+        </table>
+
+    </div>
+
+    <div id="utilisateurs">
+
+        <h3>Utilisateurs enregistrés</h3>
+        <table class="table" >
+            <tr>
+                <th>utilisateur</th>
+                <th>supprimer</th>
+                <th>administrateur</th>
+            </tr>
+
+        <% FOREACH pair IN allusers.pairs %>
+            <tr>
+            <td><% pair.key %></td>
+
+            <td>
+                <a href="/user/del/<% pair.key %>"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
+            </td>
+
+            <td>
+            <% IF pair.value == 1 %>
+                <a href="/user/unsetadmin/<% pair.key %>"><button type="button" class="btn btn-danger">Passer utilisateur</button></a>
+            <% ELSE %>
+                <a href="/user/setadmin/<% pair.key %>"><button type="button" class="btn btn-primary">Passer administrateur</button></a>
+            <% END %>
             </td>
 
             </tr>

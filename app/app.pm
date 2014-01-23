@@ -55,10 +55,9 @@ sub register_user {
     ${$self->um}->register_user($login, $passwd);
 }
 
-# TODO
 sub set_admin {
-    my ($self, $login) = @_;
-    ${$self->um}->set_admin($login);
+    my ($self, $login, $val) = @_;
+    ${$self->um}->set_admin($login, $val);
 }
 
 sub update_passwd {
@@ -129,6 +128,12 @@ sub get_all_domains {
     my ($self) = @_; 
     # % domain login
     ${$self->um}->get_all_domains;
+}
+
+sub get_all_users {
+    my ($self) = @_; 
+    # % login admin
+    ${$self->um}->get_all_users;
 }
 
 sub new_tmp {
