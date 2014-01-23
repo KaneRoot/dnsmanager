@@ -1,16 +1,17 @@
+<% include header.tt %>
 <% include sidebar.tt %>
 
 <div id="page">
 
     <h3>Fichier de zone de <% domain %></h3>
 
-    <form action='/domain/update/<% domain %>' method="post" >
-        <label for='zone'>Votre zone :</label>
+    <form class="form" action='/domain/update/<% domain %>' method="post" >
+        <textarea name="zoneupdated" rows="20" cols="100"><% domain_zone %></textarea>
 	<br />
-        <textarea id='zone' name="zoneupdated" rows="20" cols="100"><% domain_zone %></textarea>
-	<br />
-        <input type="submit" value="Mettre à jour la zone">
+        <input type="submit" value="Mettre à jour la zone" />
     </form>
 
 </div>
 
+</div> <!-- fin de colonne -->
+</div> <!-- fin de ligne -->

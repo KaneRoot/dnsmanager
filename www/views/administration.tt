@@ -1,12 +1,12 @@
+<% include header.tt %>
 <% include sidebar.tt %>
 
 <div id="page">
-    <h1>Bienvenue sur la page d'administration</h1>
 
-    <div id="waiting_dn">
-        <h3>Les sites en attente</h3>
+    <div id="domaines">
 
-        <table>
+        <h3>Domaines gérés</h3>
+        <table class="table" >
             <tr>
                 <th>domaine</th>
                 <th>utilisateur</th>
@@ -35,3 +35,5 @@
 
 </div>
 
+</div> <!-- fin de colonne -->
+</div> <!-- fin de ligne -->

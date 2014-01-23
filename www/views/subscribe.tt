@@ -1,3 +1,4 @@
+<% include header.tt %>
 <% include sidebar.tt %>
 
 <div id="page">
@@ -13,3 +14,6 @@
 </form>
 
 </div>
+
+</div> <!-- fin de colonne -->
+</div> <!-- fin de ligne -->

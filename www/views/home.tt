@@ -1,31 +1,34 @@
+<% include header.tt %>
 <% include sidebar.tt %>
 
 <div id="page">
 
     <!-- Permettra une mise en forme plus propre. -->
     <% IF creationSuccess == 1 %>
-        <p>
-            Le domaine "<% domainName %>" a bien été créée.
+      <div class="alert alert-success">
+        <p><strong>Bien !</strong> Le domaine « <% domainName %> » a bien été créé. 
+        <span class="glyphicon glyphicon-ok"></span>
         </p>
+      </div>
     <% ELSIF creationFailure == 1 %>
-        <p>
-            Le domaine "<% domainName %>" n'a pas été créée.
+      <div class="alert alert-danger">
+        <p><strong>Oh !</strong> Le domaine « <% domainName %> » n'a pu être créé. 
+        <span class="glyphicon glyphicon-remove"></span>
         </p>
+      </div>
     <% END %>
 
 <% IF domains && domains.size %>
     <h3>Vos domaines :</h3>
-    <br />
-
-    <table>
+    <table class="table">
     <% FOREACH domain in domains %>
         <tr>
             <td>
-                <a href="/domain/details/<%domain%>" ><%domain%></a> 
+                <a href="/domain/details/<% domain %>" ><% domain %></a> 
             </td>
 
             <td>
-                <a href="/domain/del/<%domain%>">Supprimer</a>
+                <a href="/domain/del/<% domain %>">Supprimer</a>
             </td>
         </tr>
     <% END %>
@@ -34,14 +37,18 @@
     <br/>
 
 <% ELSE %>
-    Vous n'avez pas encore de noms de domaines… réservez-en un ! \o/
+   <p class="text-danger">Pas encore de nom de domaine ?</p>
+   <p>Réservez-en un ! \o/</p>
 <% END %>
 
-<h3>Ajouter un nouveau domaine.</h3>
+<h3>Ajouter un nouveau domaine :</h3>
 
-<form action='/domain/add/' method="post" >
+<form class="form" action='/domain/add/' method="post" >
     <input type='text' name='domain'/>
-    <input type='submit' name='submit'/>
+    <input type='submit' name='submit' value="Créer mon domaine!" />
 </form>
 
 </div>
+
+</div> <!-- fin de colonne -->
+</div> <!-- fin de ligne -->

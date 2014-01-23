@@ -1,15 +1,22 @@
+<% include header.tt %>
 <% include sidebar.tt %>
 
 <div id="page">
 
-    <h1 style="text-align:center">Bienvenue sur netlib.re !</h1>
-    <p style="text-align:center;">Netlib.re est un projet qui permettra à tout un chacun d'obtenir un sous-domaine de netlib.re, gratuitement et simplement. </p>
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+        <h1>Bienvenue sur netlib.re !</h1>
+        <p>Netlib.re est un projet qui permet à chacun d'obtenir un nom de domaine, gratuitement et simplement. </p>
+        <p><a href="/user/subscribe" class="btn btn-primary btn-lg" role="button">S'enregistrer &raquo;</a></p>
+    <h3><a href="" ></a></h3>
+    </div>
+
     <br />
 
     <h2>Pourquoi ?</h2>
     Nous pensons qu'Internet est et doit rester un lieu où l'utilisateur crée le contenu. 
     Ce projet permettra donc d'apporter un peu notre pierre à l'édifice en aidant les gens n'ayant pas forcément de compétences en informatique de créer un nom de domaine.<br />
-    Remarque : ce site ne fera pas d'hébergement, il founira uniquement un serveur de nom de domaine automatisé.
+    Remarque : ce site ne fera pas d'hébergement, il fournira uniquement un serveur de nom de domaine automatisé.
 
     <h2>Qui sommes-nous ?</h2>
     <p>Une bande d'informaticiens passionnés, voulant aider la communauté.</p>
@@ -23,6 +30,8 @@
     </ul>
     <p>En résumé : cherchez votre nom de domaine, réservez-le, on s'occupe du reste ! </p>
 
-    <h3><a href="/user/subscribe" >S'enregistrer</a></h3>
 
 </div>
+
+</div> <!-- fin de colonne -->
+</div> <!-- fin de ligne -->

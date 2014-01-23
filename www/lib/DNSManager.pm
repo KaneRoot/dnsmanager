@@ -196,11 +196,20 @@ prefix '/domain' => sub {
 
     get '/del/:domain' => sub {
 
-        # TODO tests des droits
         my $app = initco();
-        $app->delete_domain(session('login'), param('domain'));
 
-        redirect request->referer;
+        # TODO tests des droits
+        if( session('login') ) {
+
+            $app->delete_domain(session('login'), param('domain'));
+
+            if( request->referer =~ "/domain/details" ) {
+                redirect '/home';
+            }
+            else {
+                redirect request->referer;
+            }
+        }
 
     };
 
