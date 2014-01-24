@@ -1,0 +1,10 @@
+<% IF errmsg.defined && errmsg.length > 0 %>
+<div id="errmsg" >
+    <div class="alert alert-danger">
+        <p><strong>Oh !</strong>
+        <% errmsg %>
+        <span class="glyphicon glyphicon-remove"></span>
+        </p>
+    </div>
+</div>
+<% END %>

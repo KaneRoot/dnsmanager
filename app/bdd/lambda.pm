@@ -30,18 +30,30 @@ sub delete_domain {
     return 1;
 }
 
+
+# $success add_domain
 sub add_domain {
     my ($self, $domain) = @_;
     my ($sth);
 
-    # TODO vérifier que personne n'a ce domaine, pas seulement l'utilisateur
-    return 0 if (grep { $domain eq $_ } @{ $self->domains }) > 0;
+    $sth = $self->dbh->prepare('select domain from domain where domain=?');
+    unless ( $sth->execute($domain) ) {
+        $sth->finish();
+        return 0;
+    }
+
+    # if the domain already exists
+    if (my $ref = $sth->fetchrow_arrayref) {
+        $sth->finish();
+        return 0;
+    }
 
     $sth = $self->dbh->prepare('insert into domain VALUES(?,?,?)');
     unless ( $sth->execute($domain, $self->login, 0) ) {
         $sth->finish();
         return 0;
     }
+
     $sth->finish();
     push @{ $self->domains }, $domain;
     return 1;

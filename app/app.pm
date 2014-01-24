@@ -87,7 +87,9 @@ sub add_domain {
         return 0;
     }
 
-    $user->add_domain($domain);
+    unless ($user->add_domain($domain)) {
+        return 0;
+    }
 
     my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
     $ze->addzone();

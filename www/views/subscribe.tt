@@ -1,9 +1,8 @@
 <% include header.tt %>
 <% include sidebar.tt %>
+<% include error.tt %>
 
 <div id="page">
-
-<% errmsg %> <br />
 
 <h3>S'enregistrer</h3>
 <hr />

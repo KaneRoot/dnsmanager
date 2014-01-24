@@ -1,19 +1,15 @@
 <% include header.tt %>
 <% include sidebar.tt %>
+<% include error.tt %>
 
 <div id="page">
 
     <!-- Permettra une mise en forme plus propre. -->
-    <% IF creationSuccess == 1 %>
+    <% IF creationSuccess.defined && creationSuccess.length > 0 %>
       <div class="alert alert-success">
-        <p><strong>Bien !</strong> Le domaine « <% domainName %> » a bien été créé. 
+        <p><strong>Bien !</strong>
+        <% creationSuccess %>
         <span class="glyphicon glyphicon-ok"></span>
-        </p>
-      </div>
-    <% ELSIF creationFailure == 1 %>
-      <div class="alert alert-danger">
-        <p><strong>Oh !</strong> Le domaine « <% domainName %> » n'a pu être créé. 
-        <span class="glyphicon glyphicon-remove"></span>
         </p>
       </div>
     <% END %>
@@ -46,7 +42,11 @@
 <h3>Ajouter un nouveau domaine :</h3>
 
 <form class="form" action='/domain/add/' method="post" >
-    <input type='text' name='domain'/>
+    <% IF domainName.defined %>
+        <input type='text' name='domain' value="<% domainName %>" />
+    <% ELSE %>
+        <input type='text' name='domain' />
+    <% END %>
     <input type='submit' name='submit' value="Créer mon domaine!" />
 </form>
 

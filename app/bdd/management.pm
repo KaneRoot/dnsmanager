@@ -48,7 +48,6 @@ sub register_user {
 
     # if an user already exists
     if (my $ref = $sth->fetchrow_arrayref) {
-        #say join (', ', @$ref);
         $sth->finish();
         return 0;
     }
@@ -69,21 +68,13 @@ sub delete_user {
     my ($self, $login) = @_;
     my $sth;
 
-    # TODO non utile
-    $sth = $self->dbh->prepare('delete from domain where login=?');
-    unless ( $sth->execute($login) ) {
-        $sth->finish();
-        return 0;
-    }
-    $sth->finish();
-
+    # TODO : vérifier que ça renvoie la bonne valeur
     $sth = $self->dbh->prepare('delete from user where login=?');
     unless ( $sth->execute($login) ) {
         $sth->finish();
         return 0;
     }
     $sth->finish();
-
 
     return 1;
 }

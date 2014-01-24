@@ -37,9 +37,22 @@ sub initco {
     return $app;
 }
 
+sub get_errmsg {
+    my $err = session 'errmsg';
+    session errmsg => '';
+    $err;
+}
+
+sub get_route {
+    my $route = '/';
+    $route = request->referer if (defined request->referer);
+    $route;
+}
+
 get '/' => sub {
     if( session('login') )
     {
+
         my $app = initco();
         my ($success, @domains) = $app->get_domains( session('login') );
 
@@ -48,16 +61,21 @@ get '/' => sub {
             template index => {
                 login   => session('login')
                 , admin   => session('admin')
+                , errmsg => get_errmsg
                 , domains => [ @domains ] };
         }
         else {
             session->destroy;
             template 'index';
         }
+
     }
     else
     {
-        template 'index';
+
+        template 'index' => {
+            errmsg => get_errmsg
+        };
     }
 };
 
@@ -78,22 +96,20 @@ get '/home' => sub {
 
             my (%zone_properties, %domains);
             my $cs = session('creationSuccess');
-            my $cf = session('creationFailure');
             my $dn = session('domainName');
 
             session creationSuccess => '';
-            session creationFailure => '';
             session domainName => '';
 
             template home => {
-              login             => session('login')
-              , admin           => session('admin')
-              , domains         => [@domains]
-              , zones_domains   => \%domains
-              , zone_properties => \%zone_properties
-              , creationSuccess => $cs
-              , creationFailure => $cf
-              , domainName      => $dn  };
+                login             => session('login')
+                , admin           => session('admin')
+                , domains         => [@domains]
+                , zones_domains   => \%domains
+                , zone_properties => \%zone_properties
+                , creationSuccess => $cs
+                , errmsg => get_errmsg
+                , domainName      => $dn  };
 
         }
         else {
@@ -115,6 +131,7 @@ prefix '/domain' => sub {
         }
         else
         {
+
             my $app = initco();
             my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
                 param('password') );
@@ -257,32 +274,32 @@ prefix '/domain' => sub {
         else
         {
 
-            my $creationSuccess = false;
-            my $creationFailure = false;
+            my $creationSuccess = '';
+
             if( param('domain') =~ /^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$|^[a-zA-Z0-9]+$/ )
             {
 
                 my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
                 my $domain = param('domain').$cfg->param('tld');
-                # $domain =~ s/\.{2,}/\./g;
-                # say "domain after sed : $domain";
-                # create domain
                 my $app = initco();
-                # Add tld
-                # create domain
-                $app->add_domain( session('login'), $domain );
-                $creationSuccess = true;
+                my ($success) = $app->add_domain( session('login'), $domain );
+
+                if ($success) {
+                    $creationSuccess = q{Le nom de domaine a bien été réservé ! };
+                }
+                else {
+                    session errmsg => q{Le nom de domaine est déjà pris.};
+                }
 
             }
             else
             {
-                # say param('domain')." contains a char not valid";
-                $creationFailure = true;
+                session errmsg =>
+                q{Le nom de domaine entré contient des caractères invalides};
             }
 
-            session 'creationSuccess' => $creationSuccess;
-            session 'creationFailure' => $creationFailure;
-            session 'domainName' => param('domain');
+            session creationSuccess => $creationSuccess;
+            session domainName => param('domain');
             redirect '/home';
 
         }
@@ -291,23 +308,38 @@ prefix '/domain' => sub {
 
     get '/del/:domain' => sub {
 
-        my $app = initco();
+        unless( defined param('domain') ) {
+            session errmsg => q<Domaine non renseigné.>;
+            redirect get_route;
+        }
+        else {
+            my $app = initco();
 
-        # TODO tests des droits
-        if( session('login') ) {
+            # TODO tests des droits
+            if( session('login') ) {
 
-            $app->delete_domain(session('login'), param('domain'));
+                if($app->delete_domain(session('login'), param('domain'))) {
 
-            if( request->referer =~ "/domain/details" ) {
-                redirect '/home';
-            }
-            else {
-                redirect request->referer;
+                    if( request->referer =~ "/domain/details" ) {
+                        redirect '/home';
+                    }
+                    else {
+                        redirect request->referer;
+                    }
+
+                }
+                else {
+
+                    session errmsg => "Impossible de supprimer le domaine "
+                    . param 'domain'
+                    . '.' ;
+                    redirect request->referer;
+
+                }
             }
         }
 
     };
-
 
 };
 
@@ -335,6 +367,7 @@ any ['get', 'post'] => '/admin' => sub {
             template administration => {
                 login => session('login')
                 , admin => session('admin')
+                , errmsg => get_errmsg
                 , domains => [ @domains ]
                 , alldomains => { %alldomains }
                 , allusers => { %allusers } };
@@ -355,10 +388,18 @@ prefix '/user' => sub {
         {
 
             my $app = initco();
-            $app->register_user(param('login'), param('password'));
-            session login => param('login');
-            session password => param('password');
-            redirect '/home';
+            my ($success) = $app->register_user(param('login')
+                , param('password'));
+
+            if($success) {
+                session login => param('login');
+                session password => param('password');
+                redirect '/home';
+            }
+            else {
+                session errmsg => q/Ce pseudo est déjà pris./;
+                redirect '/user/subscribe';
+            }
 
         }
         else {
@@ -376,11 +417,8 @@ prefix '/user' => sub {
         }
         else {
 
-            my $errmsg = session 'errmsg' ;
-            session errmsg => '';
-
             template subscribe => {
-                errmsg => $errmsg
+                errmsg => get_errmsg
             };
         }
 
@@ -392,12 +430,14 @@ prefix '/user' => sub {
         {
 
             # TODO ajouter une erreur à afficher
+            session errmsg => "L'administrateur n'est pas défini." ;
             redirect request->referer;
 
         }
         elsif(! defined session('login') )
         {
 
+            session errmsg => "Vous n'êtes pas connecté." ;
             redirect '/';
 
         }
@@ -411,8 +451,16 @@ prefix '/user' => sub {
             if ( $auth_ok && $isadmin ) {
                 $app->set_admin(param('user'), 0);
             }
+            else {
+                session errmsg => q/Vous n'êtes pas administrateur./;
+            }
 
-            redirect request->referer;
+            if( request->referer =~ "/admin" ) {
+                redirect request->referer;
+            }
+            else {
+                redirect '/';
+            }
 
         }
 
@@ -424,12 +472,14 @@ prefix '/user' => sub {
         {
 
             # TODO ajouter une erreur à afficher
+            session errmsg => "L'utilisateur n'est pas défini." ;
             redirect request->referer;
 
         }
         elsif(! defined session('login') )
         {
 
+            session errmsg => "Vous n'êtes pas connecté." ;
             redirect '/';
 
         }
@@ -444,7 +494,12 @@ prefix '/user' => sub {
                 $app->set_admin(param('user'), 1);
             }
 
-            redirect request->referer;
+            if( request->referer =~ "/admin" ) {
+                redirect request->referer;
+            }
+            else {
+                redirect '/';
+            }
 
         }
 
@@ -452,16 +507,31 @@ prefix '/user' => sub {
 
     get '/del/:user' => sub {
 
-        my $app = initco();
+        if(defined param 'user') {
 
-        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-            session('password') );
+            my $app = initco();
 
-        if ( $auth_ok && $isadmin || session('login') eq param('user')) {
-            $app->delete_user(param('user'));
+            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+                session('password') );
+
+            if ( $auth_ok && $isadmin || session('login') eq param('user')) {
+                unless ( $app->delete_user(param('user'))) {
+                    session errmsg => "L'utilisateur " 
+                    . param 'user'
+                    . " n'a pas pu être supprimé.";
+                }
+            }
+        }
+        else {
+            session errmsg => q{Le nom d'utilisateur n'est pas renseigné.};
         }
 
-        redirect request->referer;
+        if( defined request->referer) {
+            redirect request->referer;
+        }
+        else {
+            redirect '/';
+        }
 
     };
 
@@ -495,8 +565,10 @@ prefix '/user' => sub {
                 }
                 else
                 {
-                    # User login and/or password are incorrect
+
+                    session errmsg => q<Impossible de se connecter (login ou mot de passe incorrect).>;
                     redirect '/';
+
                 }
             }
         }
