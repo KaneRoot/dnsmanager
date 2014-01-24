@@ -5,11 +5,107 @@
 
     <h3>Fichier de zone de <% domain %></h3>
 
-    <form class="form" action='/domain/update/<% domain %>' method="post" >
-        <textarea name="zoneupdated" rows="20" cols="100"><% domain_zone %></textarea>
-	<br />
-        <input type="submit" value="Mettre à jour la zone" />
-    </form>
+	<% IF expert %>
+		<form class="form" action='/domain/updateraw/<% domain %>' method="post" >
+			<textarea name="zoneupdated" rows="20" cols="100"><% domain_zone %></textarea>
+		<br />
+			<input type="submit" value="Mettre à jour la zone" />
+		</form>
+
+		<a href='/domain/details/<% domain %>' >Easy Mode</a>
+	<% ELSE %>
+
+		<table border=1 >
+			<caption>
+				<td>Name</td>
+				<td>Class</td>
+				<td>Type</td>
+				<td>Host</td>
+				<td>TTL</td>
+			</caption>
+
+			<% FOREACH address in ns %>
+				<tr>
+					<td><% address.name %></td>
+					<td><% address.class %></td>
+					<td>NS</td>
+					<td><% address.host %></td>
+					<td><% address.ttl %></td>
+				</tr>
+			<% END %>
+
+			<% FOREACH address in a %>
+				<tr>
+					<td><% address.name %></td>
+					<td><% address.class %></td>
+					<td>A</td>
+					<td><% address.host %></td>
+					<td><% address.ttl %></td>
+				</tr>
+			<% END %>
+
+			<% FOREACH address in aaaa %>
+				<tr>
+					<td><% address.name %></td>
+					<td><% address.class %></td>
+					<td>AAAA</td>
+					<td><% address.host %></td>
+					<td><% address.ttl %></td>
+				</tr>
+			<% END %>
+
+			<% FOREACH address in cname %>
+				<tr>
+					<td><% address.name %></td>
+					<td><% address.class %></td>
+					<td>CNAME</td>
+					<td><% address.host %></td>
+					<td><% address.ttl %></td>
+				</tr>
+			<% END %>
+
+			<% FOREACH address in ptr %>
+				<tr>
+					<td><% address.name %></td>
+					<td><% address.class %></td>
+					<td>PTR</td>
+					<td><% address.host %></td>
+					<td><% address.ttl %></td>
+				</tr>
+			<% END %>
+
+			<% FOREACH address in mx %>
+				<tr>
+					<td><% address.name %></td>
+					<td><% address.class %></td>
+					<td>MX</td>
+					<td><% address.host %> (<% address.priority %>)</td>
+					<td><% address.ttl %></td>
+				</tr>
+			<% END %>
+
+		</table>
+		<a href='/domain/details/<% domain %>?expert=1'>Expert Mode</a>
+
+		<br /><br />
+
+		Ajouter un enregistrement : <br />
+		<form action='/domain/update/<% domain %>' method='post' >
+			<label for="name">Nom : </label><input type="text" name="name" />
+			<label for="type">Type : </label><select name="type" id="type" >
+				<option value="A">A</option>
+				<option value="AAAA">AAAA</option>
+				<option value="CNAME">CNAME</option>
+				<option value="MX">MX</option>
+				<option value="NS">NS</option>
+				<option value="PTR">PTR</option>
+			</select>
+			<label for="value">Valeur : </label><input type="text" id="value" name="value" />
+			<label for="input_ttl">TTL</label><input type="number" id="input_ttl" name="ttl" min='1' value="3"/>
+			<input type="submit">Valider</input>
+		</form>
+
+	<% END %>
 
 </div>
 
