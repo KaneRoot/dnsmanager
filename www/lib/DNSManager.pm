@@ -143,10 +143,28 @@ prefix '/domain' => sub {
 
             my $zone = $app->get_domain(session('login') , param('domain'));
 
-            template details => {
-                login           => session('login')
-                , domain        => param('domain')
-                , domain_zone   => $zone->output() };
+			if( param( 'expert' ) )
+			{
+				template details => {
+					login           => session('login')
+					, domain        => param('domain')
+					, domain_zone   => $zone->output()
+					, expert        => true	};
+			}
+			else
+			{
+				# say dump( $zone->cname());
+				template details => {
+					login           => session('login')
+					, domain        => param('domain')
+					, domain_zone   => $zone->output()
+					, a             => $zone->a()
+					, aaaa          => $zone->aaaa()
+					, cname         => $zone->cname()
+					, ptr			=> $zone->ptr()
+					, mx			=> $zone->mx()
+					, ns			=> $zone->ns()	};
+			}
 
         }
 
