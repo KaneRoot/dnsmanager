@@ -6,7 +6,7 @@
     <h3>Fichier de zone de <% domain %></h3>
 
 	<% IF expert %>
-		<form class="form" action='/domain/update/<% domain %>' method="post" >
+		<form class="form" action='/domain/updateraw/<% domain %>' method="post" >
 			<textarea name="zoneupdated" rows="20" cols="100"><% domain_zone %></textarea>
 		<br />
 			<input type="submit" value="Mettre à jour la zone" />
@@ -86,6 +86,25 @@
 
 		</table>
 		<a href='/domain/details/<% domain %>?expert=1'>Expert Mode</a>
+
+		<br /><br />
+
+		Ajouter un enregistrement : <br />
+		<form action='/domain/update/<% domain %>' method='post' >
+			<label for="name">Nom : </label><input type="text" name="name" />
+			<label for="type">Type : </label><select name="type" id="type" >
+				<option value="A">A</option>
+				<option value="AAAA">AAAA</option>
+				<option value="CNAME">CNAME</option>
+				<option value="MX">MX</option>
+				<option value="NS">NS</option>
+				<option value="PTR">PTR</option>
+			</select>
+			<label for="value">Valeur : </label><input type="text" id="value" name="value" />
+			<label for="input_ttl">TTL</label><input type="number" id="input_ttl" name="ttl" min='1' value="3"/>
+			<input type="submit">Valider</input>
+		</form>
+
 	<% END %>
 
 </div>

@@ -106,7 +106,7 @@ get '/home' => sub {
 
 prefix '/domain' => sub {
 
-    any ['post', 'get'] => '/update/:domain' => sub {
+    any ['post', 'get'] => '/updateraw/:domain' => sub {
 
         # check if user is logged & if domain parameter is set
         unless( session('login') && param('domain'))
@@ -124,9 +124,86 @@ prefix '/domain' => sub {
                 , param('domain'));
 
             redirect '/domain/details/' . param('domain');
-        }
+		}
 
-    };
+	};
+
+    any ['post', 'get'] => '/update/:domain' => sub {
+		unless( session('login') && param('domain') )
+		{
+            redirect '/';
+        }
+        else
+        {
+			my $type  = param('type');
+			my $name  = param('name');
+			my $value = param('value');
+			my $ttl   = param('ttl');
+
+			my $app = initco();
+			my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+				param('password') );
+			my $zone = $app->get_domain( session('login') , param('domain') );
+			given( $type )
+			{
+
+				when ('A') { my $a=$zone->a();
+				             push( @$a, {name  => $name,
+				                         class => "IN",
+				                         host  => $value,
+				                         ttl   => $ttl,
+				                         ORIGIN => $zone->origin} );
+				           }
+
+				when ('AAAA') { my $aaaa=$zone->aaaa;
+				                push(@$aaaa, {name  => $name,
+				                              class => "IN",
+				                              host  => $value,
+				                              ttl   => $ttl,
+                                              ORIGIN => $zone->origin} );
+				              }
+
+				when ('CNAME') { my $cname=$zone->cname;
+				                 push(@$cname,
+                                      {name  => $name,
+				                       class => "IN",
+				                       host  => $value,
+				                       ttl   => $ttl,
+                                       ORIGIN => $zone->origin} );
+				               }
+
+				when ('MX') { my $ptr=$zone->ptr;
+				              push(@$ptr, {name  => $name,
+				                           class => "IN",
+				                           host  => $value,
+				                           ttl   => $ttl,
+                                           ORIGIN => $zone->origin} );
+				            }
+
+				when ('PTR') { my $ptr=$zone->ptr;
+				               push(@$ptr, {name  => $name,
+				                           class => "IN",
+				                           host  => $value,
+				                           ttl   => $ttl,
+                                           ORIGIN => $zone->origin} );
+				             }
+
+				when ('NS') { my $ns=$zone->ns;
+				               push(@$ns, {name  => $name,
+				                           class => "IN",
+				                           host  => $value,
+				                           ttl   => $ttl,
+                                           ORIGIN => $zone->origin} );
+				             }
+
+			}
+			$zone->new_serial();
+			my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
+			my $ed = app::zone::edit->new(zdir=>$cfg->param('zones_path'), zname => param('domain'));
+			$ed->update($zone);
+			redirect '/domain/details/'.param('domain');
+		}
+	};
 
     get '/details/:domain' => sub {
 
