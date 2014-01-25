@@ -353,6 +353,80 @@ prefix '/domain' => sub {
 
     };
 
+    get '/del/:domain/:name/:type/:host/:ttl' => sub {
+
+        unless( session( 'user' ) and defined param('domain') ) {
+            session errmsg => q<Domaine non renseigné.>;
+            redirect get_route;
+        }
+        else {
+			# Load :domain and search for corresponding data
+			my $app = initco();
+			my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+				param('password') );
+
+			my $zone = $app->get_domain(session('login') , param('domain'));
+			my $dump = $zone->dump;
+
+			my $record;
+			my $found = false;
+
+			given( lc param('type') )
+			{
+				when ('a')
+				{
+					$record = $zone->a;
+					$found = true;
+				}
+				when ('aaaa')
+				{
+					$record = $zone->aaaa;
+					$found = true;
+				}
+				when ('cname')
+				{
+					$record = $zone->cname;
+					$found = true;
+				}
+				when ('ns')
+				{
+					$record = $zone->ns;
+					$found = true;
+				}
+				when ('mx')
+				{
+					$record = $zone->mx;
+					$found = true;
+				}
+				when ('ptr')
+				{
+					$record = $zone->ptr;
+					$found = true;
+				}
+			}
+
+			if( $found )
+			{
+
+				foreach my $i ( 0 .. scalar @{$record}-1 )
+				{
+
+					if( $record->[$i]->{'name'} eq param('name') && 
+						$record->[$i]->{'host'} eq param('host') &&
+						$record->[$i]->{'ttl'} == param('ttl') )
+					{
+						delete $record->[$i];
+					}
+
+				}
+
+			}
+
+			$app->update_domain( session('login'), $zone, param('domain') );
+		}
+
+		redirect '/domain/details/'. param('domain');
+	}
 };
 
 any ['get', 'post'] => '/admin' => sub {
