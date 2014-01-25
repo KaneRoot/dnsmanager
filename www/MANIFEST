@@ -11,7 +11,7 @@ public/css/style.css
 public/css/error.css
 public/404.html
 public/dispatch.fcgi
-public/javascripts/jquery.js
+public/js/jquery.min.js
 public/dispatch.cgi
 public/500.html
 t/002_index_route.t
