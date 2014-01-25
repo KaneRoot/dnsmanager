@@ -33,7 +33,6 @@ sub reconfig {
 sub delzone {
     my ($self, $zdir, $zname) = @_;
     system("rndc delzone $zname 2>/dev/null 1>/dev/null");
-    unlink("$zdir/$zname");
 }
 
 1;

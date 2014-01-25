@@ -17,7 +17,7 @@ use Moose;
 has dbh => ( is => 'rw', builder => '_void');
 has dnsi => ( is => 'rw', builder => '_void');
 has um => ( is => 'rw', builder => '_void');
-has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp/ ] => qw/is ro required 1/;
+has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp sshhost sshuser/ ] => qw/is ro required 1/;
 sub _void { my $x = ''; \$x; }
 
 ### users
@@ -91,7 +91,10 @@ sub add_domain {
         return 0;
     }
 
-    my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
+    my $ze = app::zone::edit->new(zname => $domain
+        , zdir => $self->zdir
+        , host => $self->sshhost
+        , user => $self->sshuser );
     $ze->addzone();
 }
 
@@ -103,7 +106,10 @@ sub delete_domain {
     return 0 unless $success;
     return 0 unless $user->delete_domain($domain);
 
-    my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
+    my $ze = app::zone::edit->new(zname => $domain
+        , zdir => $self->zdir
+        , host => $self->sshhost
+        , user => $self->sshuser );
     $ze->del();
 
     1;
@@ -111,19 +117,28 @@ sub delete_domain {
 
 sub update_domain_raw {
     my ($self, $login, $zone, $domain) = @_; 
-    my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
+    my $ze = app::zone::edit->new(zname => $domain
+        , zdir => $self->zdir
+        , host => $self->sshhost
+        , user => $self->sshuser );
     $ze->update_raw($zone);
 }
 
 sub update_domain {
     my ($self, $login, $zone, $domain) = @_; 
-    my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
+    my $ze = app::zone::edit->new(zname => $domain
+        , zdir => $self->zdir
+        , host => $self->sshhost
+        , user => $self->sshuser );
     $ze->update($zone);
 }
 
 sub get_domain {
     my ($self, $login, $domain) = @_; 
-    my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
+    my $ze = app::zone::edit->new(zname => $domain
+        , zdir => $self->zdir
+        , host => $self->sshhost
+        , user => $self->sshuser );
     $ze->get();
 }
 
@@ -146,7 +161,10 @@ sub get_all_users {
 
 sub new_tmp {
     my ($self, $login, $domain) = @_; 
-    my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
+    my $ze = app::zone::edit->new(zname => $domain
+        , zdir => $self->zdir
+        , host => $self->sshhost
+        , user => $self->sshuser );
     $ze->new_tmp();
 }
 
