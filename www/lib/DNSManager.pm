@@ -23,14 +23,16 @@ our $VERSION = '0.1';
 sub initco {
 
     my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
-    my $app = app->new( zdir => $cfg->param('zones_path'),
-        dbname => $cfg->param('dbname'),
-        dbhost => $cfg->param('host'),
-        dbport => $cfg->param('port'),
-        dbuser => $cfg->param('user'),
-        dbpass => $cfg->param('passwd'),
-        sgbd => $cfg->param('sgbd'),
-        dnsapp => $cfg->param('dnsapp') );
+    my $app = app->new( zdir => $cfg->param('zones_path')
+        , dbname => $cfg->param('dbname')
+        , dbhost => $cfg->param('host')
+        , dbport => $cfg->param('port')
+        , dbuser => $cfg->param('user')
+        , dbpass => $cfg->param('passwd')
+        , sgbd => $cfg->param('sgbd')
+        , sshhost => $cfg->param('sshhost')
+        , sshuser => $cfg->param('sshuser')
+        , dnsapp => $cfg->param('dnsapp') );
 
     $app->init();
 
@@ -224,11 +226,10 @@ prefix '/domain' => sub {
             }
 
             $zone->new_serial();
-            my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
-            my $ed = app::zone::edit->new(zdir=>$cfg->param('zones_path')
-                , zname => param('domain'));
+            $app->update_domain( session('login')
+                , $zone
+                , param('domain'));
 
-            $ed->update($zone);
             redirect '/domain/details/'.param('domain');
 
         }
