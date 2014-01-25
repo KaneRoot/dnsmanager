@@ -15,9 +15,10 @@ has passwd => (is => 'rw', trigger => \&_update_passwd );
 
 # $success delete_domain
 sub delete_domain {
-    # check if we are the owner then delete
     my ($self, $domain) = @_;
     my $sth;
+
+    # check if we are the owner then delete
     return 0 if (grep { $domain eq $_ } @{ $self->domains }) == 0;
 
     $sth = $self->dbh->prepare('delete from domain where domain=?');
@@ -25,7 +26,9 @@ sub delete_domain {
         $sth->finish();
         return 0;
     }
+
     $sth->finish();
+    # delete the domain from our domains
     @{ $self->domains } = grep { $_ ne $domain } @{ $self->domains };
     return 1;
 }

@@ -97,10 +97,16 @@ sub add_domain {
 
 sub delete_domain {
     my ($self, $login, $domain) = @_; 
+
     my ($success, $user, $isadmin) = ${$self->um}->get_user($login);
-    $user->delete_domain($domain);
+
+    return 0 unless $success;
+    return 0 unless $user->delete_domain($domain);
+
     my $ze = app::zone::edit->new(zname => $domain, zdir => $self->zdir);
     $ze->del();
+
+    1;
 }
 
 sub update_domain_raw {

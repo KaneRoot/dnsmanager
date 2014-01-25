@@ -7,16 +7,15 @@
     <h3>Fichier de zone de <% domain %></h3>
 
 	<% IF expert %>
+		<a href='/domain/details/<% domain %>'><button type="button" class="btn btn-primary">Visualisation pour débutants</button></a>
 		<form class="form" action='/domain/updateraw/<% domain %>' method="post" >
-			<textarea name="zoneupdated" rows="20" cols="100"><% domain_zone %></textarea>
-		<br />
-			<input type="submit" value="Mettre à jour la zone" />
+			<textarea name="zoneupdated" rows="15" cols="75"><% domain_zone %></textarea>
+                <input type="submit" value="Mettre à jour la zone" />
 		</form>
 
-		<a href='/domain/details/<% domain %>' >Easy Mode</a>
 	<% ELSE %>
 
-		<table border=1 >
+        <table class="table" >
 			<caption>
 				<td>Name</td>
 				<td>Class</td>
@@ -86,12 +85,13 @@
 			<% END %>
 
 		</table>
-		<a href='/domain/details/<% domain %>?expert=1'>Expert Mode</a>
+		<a href='/domain/details/<% domain %>?expert=1'><button type="button" class="btn btn-primary">Visualisation en mode expert</button></a>
 
 		<br /><br />
 
 		Ajouter un enregistrement : <br />
 		<form action='/domain/update/<% domain %>' method='post' >
+
 			<label for="name">Nom : </label><input type="text" name="name" />
 			<label for="type">Type : </label><select name="type" id="type" >
 				<option value="A">A</option>
@@ -101,9 +101,10 @@
 				<option value="NS">NS</option>
 				<option value="PTR">PTR</option>
 			</select>
+
 			<label for="value">Valeur : </label><input type="text" id="value" name="value" />
-			<label for="input_ttl">TTL</label><input type="number" id="input_ttl" name="ttl" min='1' value="3"/>
-			<input type="submit">Valider</input>
+			<label for="input_ttl">TTL</label><input type="number" id="input_ttl" name="ttl" min='1' value="3600"/>
+                        <button type="submit" class="btn btn-sm btn-primary">Valider</button>
 		</form>
 
 	<% END %>

@@ -331,8 +331,8 @@ prefix '/domain' => sub {
                 else {
 
                     session errmsg => "Impossible de supprimer le domaine "
-                    . param 'domain'
-                    . '.' ;
+                        . param('domain')
+                        . '.' ;
                     redirect request->referer;
 
                 }
