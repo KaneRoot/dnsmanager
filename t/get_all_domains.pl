@@ -10,30 +10,14 @@ use Data::Dump qw( dump );
 
 use lib '../';
 use app::app;
-
-sub initco {
-
-    my $cfg = new Config::Simple('./config.ini');
-    my $app = app->new( zdir => $cfg->param('zones_path'),
-        dbname => $cfg->param('dbname'),
-        dbhost => $cfg->param('host'),
-        dbport => $cfg->param('port'),
-        dbuser => $cfg->param('user'),
-        dbpass => $cfg->param('passwd'),
-        sgbd => $cfg->param('sgbd'),
-        dnsapp => $cfg->param('dnsapp') );
-
-    $app->init();
-
-    return $app;
-}
+use initco;
 
 if( @ARGV != 0 ) {
     say "usage : ./get_all_domains.pl";
     exit 1;
 }
 
-my $app = initco();
+my $app = initco::initco();
 
 my %domains = $app->get_all_domains();
 
