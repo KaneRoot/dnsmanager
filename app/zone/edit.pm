@@ -77,6 +77,7 @@ sub update {
 sub update_raw {
     my ($self, $zonetext) = @_;
 
+    my $zonefile;
     my $file = '/tmp/'.$self->zname;
 
     # write the updated zone file to disk 
@@ -85,10 +86,17 @@ sub update_raw {
     print $newzone $zonetext;
     close $newzone;
 
-    my $zonefile = DNS::ZoneParse->new($file, $self->zname);
+    eval { $zonefile = DNS::ZoneParse->new($file, $self->zname); };
+
+    if( $@ ) {
+        unlink($file);
+        0;
+    }
+
     unlink($file);
 
     $self->update($zonefile);
+    1;
 }
 
 # sera utile plus tard, pour l'interface

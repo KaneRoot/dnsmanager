@@ -87,25 +87,65 @@
 		</table>
 		<a href='/domain/details/<% domain %>?expert=1'><button type="button" class="btn btn-primary">Visualisation en mode expert</button></a>
 
-		<br /><br />
 
-		Ajouter un enregistrement : <br />
-		<form action='/domain/update/<% domain %>' method='post' >
+                <hr />
+                <form class="form-horizontal" role="form" action='/domain/update/<% domain %>' method='post' >
 
-			<label for="name">Nom : </label><input type="text" name="name" />
-			<label for="type">Type : </label><select name="type" id="type" >
-				<option value="A">A</option>
-				<option value="AAAA">AAAA</option>
-				<option value="CNAME">CNAME</option>
-				<option value="MX">MX</option>
-				<option value="NS">NS</option>
-				<option value="PTR">PTR</option>
-			</select>
+                    <fieldset>
+                        <legend>Ajout d'un enregistrement</legend>
 
-			<label for="value">Valeur : </label><input type="text" id="value" name="value" />
-			<label for="input_ttl">TTL</label><input type="number" id="input_ttl" name="ttl" min='1' value="3600"/>
-                        <button type="submit" class="btn btn-sm btn-primary">Valider</button>
-		</form>
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">Nom</label>
+                            <div class="col-sm-3">
+                                <input type="text" id="name" name="name" class="form-control" placeholder="www">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="type" class="col-sm-2 control-label">Type</label>
+                            <div class="col-sm-3">
+                                <select class="form-control" name="type" id="type" >
+                                    <option value="A">A</option>
+                                    <option value="AAAA">AAAA</option>
+                                    <option value="CNAME">CNAME</option>
+                                    <option value="MX">MX</option>
+                                    <option value="NS">NS</option>
+                                    <option value="PTR">PTR</option>
+                                </select>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="priority" class="col-sm-2 control-label">Priorité (MX)</label>
+                            <div class="col-sm-3">
+                                <input type="text" id="priority" name="priority" class="form-control" value="10" >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="value" class="col-sm-2 control-label">Valeur</label>
+                            <div class="col-sm-3">
+                                <input type="text" id="value" name="value" class="form-control" placeholder="IP ou ndd" >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input_ttl" class="col-sm-2 control-label">TTL</label>
+                            <div class="col-sm-3">
+                                <input type="number" id="input_ttl" name="ttl" class="form-control" value="3600" placeholder="3600" >
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-3">
+                            <button type="submit" class="btn btn-primary">Ajouter</button>
+                        </div>
+                    </div>
+
+                </form>
+
 
 	<% END %>
 
