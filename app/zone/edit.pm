@@ -3,7 +3,7 @@ use Data::Dump "dump";
 use DNS::ZoneParse;
 use File::Copy;
 use Net::SCP;
-use Net::SSH2;
+use Net::SSH q<sshopen2>;
 use v5.14;
 
 use lib '../../';
@@ -165,15 +165,17 @@ sub del {
     $rndc->delzone($self->zdir, $self->zname);
     $rndc->reconfig();
 
-    my $ssh = Net::SSH2->new();
-
-    $ssh->connect($self->host);
-    $ssh->auth( username => $self->user);
-
-    my $chan = $ssh->channel();
     my $file = $self->zdir.'/'.$self->zname;
-    $chan->exec( "rm $file" );
-    $ssh->disconnect();
+    my $host = $self->host;
+    my $user = $self->user;
+    my $cmd = "rm $file";
+
+    sshopen2("$user\@$host", *READER, *WRITER, "$cmd") || die "ssh: $!";
+
+    close(READER);
+    close(WRITER);
+
+
     1;
 }
 
