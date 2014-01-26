@@ -170,7 +170,7 @@ sub del {
     my $user = $self->user;
     my $cmd = "rm $file";
 
-    sshopen2("$user\@$host", *READER, *WRITER, "$cmd") || die "ssh: $!";
+    Net::SSH::sshopen2("$user\@$host", *READER, *WRITER, "$cmd") || die "ssh: $!";
 
     close(READER);
     close(WRITER);
