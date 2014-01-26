@@ -26,66 +26,84 @@
 
 			<% FOREACH address in ns %>
 				<tr>
-					<td><% address.name %></td>
+					<form action='/domain/mod/<%domain%>/<%address.name%>/NS/<%address.host%>/<%address.ttl%>'>
+					<td><input type='text' name='newname' class="form-control" value='<% address.name %>'></input></td>
 					<td><% address.class %></td>
 					<td>NS</td>
-					<td><% address.host %></td>
-					<td><% address.ttl %></td>
+					<td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
+					<td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
+					<td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
+					</form>
 					<td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/NS/<% address.host %>/<% address.ttl %>';">✘</button></td>
 				</tr>
 			<% END %>
 
 			<% FOREACH address in a %>
 				<tr>
-					<td><% address.name %></td>
+					<form action='/domain/mod/<%domain%>/<%address.name%>/A/<%address.host%>/<%address.ttl%>'>
+					<td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
 					<td><% address.class %></td>
 					<td>A</td>
-					<td><% address.host %></td>
-					<td><% address.ttl %></td>
+					<td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
+					<td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
+					<td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
+					</form>
 					<td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/A/<% address.host %>/<% address.ttl %>';">✘</button></td>
 				</tr>
 			<% END %>
 
 			<% FOREACH address in aaaa %>
 				<tr>
-					<td><% address.name %></td>
+					<form action='/domain/mod/<%domain%>/<%address.name%>/AAAA/<%address.host%>/<%address.ttl%>'>
+					<td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
 					<td><% address.class %></td>
 					<td>AAAA</td>
-					<td><% address.host %></td>
-					<td><% address.ttl %></td>
+					<td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
+					<td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
+					<td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
+					</form>
 					<td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/AAAA/<% address.host %>/<% address.ttl %>';">✘</button></td>
 				</tr>
 			<% END %>
 
 			<% FOREACH address in cname %>
 				<tr>
-					<td><% address.name %></td>
+					<form  action='/domain/mod/<%domain%>/<%address.name%>/CNAME/<%address.host%>/<%address.ttl%>'>
+					<td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
 					<td><% address.class %></td>
 					<td>CNAME</td>
-					<td><% address.host %></td>
-					<td><% address.ttl %></td>
+					<td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
+					<td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
+					<td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
+					</form>
 					<td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/CNAME/<% address.host %>/<% address.ttl %>';">✘</button></td>
 				</tr>
 			<% END %>
 
 			<% FOREACH address in ptr %>
 				<tr>
-					<td><% address.name %></td>
+					<form  action='/domain/mod/<%domain%>/<%address.name%>/PTR/<%address.host%>/<%address.ttl%>'>
+					<td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
 					<td><% address.class %></td>
 					<td>PTR</td>
-					<td><% address.host %></td>
-					<td><% address.ttl %></td>
+					<td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
+					<td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
+					<td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
+					</form>
 					<td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/PTR/<% address.host %>/<% address.ttl %>';">✘</button></td>
 				</tr>
 			<% END %>
 
 			<% FOREACH address in mx %>
 				<tr>
-					<td><% address.name %></td>
+					<form  action='/domain/mod/<%domain%>/<%address.name%>/MX/<%address.host%>/<%address.ttl%>'>
+					<td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
 					<td><% address.class %></td>
 					<td>MX</td>
-					<td><% address.host %> (<% address.priority %>)</td>
-					<td><% address.ttl %></td>
+					<td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/><input type='number' name='newpriority' class="form-control" value='<%address.priority%>'/></td>
+					<td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
+					<td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
+					</form>
 					<td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/MX/<% address.host %>/<% address.ttl %>';">✘</button></td>
 				</tr>
 			<% END %>
