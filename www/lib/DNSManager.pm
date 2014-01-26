@@ -363,305 +363,255 @@ prefix '/domain' => sub {
         else {
 			# Load :domain and search for corresponding data
 			my $app = initco();
-			my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
-				param('password') );
+			# my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+			# 	param('password') );
 
-			my $zone = $app->get_domain(session('login') , param('domain'));
-			my $dump = $zone->dump;
-
-			my $record;
-			my $found = false;
-
-			given( lc param('type') )
-			{
-				when ('a')
+			$app->delete_entry( session('login'),
+				param('domain'),
 				{
-					$record = $zone->a;
-					$found = true;
-				}
-				when ('aaaa')
-				{
-					$record = $zone->aaaa;
-					$found = true;
-				}
-				when ('cname')
-				{
-					$record = $zone->cname;
-					$found = true;
-				}
-				when ('ns')
-				{
-					$record = $zone->ns;
-					$found = true;
-				}
-				when ('mx')
-				{
-					$record = $zone->mx;
-					$found = true;
-				}
-				when ('ptr')
-				{
-					$record = $zone->ptr;
-					$found = true;
-				}
-			}
+					type => param('type'),
+					name => param('name'),
+					host => param('host'),
+					ttl  => param('ttl')
+				});
 
-			if( $found )
-			{
-
-				foreach my $i ( 0 .. scalar @{$record}-1 )
-				{
-
-					if( $record->[$i]->{'name'} eq param('name') && 
-						$record->[$i]->{'host'} eq param('host') &&
-						$record->[$i]->{'ttl'} == param('ttl') )
-					{
-						delete $record->[$i];
-					}
-
-				}
-
-			}
-
-			$app->update_domain( session('login'), $zone, param('domain') );
+			redirect '/domain/details/'. param('domain');
 		}
+	};
 
-		redirect '/domain/details/'. param('domain');
-	}
-};
+	any ['get', 'post'] => '/admin' => sub {
 
-any ['get', 'post'] => '/admin' => sub {
+		unless( session('login') )
+		{
+			redirect '/';
+		}
+		else
+		{
+			my $app = initco();
+			my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+				session('password') );
 
-    unless( session('login') )
-    {
-        redirect '/';
-    }
-    else
-    {
-        my $app = initco();
-        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-            session('password') );
+			unless ( $auth_ok && $isadmin ) {
+				redirect '/ ';
+			}
+			else {
 
-        unless ( $auth_ok && $isadmin ) {
-            redirect '/ ';
-        }
-        else {
+				my %alldomains = $app->get_all_domains;
+				my %allusers = $app->get_all_users;
+				my ($success, @domains) = $app->get_domains( session('login') );
 
-            my %alldomains = $app->get_all_domains;
-            my %allusers = $app->get_all_users;
-            my ($success, @domains) = $app->get_domains( session('login') );
+				template administration => {
+					login => session('login')
+					, admin => session('admin')
+					, errmsg => get_errmsg
+					, domains => [ @domains ]
+					, alldomains => { %alldomains }
+					, allusers => { %allusers } };
+			}
+		}
+	};
 
-            template administration => {
-                login => session('login')
-                , admin => session('admin')
-                , errmsg => get_errmsg
-                , domains => [ @domains ]
-                , alldomains => { %alldomains }
-                , allusers => { %allusers } };
-        }
-    }
 };
 
 prefix '/user' => sub {
 
-    get '/logout' => sub {
-        session->destroy;
-        redirect '/';
-    };
+	get '/logout' => sub {
+		session->destroy;
+		redirect '/';
+	};
 
-    post '/add/' => sub {
+	post '/add/' => sub {
 
-        if ( param('login') && param('password') )
-        {
+		if ( param('login') && param('password') )
+		{
 
-            my $app = initco();
-            my ($success) = $app->register_user(param('login')
-                , param('password'));
+			my $app = initco();
+			my ($success) = $app->register_user(param('login')
+				, param('password'));
 
-            if($success) {
-                session login => param('login');
-                session password => param('password');
-                redirect '/home';
-            }
-            else {
-                session errmsg => q/Ce pseudo est déjà pris./;
-                redirect '/user/subscribe';
-            }
+			if($success) {
+				session login => param('login');
+				session password => param('password');
+				redirect '/home';
+			}
+			else {
+				session errmsg => q/Ce pseudo est déjà pris./;
+				redirect '/user/subscribe';
+			}
 
-        }
-        else {
-            session errmsg => q/login ou password non renseignés/;
-            redirect '/user/subscribe';
-        }
+		}
+		else {
+			session errmsg => q/login ou password non renseignés/;
+			redirect '/user/subscribe';
+		}
 
-    };
+	};
 
-    get '/subscribe' => sub {
+	get '/subscribe' => sub {
 
-        if( defined session('login') )
-        {
-            redirect '/home';
-        }
-        else {
+		if( defined session('login') )
+		{
+			redirect '/home';
+		}
+		else {
 
-            template subscribe => {
-                errmsg => get_errmsg
-            };
-        }
+			template subscribe => {
+				errmsg => get_errmsg
+			};
+		}
 
-    };
+	};
 
-    get '/unsetadmin/:user' => sub {
+	get '/unsetadmin/:user' => sub {
 
-        unless( defined param('user') )
-        {
+		unless( defined param('user') )
+		{
 
-            # TODO ajouter une erreur à afficher
-            session errmsg => "L'administrateur n'est pas défini." ;
-            redirect request->referer;
+			# TODO ajouter une erreur à afficher
+			session errmsg => "L'administrateur n'est pas défini." ;
+			redirect request->referer;
 
-        }
-        elsif(! defined session('login') )
-        {
+		}
+		elsif(! defined session('login') )
+		{
 
-            session errmsg => "Vous n'êtes pas connecté." ;
-            redirect '/';
+			session errmsg => "Vous n'êtes pas connecté." ;
+			redirect '/';
 
-        }
-        else {
+		}
+		else {
 
-            my $app = initco();
+			my $app = initco();
 
-            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-                session('password') );
+			my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+				session('password') );
 
-            if ( $auth_ok && $isadmin ) {
-                $app->set_admin(param('user'), 0);
-            }
-            else {
-                session errmsg => q/Vous n'êtes pas administrateur./;
-            }
+			if ( $auth_ok && $isadmin ) {
+				$app->set_admin(param('user'), 0);
+			}
+			else {
+				session errmsg => q/Vous n'êtes pas administrateur./;
+			}
 
-            if( request->referer =~ "/admin" ) {
-                redirect request->referer;
-            }
-            else {
-                redirect '/';
-            }
+			if( request->referer =~ "/admin" ) {
+				redirect request->referer;
+			}
+			else {
+				redirect '/';
+			}
 
-        }
+		}
 
-    };
+	};
 
-    get '/setadmin/:user' => sub {
+	get '/setadmin/:user' => sub {
 
-        unless( defined param('user') )
-        {
+		unless( defined param('user') )
+		{
 
-            # TODO ajouter une erreur à afficher
-            session errmsg => "L'utilisateur n'est pas défini." ;
-            redirect request->referer;
+			# TODO ajouter une erreur à afficher
+			session errmsg => "L'utilisateur n'est pas défini." ;
+			redirect request->referer;
 
-        }
-        elsif(! defined session('login') )
-        {
+		}
+		elsif(! defined session('login') )
+		{
 
-            session errmsg => "Vous n'êtes pas connecté." ;
-            redirect '/';
+			session errmsg => "Vous n'êtes pas connecté." ;
+			redirect '/';
 
-        }
-        else {
+		}
+		else {
 
-            my $app = initco();
+			my $app = initco();
 
-            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-                session('password') );
+			my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+				session('password') );
 
-            if ( $auth_ok && $isadmin ) {
-                $app->set_admin(param('user'), 1);
-            }
+			if ( $auth_ok && $isadmin ) {
+				$app->set_admin(param('user'), 1);
+			}
 
-            if( request->referer =~ "/admin" ) {
-                redirect request->referer;
-            }
-            else {
-                redirect '/';
-            }
+			if( request->referer =~ "/admin" ) {
+				redirect request->referer;
+			}
+			else {
+				redirect '/';
+			}
 
-        }
+		}
 
-    };
+	};
 
-    get '/del/:user' => sub {
+	get '/del/:user' => sub {
 
-        if(defined param 'user') {
+		if(defined param 'user') {
 
-            my $app = initco();
+			my $app = initco();
 
-            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-                session('password') );
+			my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+				session('password') );
 
-            if ( $auth_ok && $isadmin || session('login') eq param('user')) {
-                unless ( $app->delete_user(param('user'))) {
-                    session errmsg => "L'utilisateur " 
-                    . param 'user'
-                    . " n'a pas pu être supprimé.";
-                }
-            }
-        }
-        else {
-            session errmsg => q{Le nom d'utilisateur n'est pas renseigné.};
-        }
+			if ( $auth_ok && $isadmin || session('login') eq param('user')) {
+				unless ( $app->delete_user(param('user'))) {
+					session errmsg => "L'utilisateur " 
+					. param 'user'
+					. " n'a pas pu être supprimé.";
+				}
+			}
+		}
+		else {
+			session errmsg => q{Le nom d'utilisateur n'est pas renseigné.};
+		}
 
-        if( defined request->referer) {
-            redirect request->referer;
-        }
-        else {
-            redirect '/';
-        }
+		if( defined request->referer) {
+			redirect request->referer;
+		}
+		else {
+			redirect '/';
+		}
 
-    };
+	};
 
-    post '/login' => sub {
+	post '/login' => sub {
 
-        # Check if user is already logged
-        unless ( session('login') )
-        {
-            # Check user login and password
-            if ( param('login') && param('password') )
-            {
+		# Check if user is already logged
+		unless ( session('login') )
+		{
+			# Check user login and password
+			if ( param('login') && param('password') )
+			{
 
-                my $app = initco();
-                my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
-                    param('password') );
+				my $app = initco();
+				my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+					param('password') );
 
-                if( $auth_ok )
-                {
+				if( $auth_ok )
+				{
 
-                    session login => param('login');
-                    # TODO : change password storage…
-                    session password => param('password');
-                    session user  => freeze( $user );
-                    session admin => $isadmin;
+					session login => param('login');
+					# TODO : change password storage…
+					session password => param('password');
+					session user  => freeze( $user );
+					session admin => $isadmin;
 
-                    if( $isadmin ) {
-                        redirect '/admin';
-                        return;
-                    }
+					if( $isadmin ) {
+						redirect '/admin';
+						return;
+					}
 
-                }
-                else
-                {
+				}
+				else
+				{
 
-                    session errmsg => q<Impossible de se connecter (login ou mot de passe incorrect).>;
-                    redirect '/';
+					session errmsg => q<Impossible de se connecter (login ou mot de passe incorrect).>;
+					redirect '/';
 
-                }
-            }
-        }
+				}
+			}
+		}
 
-        redirect '/home';
+		redirect '/home';
 
-    };
-
+	};
 };

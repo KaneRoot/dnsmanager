@@ -168,4 +168,71 @@ sub new_tmp {
     $ze->new_tmp();
 }
 
+sub delete_entry {
+	my ($self, $login, $domain, $entryToDelete) = @_;
+
+	my $name = $entryToDelete->{'name'};
+	my $type = $entryToDelete->{'type'};
+	my $ttl = $entryToDelete->{'ttl'};
+	my $host = $entryToDelete->{'host'};
+
+	my $zone = $self->get_domain($login , $domain);
+	my $dump = $zone->dump;
+
+	my $record;
+	my $found = 0;
+
+	given( lc $type )
+	{
+		when ('a')
+		{
+			$record = $zone->a;
+			$found = 1;
+		}
+		when ('aaaa')
+		{
+			$record = $zone->aaaa;
+			$found = 1;
+		}
+		when ('cname')
+		{
+			$record = $zone->cname;
+			$found = 1;
+		}
+		when ('ns')
+		{
+			$record = $zone->ns;
+			$found = 1;
+		}
+		when ('mx')
+		{
+			$record = $zone->mx;
+			$found = 1;
+		}
+		when ('ptr')
+		{
+			$record = $zone->ptr;
+			$found = 1;
+		}
+	}
+
+	if( $found )
+	{
+
+		foreach my $i ( 0 .. scalar @{$record}-1 )
+		{
+
+			delete $record->[$i]
+				if( $record->[$i]->{'name'} eq $name && 
+					$record->[$i]->{'host'} eq $host &&
+					$record->[$i]->{'ttl'} == $ttl );
+
+		}
+
+	}
+
+	$self->update_domain( $login, $zone, $domain );
+
+}
+
 1;
