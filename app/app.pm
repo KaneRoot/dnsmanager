@@ -168,14 +168,23 @@ sub new_tmp {
     $ze->new_tmp();
 }
 
-sub delete_entry {
-	my ($self, $login, $domain, $entryToDelete) = @_;
+sub _mod_entry {
+	my ($self, $login, $domain, $entryToDelete, $action, $newEntry) = @_;
 
-	my $name = $entryToDelete->{'name'};
-	my $type = $entryToDelete->{'type'};
-	my $ttl = $entryToDelete->{'ttl'};
-	my $host = $entryToDelete->{'host'};
+	my $name     = $entryToDelete->{'name'};
+	my $type     = $entryToDelete->{'type'};
+	my $ttl      = $entryToDelete->{'ttl'};
+	my $host     = $entryToDelete->{'host'};
+	my $priority = $entryToDelete->{'priority'};
 
+	my $new_name     = $newEntry->{'newname'};
+	my $new_type     = $newEntry->{'newtype'};
+	my $new_ttl      = $newEntry->{'newttl'};
+	my $new_host     = $newEntry->{'newhost'};
+	my $new_priority = $newEntry->{'newpriority'};
+
+	# say "in _mod_entry : $action";
+	# say "in _mod_entry : $new_name";
 	my $zone = $self->get_domain($login , $domain);
 	my $dump = $zone->dump;
 
@@ -222,17 +231,45 @@ sub delete_entry {
 		foreach my $i ( 0 .. scalar @{$record}-1 )
 		{
 
-			delete $record->[$i]
+			if( $action eq 'del' )
+			{
+				delete $record->[$i]
 				if( $record->[$i]->{'name'} eq $name && 
 					$record->[$i]->{'host'} eq $host &&
 					$record->[$i]->{'ttl'} == $ttl );
+			}
+			if ( $action eq 'mod' )
+			{
+				if( $record->[$i]->{'name'} eq $name && 
+					$record->[$i]->{'host'} eq $host &&
+					$record->[$i]->{'ttl'} == $ttl )
+				{
+					$record->[$i]->{'name'} = $new_name;
+					$record->[$i]->{'host'} = $new_host;
+					$record->[$i]->{'ttl'}  = $new_ttl;
+					if( defined $new_priority )
+					{
+						$record->[$i]->{'priority'} = $new_priority 
+					}
+				}
+			}
 
 		}
 
 	}
 
 	$self->update_domain( $login, $zone, $domain );
+}
 
+
+sub delete_entry {
+	my ($self, $login, $domain, $entryToDelete) = @_;
+	$self->_mod_entry( $login, $domain, $entryToDelete, 'del' );
+}
+
+sub modify_entry {
+	my ($self, $login, $domain, $entryToDelete, $newEntry) = @_;
+	$self->_mod_entry( $login, $domain, $entryToDelete, 'mod', $newEntry );
 }
 
 1;

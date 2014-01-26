@@ -245,8 +245,8 @@ prefix '/domain' => sub {
         else
         {
             my $app = initco();
-            my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
-                param('password') );
+            # my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+            #     param('password') );
 
             my $zone = $app->get_domain(session('login') , param('domain'));
 
@@ -379,6 +379,37 @@ prefix '/domain' => sub {
 		}
 	};
 
+    get '/mod/:domain/:name/:type/:host/:ttl' => sub {
+
+        unless( session( 'user' ) and defined param('domain') ) {
+            session errmsg => q<Domaine non renseigné.>;
+            redirect get_route;
+        }
+        else {
+			# Load :domain and search for corresponding data
+			my $app = initco();
+			# my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
+			# 	param('password') );
+
+			$app->modify_entry( session('login'),
+				param('domain'),
+				{
+					type => param('type'),
+					name => param('name'),
+					host => param('host'),
+					ttl  => param('ttl')
+				},
+				{
+					newtype     => param('newtype'),
+					newname     => param('newname'),
+					newhost     => param('newhost'),
+					newttl      => param('newttl'),
+					newpriority => param('newpriority')
+				});
+
+			redirect '/domain/details/'. param('domain');
+		}
+	};
 	any ['get', 'post'] => '/admin' => sub {
 
 		unless( session('login') )
