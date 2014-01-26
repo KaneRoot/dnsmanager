@@ -410,39 +410,40 @@ prefix '/domain' => sub {
 			redirect '/domain/details/'. param('domain');
 		}
 	};
-	any ['get', 'post'] => '/admin' => sub {
-
-		unless( session('login') )
-		{
-			redirect '/';
-		}
-		else
-		{
-			my $app = initco();
-			my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-				session('password') );
-
-			unless ( $auth_ok && $isadmin ) {
-				redirect '/ ';
-			}
-			else {
-
-				my %alldomains = $app->get_all_domains;
-				my %allusers = $app->get_all_users;
-				my ($success, @domains) = $app->get_domains( session('login') );
-
-				template administration => {
-					login => session('login')
-					, admin => session('admin')
-					, errmsg => get_errmsg
-					, domains => [ @domains ]
-					, alldomains => { %alldomains }
-					, allusers => { %allusers } };
-			}
-		}
-	};
-
 };
+
+any ['get', 'post'] => '/admin' => sub {
+
+	unless( session('login') )
+	{
+		redirect '/';
+	}
+	else
+	{
+		my $app = initco();
+		my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
+			session('password') );
+
+		unless ( $auth_ok && $isadmin ) {
+			redirect '/ ';
+		}
+		else {
+
+			my %alldomains = $app->get_all_domains;
+			my %allusers = $app->get_all_users;
+			my ($success, @domains) = $app->get_domains( session('login') );
+
+			template administration => {
+				login => session('login')
+				, admin => session('admin')
+				, errmsg => get_errmsg
+				, domains => [ @domains ]
+				, alldomains => { %alldomains }
+				, allusers => { %allusers } };
+		}
+	}
+};
+
 
 prefix '/user' => sub {
 
