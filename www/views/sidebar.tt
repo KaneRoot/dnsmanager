@@ -14,7 +14,7 @@
 
                 <div class="list-group">
                 <a href="/user/logout" class="list-group-item active">Déconnexion</a>
-                <a href='/home' class="list-group-item active">Ma page</a>
+                <a href='/user/home' class="list-group-item active">Ma page</a>
 
                 <% IF admin == 1 %>
                 <a href='/admin' class="list-group-item ">Administration</a>

@@ -116,7 +116,8 @@ sub delete_domain {
 }
 
 sub update_domain_raw {
-    my ($self, $login, $zone, $domain) = @_; 
+    my ($self, $zone, $domain) = @_; 
+
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
@@ -125,7 +126,7 @@ sub update_domain_raw {
 }
 
 sub update_domain {
-    my ($self, $login, $zone, $domain) = @_; 
+    my ($self, $zone, $domain) = @_; 
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
@@ -134,7 +135,7 @@ sub update_domain {
 }
 
 sub get_domain {
-    my ($self, $login, $domain) = @_; 
+    my ($self, $domain) = @_; 
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
@@ -160,7 +161,7 @@ sub get_all_users {
 }
 
 sub new_tmp {
-    my ($self, $login, $domain) = @_; 
+    my ($self, $domain) = @_; 
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
@@ -169,107 +170,106 @@ sub new_tmp {
 }
 
 sub _mod_entry {
-	my ($self, $login, $domain, $entryToDelete, $action, $newEntry) = @_;
+    my ($self, $domain, $entryToDelete, $action, $newEntry) = @_;
 
-	my $name     = $entryToDelete->{'name'};
-	my $type     = $entryToDelete->{'type'};
-	my $ttl      = $entryToDelete->{'ttl'};
-	my $host     = $entryToDelete->{'host'};
-	my $priority = $entryToDelete->{'priority'};
+    my $name     = $entryToDelete->{'name'};
+    my $type     = $entryToDelete->{'type'};
+    my $ttl      = $entryToDelete->{'ttl'};
+    my $host     = $entryToDelete->{'host'};
+    my $priority = $entryToDelete->{'priority'};
 
-	my $new_name     = $newEntry->{'newname'};
-	my $new_type     = $newEntry->{'newtype'};
-	my $new_ttl      = $newEntry->{'newttl'};
-	my $new_host     = $newEntry->{'newhost'};
-	my $new_priority = $newEntry->{'newpriority'};
+    my $new_name     = $newEntry->{'newname'};
+    my $new_type     = $newEntry->{'newtype'};
+    my $new_ttl      = $newEntry->{'newttl'};
+    my $new_host     = $newEntry->{'newhost'};
+    my $new_priority = $newEntry->{'newpriority'};
 
-	# say "in _mod_entry : $action";
-	# say "in _mod_entry : $new_name";
-	my $zone = $self->get_domain($login , $domain);
-	my $dump = $zone->dump;
+    # say "in _mod_entry : $action";
+    # say "in _mod_entry : $new_name";
+    my $zone = $self->get_domain($domain);
+    my $dump = $zone->dump;
 
-	my $record;
-	my $found = 0;
+    my $record;
+    my $found = 0;
 
-	given( lc $type )
-	{
-		when ('a')
-		{
-			$record = $zone->a;
-			$found = 1;
-		}
-		when ('aaaa')
-		{
-			$record = $zone->aaaa;
-			$found = 1;
-		}
-		when ('cname')
-		{
-			$record = $zone->cname;
-			$found = 1;
-		}
-		when ('ns')
-		{
-			$record = $zone->ns;
-			$found = 1;
-		}
-		when ('mx')
-		{
-			$record = $zone->mx;
-			$found = 1;
-		}
-		when ('ptr')
-		{
-			$record = $zone->ptr;
-			$found = 1;
-		}
-	}
+    given( lc $type )
+    {
+        when ('a')
+        {
+            $record = $zone->a;
+            $found = 1;
+        }
+        when ('aaaa')
+        {
+            $record = $zone->aaaa;
+            $found = 1;
+        }
+        when ('cname')
+        {
+            $record = $zone->cname;
+            $found = 1;
+        }
+        when ('ns')
+        {
+            $record = $zone->ns;
+            $found = 1;
+        }
+        when ('mx')
+        {
+            $record = $zone->mx;
+            $found = 1;
+        }
+        when ('ptr')
+        {
+            $record = $zone->ptr;
+            $found = 1;
+        }
+    }
 
-	if( $found )
-	{
+    if( $found )
+    {
 
-		foreach my $i ( 0 .. scalar @{$record}-1 )
-		{
+        foreach my $i ( 0 .. scalar @{$record}-1 )
+        {
 
-			if( $action eq 'del' )
-			{
-				delete $record->[$i]
-				if( $record->[$i]->{'name'} eq $name && 
-					$record->[$i]->{'host'} eq $host &&
-					$record->[$i]->{'ttl'} == $ttl );
-			}
-			if ( $action eq 'mod' )
-			{
-				if( $record->[$i]->{'name'} eq $name && 
-					$record->[$i]->{'host'} eq $host &&
-					$record->[$i]->{'ttl'} == $ttl )
-				{
-					$record->[$i]->{'name'} = $new_name;
-					$record->[$i]->{'host'} = $new_host;
-					$record->[$i]->{'ttl'}  = $new_ttl;
-					if( defined $new_priority )
-					{
-						$record->[$i]->{'priority'} = $new_priority 
-					}
-				}
-			}
+            if( $action eq 'del' )
+            {
+                delete $record->[$i]
+                if( $record->[$i]->{'name'} eq $name && 
+                    $record->[$i]->{'host'} eq $host &&
+                    $record->[$i]->{'ttl'} == $ttl );
+            }
+            if ( $action eq 'mod' )
+            {
+                if( $record->[$i]->{'name'} eq $name && 
+                    $record->[$i]->{'host'} eq $host &&
+                    $record->[$i]->{'ttl'} == $ttl )
+                {
+                    $record->[$i]->{'name'} = $new_name;
+                    $record->[$i]->{'host'} = $new_host;
+                    $record->[$i]->{'ttl'}  = $new_ttl;
+                    if( defined $new_priority )
+                    {
+                        $record->[$i]->{'priority'} = $new_priority 
+                    }
+                }
+            }
 
-		}
+        }
 
-	}
+    }
 
-	$self->update_domain( $login, $zone, $domain );
+    $self->update_domain( $zone, $domain );
 }
 
-
 sub delete_entry {
-	my ($self, $login, $domain, $entryToDelete) = @_;
-	$self->_mod_entry( $login, $domain, $entryToDelete, 'del' );
+    my ($self, $domain, $entryToDelete) = @_;
+    $self->_mod_entry( $domain, $entryToDelete, 'del' );
 }
 
 sub modify_entry {
-	my ($self, $login, $domain, $entryToDelete, $newEntry) = @_;
-	$self->_mod_entry( $login, $domain, $entryToDelete, 'mod', $newEntry );
+    my ($self, $domain, $entryToDelete, $newEntry) = @_;
+    $self->_mod_entry( $domain, $entryToDelete, 'mod', $newEntry );
 }
 
 1;
