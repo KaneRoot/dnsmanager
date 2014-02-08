@@ -520,27 +520,30 @@ prefix '/user' => sub {
     # add a user => registration
     post '/add/' => sub {
 
-        if ( param('login') && param('password') ) {
+        unless ( param('login') && param('password') && param('password2') ) {
+            session errmsg => q/Identifiant ou mot de passe non renseigné./;
+            redirect '/user/subscribe';
+            return;
+        }
 
-            my $pass = sha256_hex(param('password'));
+        unless ( param('password') eq param('password2')) {
+            session errmsg => q/Les mots de passes ne sont pas identiques./;
+            redirect '/user/subscribe';
+            return;
+        }
 
-            my $app = initco();
-            my ($success) = $app->register_user(param('login')
-                , $pass);
+        my $pass = sha256_hex(param('password'));
 
-            if($success) {
-                session login => param('login');
-                session password => $pass;
-                redirect '/user/home';
-            }
-            else {
-                session errmsg => q/Ce pseudo est déjà pris./;
-                redirect '/user/subscribe';
-            }
+        my $app = initco();
+        my ($success) = $app->register_user(param('login'), $pass);
 
+        if($success) {
+            session login => param('login');
+            session password => $pass;
+            redirect '/user/home';
         }
         else {
-            session errmsg => q/login ou password non renseignés/;
+            session errmsg => q/Ce pseudo est déjà pris./;
             redirect '/user/subscribe';
         }
 
