@@ -1,6 +1,6 @@
 ;
 ;  Database file tpl.zone for tpl.zone. zone.
-;	Zone version: 2014011815
+;	Zone version: 2014030200
 ;
 
 $ORIGIN CHANGEMEORIGIN.
@@ -8,7 +8,7 @@ $ORIGIN CHANGEMEORIGIN.
 
 $TTL 3600
 @		3600	IN  SOA  ns0.netlib.re. postmaster.netlib.re. (
-				2014011815	; serial number
+				2014030200	; serial number
 				3600	; refresh
 				600	; retry
 				86400	; expire
@@ -16,3 +16,5 @@ $TTL 3600
 				)
 ;
 ; Zone NS Records
+
+@ IN NS ns0.arn-fai.net.

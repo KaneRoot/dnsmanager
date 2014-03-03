@@ -4,13 +4,19 @@ use warnings;
 use v5.14;
 use autodie;
 use Modern::Perl;
-use Net::SCP;
+use Net::OpenSSH;
 
-my $hostname = "pizza";
-my $username = "karchnu";
+my $hostname = "ns0.arn-fai.net";
+my $username = "dnsmanager";
 
-my $scp = Net::SCP->new( { host => $hostname, user => $username } );
-$scp->get("/etc/resolv.conf", "kikoo") or die $scp->{errstr};
-$scp->put("kikoo", "lolwat") or die $scp->{errstr};
+my $co = "$username\@$hostname:2222";
 
+say $co;
+
+my $ssh = Net::OpenSSH->new($co);
+$ssh->scp_put("tpl.zone", "/home/$username/") or die "scp failed: " . $ssh->error;
+
+#use Net::SCP; # ne fonctionne pas avec des ports :/
+#my $scp = Net::SCP->new( { host => $hostname, user => $username, port => 2222} );
+#$scp->put("tpl.zone", "lolwat") or die $scp->{errstr};
 # $scp->put("filename") or die $scp->{errstr};

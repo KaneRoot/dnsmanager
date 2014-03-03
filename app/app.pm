@@ -17,7 +17,7 @@ use Moose;
 has dbh => ( is => 'rw', builder => '_void');
 has dnsi => ( is => 'rw', builder => '_void');
 has um => ( is => 'rw', builder => '_void');
-has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp sshhost sshuser/ ] => qw/is ro required 1/;
+has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp sshhost sshuser sshport/ ] => qw/is ro required 1/;
 sub _void { my $x = ''; \$x; }
 
 ### users
@@ -94,7 +94,8 @@ sub add_domain {
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
-        , user => $self->sshuser );
+        , user => $self->sshuser
+        , port => $self->sshport );
     $ze->addzone();
 }
 
@@ -109,7 +110,8 @@ sub delete_domain {
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
-        , user => $self->sshuser );
+        , user => $self->sshuser
+        , port => $self->sshport );
     $ze->del();
 
     1;
@@ -121,7 +123,8 @@ sub update_domain_raw {
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
-        , user => $self->sshuser );
+        , user => $self->sshuser
+        , port => $self->sshport );
     $ze->update_raw($zone);
 }
 
@@ -130,7 +133,8 @@ sub update_domain {
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
-        , user => $self->sshuser );
+        , user => $self->sshuser
+        , port => $self->sshport );
     $ze->update($zone);
 }
 
@@ -139,7 +143,8 @@ sub get_domain {
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
-        , user => $self->sshuser );
+        , user => $self->sshuser
+        , port => $self->sshport );
     $ze->get();
 }
 
@@ -165,7 +170,8 @@ sub new_tmp {
     my $ze = app::zone::edit->new(zname => $domain
         , zdir => $self->zdir
         , host => $self->sshhost
-        , user => $self->sshuser );
+        , user => $self->sshuser
+        , port => $self->sshport );
     $ze->new_tmp();
 }
 

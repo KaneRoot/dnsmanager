@@ -41,6 +41,7 @@ sub initco {
         , sgbd => $cfg->param('sgbd')
         , sshhost => $cfg->param('sshhost')
         , sshuser => $cfg->param('sshuser')
+        , sshport => $cfg->param('sshport')
         , dnsapp => $cfg->param('dnsapp') );
 
     $app->init();

@@ -2,7 +2,7 @@ use Modern::Perl;
 use Data::Dump "dump";
 use DNS::ZoneParse;
 use File::Copy;
-use Net::SCP;
+use Net::OpenSSH;
 use Net::SSH q<sshopen2>;
 use v5.14;
 
@@ -11,7 +11,7 @@ use app::zone::rndc_interface;
 package app::zone::edit;
 use Moose;
 
-has [ qw/zname zdir host user/ ] => qw/is ro required 1/;
+has [ qw/zname zdir host user port/ ] => qw/is ro required 1/;
 
 sub get {
     my ($self) = @_;
@@ -140,15 +140,17 @@ sub _cp {
 sub _scp_put {
     my ($self, $src, $dest) = @_;
 
-    my $scp = Net::SCP->new( { host => $self->host, user => $self->user } );
-    $scp->put($src, $dest) or die $scp->{errstr};
+    my $co = $self->user . '@' . $self->host . ':' . $self->port;
+    my $ssh = Net::OpenSSH->new($co);
+    $ssh->scp_put($src, $dest) or die "scp failed: " . $ssh->error;
 }
 
 sub _scp_get {
     my ($self, $src, $dest) = @_;
 
-    my $scp = Net::SCP->new( { host => $self->host, user => $self->user } );
-    $scp->get($src, $dest) or die $scp->{errstr};
+    my $co = $self->user . '@' . $self->host . ':' . $self->port;
+    my $ssh = Net::OpenSSH->new($co);
+    $ssh->scp_get($src, $dest) or die "scp failed: " . $ssh->error;
 }
 
 sub _sed {
