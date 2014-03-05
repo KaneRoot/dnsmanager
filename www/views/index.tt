@@ -6,32 +6,65 @@
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
-        <h1>Bienvenue sur netlib.re !</h1>
-        <p>Netlib.re est un projet qui permet à chacun d'obtenir un nom de domaine, gratuitement et simplement. </p>
+        <h1>Bienvenue sur netlib.re !</h1>
+        <p>Netlib.re vous donne un nom de domaine, gratuitement et simplement.</p>
         <p><a href="/user/subscribe" class="btn btn-primary btn-lg" role="button">S'enregistrer &raquo;</a></p>
     <h3><a href="" ></a></h3>
     </div>
 
     <br />
 
-    <h2>Pourquoi ?</h2>
-    Nous pensons qu'Internet est et doit rester un lieu où l'utilisateur crée le contenu. 
-    Ce projet permettra donc d'apporter un peu notre pierre à l'édifice en aidant les gens n'ayant pas forcément de compétences en informatique de créer un nom de domaine.<br />
-    Remarque : ce site ne fera pas d'hébergement, il fournira uniquement un serveur de nom de domaine automatisé.
+    <div class="container-fluid">
 
-    <h2>Qui sommes-nous ?</h2>
-    <p>Une bande d'informaticiens passionnés, voulant aider la communauté.</p>
-    <h2>Ce qui sera proposé</h2>
+    <div class="row">
+    <div class="col-md-6">
 
-    À venir sur le site : 
-    <ul>
-        <li>visualisation de la liste des domaines déjà réservés et utilisés ; </li>
-        <li>création d'un compte vous permettant de demander un nom de domaine en *.netlib.re (un administrateur devra le valider) ;</li>
-        <li>nous aimerions également proposer une mise à jour dynamique de votre adresse (dyndns).</li>
-    </ul>
-    <p>En résumé : cherchez votre nom de domaine, réservez-le, on s'occupe du reste ! </p>
+    <h2>Ce qui est proposé</h2>
 
+    <p>
+        Vous pouvez réserver un nom de domaine et l'administrer sur ce site.
+        Gratuitement, sans contrepartie.
+        Nous ne fournissons pas d'hébergement, juste un nom.
+    </p>
 
+    </div>
+    <div class="col-md-6">
+    <h2>Prochainement</h2>
+
+    <p>
+        Nous aimerions proposer une mise à jour dynamique de votre adresse (style dyndns).
+        Ce sera notre prochaine étape.
+    </p>
+
+    </div>
+    </div>
+
+    <div class="row">
+    <div class="col-md-6">
+
+    <h2>Pourquoi ?</h2>
+    <p>
+        Internet doit rester un lieu où l'utilisateur crée le contenu. 
+        Ce projet vous donne un nom, ne restez pas dans l'ombre, <strong>créez</strong> !
+    </p>
+
+    <p>
+        Aucune connaissance requise !
+    </p>
+
+    </div>
+    <div class="col-md-6">
+
+    <h2>Nous contacter</h2>
+
+    <p>Si vous êtes intéressé, n'hésitez pas à venir nous parler.</p>
+    <p>IRC: <a href="http://irc.lc/geeknode/arn">#arn sur irc.geeknode.org:6667</a></p>
+
+    </div>
+    </div>
+
+    </div>
+    
 </div>
 
 </div> <!-- fin de colonne -->

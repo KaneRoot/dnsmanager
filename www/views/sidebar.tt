@@ -37,11 +37,11 @@
                 <form class="form" role="form" action="/user/login" method="post" accept-charset="utf-8">
                     <div class="form-group">
                         <fieldset>
-                            <legend>Se connecter :</legend>
-                            <label for="login">Votre identifiant : </label>
+                            <legend>Se connecter :</legend>
+                            <label for="login">Votre identifiant : </label>
                             <input type="text" name="login" class="form-control" id="login" placeholder="Votre identifiant" />
 
-                            <label for="password">Votre mot de passe : </label>
+                            <label for="password">Votre mot de passe : </label>
                             <input type="password" name="password" class="form-control" id="password" placeholder="Mot de passe" />
 
                             <br />
