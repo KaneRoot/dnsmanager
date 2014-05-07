@@ -39,10 +39,16 @@ sub initco {
         , dbuser => $cfg->param('user')
         , dbpass => $cfg->param('passwd')
         , sgbd => $cfg->param('sgbd')
+        , nsmasterv4 => $cfg->param('nsmasterv4')
+        , nsmasterv6 => $cfg->param('nsmasterv6')
         , sshhost => $cfg->param('sshhost')
+        , sshhostsec => $cfg->param('sshhostsec')
         , sshuser => $cfg->param('sshuser')
+        , sshusersec => $cfg->param('sshusersec')
         , sshport => $cfg->param('sshport')
-        , dnsapp => $cfg->param('dnsapp') );
+        , sshportsec => $cfg->param('sshportsec')
+        , dnsapp => $cfg->param('dnsapp')
+        , dnsappsec => $cfg->param('dnsappsec') );
 
     $app->init();
 

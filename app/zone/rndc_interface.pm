@@ -2,6 +2,8 @@ use v5.14;
 package app::zone::rndc_interface;
 use Moose;
 
+has [ qw/data/ ] => qw/is ro required 1/;
+
 # on suppose que tout est déjà mis à jour dans le fichier
 sub reload {
     my ($self, $zname) = @_;

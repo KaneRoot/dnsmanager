@@ -7,11 +7,11 @@ use Net::SSH q<sshopen2>;
 use v5.14;
 
 use lib '../../';
-use app::zone::rndc_interface;
+use app::zone::interface;
 package app::zone::edit;
 use Moose;
 
-has [ qw/zname zdir host user port/ ] => qw/is ro required 1/;
+has [ qw/dnsapp dnsappsec zname zdir host user port/ ] => qw/is ro required 1/;
 
 sub get {
     my ($self) = @_;
@@ -25,7 +25,7 @@ sub get {
 =pod
     copie du template pour créer une nouvelle zone
     update du serial
-    ajout de la zone via rndc
+    ajout de la zone via dnsapp (rndc, knot…)
     retourne la zone + le nom de la zone
 =cut
 
@@ -51,8 +51,15 @@ sub addzone {
     $self->_scp_put($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
-    my $rndc = app::zone::rndc_interface->new();
-    $rndc->addzone($self->zdir, $self->zname);
+    # add new zone on the primary ns
+    my $prim = app::zone::interface->new()
+    ->get_interface($self->dnsapp);
+    $prim->addzone($self->zdir, $self->zname);
+
+    # add new zone on the secondary ns
+    my $sec = app::zone::interface->new()
+    ->get_interface($self->dnsappsec);
+    $sec->addzone_sec($self->zdir, $self->zname);
 
     return $zonefile;
 }
@@ -80,8 +87,9 @@ sub update {
     $self->_scp_put($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
-    my $rndc = app::zone::rndc_interface->new();
-    $rndc->reload($self->zname);
+    my $prim = app::zone::interface->new()
+    ->get_interface($self->dnsapp);
+    $prim->reload($self->zname);
     1;
 }
 
@@ -163,9 +171,15 @@ sub _sed {
 
 sub del {
     my ($self) = @_;
-    my $rndc = app::zone::rndc_interface->new();
-    $rndc->delzone($self->zdir, $self->zname);
-    $rndc->reconfig();
+    my $prim = app::zone::interface->new()
+    ->get_interface($self->dnsapp);
+    $prim->delzone($self->zdir, $self->zname);
+    $prim->reconfig();
+
+    my $sec = app::zone::interface->new()
+    ->get_interface($self->dnsappsec);
+    $sec->delzone($self->zdir, $self->zname);
+    $sec->reload($self->zdir, $self->zname);
 
     my $file = $self->zdir.'/'.$self->zname;
     my $host = $self->host;
@@ -176,7 +190,6 @@ sub del {
 
     close(READER);
     close(WRITER);
-
 
     1;
 }
