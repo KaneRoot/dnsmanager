@@ -47,6 +47,7 @@ sub initco {
         , sshusersec => $cfg->param('sshusersec')
         , sshport => $cfg->param('sshport')
         , sshportsec => $cfg->param('sshportsec')
+        , dnsslavekey => $cfg->param('dnsslavekey')
         , dnsapp => $cfg->param('dnsapp')
         , dnsappsec => $cfg->param('dnsappsec') );
 

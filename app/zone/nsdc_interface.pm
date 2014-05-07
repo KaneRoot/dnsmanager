@@ -38,12 +38,12 @@ sub addzone_sec {
 
         # allow notify & request xfr, v4 & v6
         $nouveau .=
-        "\tallow-notify: " . $self->data->nsmasterv4. "\n"
-        . "\trequest-xfr: " . $self->data->nsmasterv4 . "\n";
+        "\tallow-notify: " . $self->data->nsmasterv4 . ' ' . $self->data->dnsslavekey . "\n"
+        . "\trequest-xfr: " . $self->data->nsmasterv4 . ' ' . $self->data->dnsslavekey . "\n";
 
         $nouveau .=
-        "\tallow-notify: " . $self->data->nsmasterv6. "\n"
-        . "\trequest-xfr: " . $self->data->nsmasterv6 . "\n\n";
+        "\tallow-notify: " . $self->data->nsmasterv6. ' ' . $self->data->dnsslavekey . "\n"
+        . "\trequest-xfr: " . $self->data->nsmasterv6. ' ' . $self->data->dnsslavekey . "\n\n";
     }
 
     $data =~ s/$debut.*/$debut\n$nouveau/gsm;
