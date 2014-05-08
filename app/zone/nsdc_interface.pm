@@ -12,7 +12,7 @@ sub reload_sec {
 
     system('ssh -p ' . $self->data->sshportsec . ' '
         . $self->data->sshusersec . '@' . $self->data->sshhostsec
-        . ' sudo nsdc rebuild 2>/dev/null 1>/dev/null && sudo nsdc reload 2>/dev/null 1>/dev/null');
+        . ' "sudo nsdc rebuild 2>/dev/null 1>/dev/null && sudo nsdc reload 2>/dev/null 1>/dev/null "');
 }
 
 sub _reload_conf {
