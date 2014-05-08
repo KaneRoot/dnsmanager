@@ -58,7 +58,7 @@ sub addzone_sec {
 }
 
 sub _scp_get {
-    my ($self, $user, $host, $port, $src, $dest) = @_;
+    my ($user, $host, $port, $src, $dest) = @_;
 
     my $co = $user . '@' . $host . ':' . $port;
     my $ssh = Net::OpenSSH->new($co);
@@ -66,7 +66,7 @@ sub _scp_get {
 }
 
 sub _scp_put {
-    my ($self, $user, $host, $port, $src, $dest) = @_;
+    my ($user, $host, $port, $src, $dest) = @_;
 
     my $co = $user . '@' . $host . ':' . $port;
     my $ssh = Net::OpenSSH->new($co);
