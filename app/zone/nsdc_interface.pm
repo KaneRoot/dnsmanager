@@ -5,15 +5,22 @@ use Moose;
 has [ qw/data/ ] => qw/is ro required 1/;
 
 # on suppose que tout est déjà mis à jour dans le fichier
-sub reload {
-    my ($self, $zname) = @_;
-    system("ssh "
-        . $self->data->sshhostsec 
-        . " nsdc reload $zname 2>/dev/null 1>/dev/null");
+sub reload_sec {
+    my ($self) = @_;
+
+    $self->_reload_conf();
+
+    system('ssh -p ' . $self->data->sshportsec . ' '
+        . $self->data->sshusersec . '@' . $self->data->sshhostsec
+        . ' sudo nsdc rebuild 2>/dev/null 1>/dev/null');
+
+    system('ssh ' . $self->data->sshportsec . ' '
+        . $self->data->sshusersec . '@' . $self->data->sshhostsec
+        . ' sudo nsdc reload 2>/dev/null 1>/dev/null');
 }
 
-sub addzone_sec {
-    my ($self, $zdir, $zname, $opt) = @_;
+sub _reload_conf {
+    my ($self) = @_;
 
     # get the file
     # modify the file
@@ -30,16 +37,16 @@ sub addzone_sec {
 
     my $data = read_file($f);
     my $debut = "## BEGIN_GENERATED";
-    my $nouveau = ''; # TODO
+    my $nouveau = '';
 
     for(keys %slavedzones) {
-        $nouveau .= "zone:\n\tname: \"$_\"\n"
-        . "\tzonefile: \"slave/$_\"\n";
+        $nouveau .= "zone:\n\n\tname: \"$_\"\n"
+        . "\tzonefile: \"slave/$_\"\n\n";
 
         # allow notify & request xfr, v4 & v6
         $nouveau .=
         "\tallow-notify: " . $self->data->nsmasterv4 . ' ' . $self->data->dnsslavekey . "\n"
-        . "\trequest-xfr: " . $self->data->nsmasterv4 . ' ' . $self->data->dnsslavekey . "\n";
+        . "\trequest-xfr: " . $self->data->nsmasterv4 . ' ' . $self->data->dnsslavekey . "\n\n";
 
         $nouveau .=
         "\tallow-notify: " . $self->data->nsmasterv6. ' ' . $self->data->dnsslavekey . "\n"
@@ -75,12 +82,14 @@ sub _scp_put {
 
 sub reconfig {
     my ($self, $zname) = @_;
-    system("nsdc reconfig 2>/dev/null 1>/dev/null");
+    die "not implemented";
+    #system("nsdc reconfig 2>/dev/null 1>/dev/null");
 }
 
 sub delzone {
-    my ($self, $zdir, $zname) = @_;
-    system("nsdc delzone $zname 2>/dev/null 1>/dev/null");
+    my ($self) = @_;
+    die "not implemented";
+    #system("nsdc delzone $zname 2>/dev/null 1>/dev/null");
 }
 
 sub read_file {

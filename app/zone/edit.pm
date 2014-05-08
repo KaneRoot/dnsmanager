@@ -59,7 +59,7 @@ sub addzone {
     # add new zone on the secondary ns
     my $sec = app::zone::interface->new()
     ->get_interface($self->data->dnsappsec, $self->data);
-    $sec->addzone_sec($self->data->zdir, $self->zname);
+    $sec->reload_sec();
 
     return $zonefile;
 }
@@ -178,8 +178,7 @@ sub del {
 
     my $sec = app::zone::interface->new()
     ->get_interface($self->data->dnsappsec, $self->data);
-    $sec->delzone($self->data->zdir, $self->zname);
-    $sec->reload($self->data->zdir, $self->zname);
+    $sec->reload_sec();
 
     my $file = $self->data->zdir.'/'.$self->zname;
     my $host = $self->data->sshhost;
