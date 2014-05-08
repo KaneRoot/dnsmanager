@@ -8,6 +8,7 @@ has [ qw/data/ ] => qw/is ro required 1/;
 sub reload {
     my ($self, $zname) = @_;
     system("rndc reload $zname 2>/dev/null 1>/dev/null");
+    system("rndc notify $zname 2>/dev/null 1>/dev/null");
 }
 
 sub addzone {
