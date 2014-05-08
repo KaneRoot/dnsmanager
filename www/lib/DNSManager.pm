@@ -41,6 +41,8 @@ sub initco {
         , sgbd => $cfg->param('sgbd')
         , nsmasterv4 => $cfg->param('nsmasterv4')
         , nsmasterv6 => $cfg->param('nsmasterv6')
+        , nsslavev4 => $cfg->param('nsslavev4')
+        , nsslavev6 => $cfg->param('nsslavev6')
         , sshhost => $cfg->param('sshhost')
         , sshhostsec => $cfg->param('sshhostsec')
         , sshuser => $cfg->param('sshuser')
