@@ -8,7 +8,7 @@ has [ qw/data/ ] => qw/is ro required 1/;
 sub reload {
     my ($self, $zname) = @_;
     system("ssh "
-        . $self->data->sshsec 
+        . $self->data->sshhostsec 
         . " nsdc reload $zname 2>/dev/null 1>/dev/null");
 }
 

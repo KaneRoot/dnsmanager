@@ -28,7 +28,7 @@ sub init {
 
     my $success;
 
-    my $dsn = 'DBI:' . $self->sgbd
+    my $dsn = 'dbi:' . $self->sgbd
     . ':database=' . $self->dbname
     . ';host=' .  $self->dbhost
     . ';port=' . $self->dbport;
@@ -110,7 +110,7 @@ sub add_domain {
         return 0;
     }
 
-    my $ze = _get_zone_edit($domain);
+    my $ze = $self->_get_zone_edit($domain);
     $ze->addzone();
 }
 
@@ -122,7 +122,7 @@ sub delete_domain {
     return 0 unless $success;
     return 0 unless $user->delete_domain($domain);
 
-    my $ze = _get_zone_edit($domain);
+    my $ze = $self->_get_zone_edit($domain);
     $ze->del();
 
     1;
@@ -131,19 +131,19 @@ sub delete_domain {
 sub update_domain_raw {
     my ($self, $zone, $domain) = @_; 
 
-    my $ze = _get_zone_edit($domain);
+    my $ze = $self->_get_zone_edit($domain);
     $ze->update_raw($zone);
 }
 
 sub update_domain {
     my ($self, $zone, $domain) = @_; 
-    my $ze = _get_zone_edit($domain);
+    my $ze = $self->_get_zone_edit($domain);
     $ze->update($zone);
 }
 
 sub get_domain {
     my ($self, $domain) = @_; 
-    my $ze = _get_zone_edit($domain);
+    my $ze = $self->_get_zone_edit($domain);
     $ze->get();
 }
 
@@ -166,7 +166,7 @@ sub get_all_users {
 
 sub new_tmp {
     my ($self, $domain) = @_; 
-    my $ze = _get_zone_edit($domain);
+    my $ze = $self->_get_zone_edit($domain);
     $ze->new_tmp();
 }
 
