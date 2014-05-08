@@ -89,12 +89,7 @@ sub _get_zone_edit {
 
     return app::zone::edit->new(
         zname => $domain
-        , dnsapp => $self->dnsapp
-        , dnsappsec => $self->dnsappsec
-        , zdir => $self->zdir
-        , host => $self->sshhost
-        , user => $self->sshuser
-        , port => $self->sshport );
+        , data => $self );
 }
 
 # return yes or no

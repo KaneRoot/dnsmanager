@@ -11,12 +11,12 @@ use app::zone::interface;
 package app::zone::edit;
 use Moose;
 
-has [ qw/dnsapp dnsappsec zname zdir host user port/ ] => qw/is ro required 1/;
+has [ qw/zname data/ ] => qw/is ro required 1/;
 
 sub get {
     my ($self) = @_;
     my $dest = '/tmp/' . $self->zname;
-    my $file = $self->zdir.'/'.$self->zname;
+    my $file = $self->data->zdir.'/'.$self->zname;
 
     $self->_scp_get($file, $dest);
     DNS::ZoneParse->new($dest, $self->zname);
@@ -32,7 +32,7 @@ sub get {
 sub addzone {
     my ($self) = @_;
 
-    my $tpl = $self->zdir."/tpl.zone";
+    my $tpl = $self->data->zdir."/tpl.zone";
     my $tmpfile = '/tmp/'.$self->zname;
 
     $self->_scp_get($tpl, $tmpfile); # get the template
@@ -47,19 +47,19 @@ sub addzone {
     print $newzone $zonefile->output();
     close $newzone;
 
-    my $file = $self->zdir.'/'.$self->zname;
+    my $file = $self->data->zdir.'/'.$self->zname;
     $self->_scp_put($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
     # add new zone on the primary ns
     my $prim = app::zone::interface->new()
-    ->get_interface($self->dnsapp);
-    $prim->addzone($self->zdir, $self->zname);
+    ->get_interface($self->data->dnsapp, $self->data);
+    $prim->addzone($self->data->zdir, $self->zname);
 
     # add new zone on the secondary ns
     my $sec = app::zone::interface->new()
-    ->get_interface($self->dnsappsec);
-    $sec->addzone_sec($self->zdir, $self->zname);
+    ->get_interface($self->data->dnsappsec, $self->data);
+    $sec->addzone_sec($self->data->zdir, $self->zname);
 
     return $zonefile;
 }
@@ -83,12 +83,12 @@ sub update {
     print $newzone $zonefile->output();
     close $newzone;
 
-    my $file = $self->zdir.'/'.$self->zname;
+    my $file = $self->data->zdir.'/'.$self->zname;
     $self->_scp_put($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
     my $prim = app::zone::interface->new()
-    ->get_interface($self->dnsapp);
+    ->get_interface($self->data->dnsapp, $self->data);
     $prim->reload($self->zname);
     1;
 }
@@ -125,7 +125,7 @@ sub update_raw {
 sub new_tmp {
     my ($self) = @_;
 
-    my $tpl = $self->zdir."/tpl.zone";
+    my $tpl = $self->data->zdir."/tpl.zone";
     my $file = '/tmp/'.$self->zname;
 
     $self->_scp($tpl, $file);
@@ -148,7 +148,7 @@ sub _cp {
 sub _scp_put {
     my ($self, $src, $dest) = @_;
 
-    my $co = $self->user . '@' . $self->host . ':' . $self->port;
+    my $co = $self->data->sshuser . '@' . $self->data->sshhost . ':' . $self->data->sshport;
     my $ssh = Net::OpenSSH->new($co);
     $ssh->scp_put($src, $dest) or die "scp failed: " . $ssh->error;
 }
@@ -156,7 +156,7 @@ sub _scp_put {
 sub _scp_get {
     my ($self, $src, $dest) = @_;
 
-    my $co = $self->user . '@' . $self->host . ':' . $self->port;
+    my $co = $self->data->sshuser . '@' . $self->data->sshhost . ':' . $self->data->sshport;
     my $ssh = Net::OpenSSH->new($co);
     $ssh->scp_get($src, $dest) or die "scp failed: " . $ssh->error;
 }
@@ -172,18 +172,18 @@ sub _sed {
 sub del {
     my ($self) = @_;
     my $prim = app::zone::interface->new()
-    ->get_interface($self->dnsapp);
-    $prim->delzone($self->zdir, $self->zname);
+    ->get_interface($self->data->dnsapp, $self->data);
+    $prim->delzone($self->data->zdir, $self->zname);
     $prim->reconfig();
 
     my $sec = app::zone::interface->new()
-    ->get_interface($self->dnsappsec);
-    $sec->delzone($self->zdir, $self->zname);
-    $sec->reload($self->zdir, $self->zname);
+    ->get_interface($self->data->dnsappsec, $self->data);
+    $sec->delzone($self->data->zdir, $self->zname);
+    $sec->reload($self->data->zdir, $self->zname);
 
-    my $file = $self->zdir.'/'.$self->zname;
-    my $host = $self->host;
-    my $user = $self->user;
+    my $file = $self->data->zdir.'/'.$self->zname;
+    my $host = $self->data->sshhost;
+    my $user = $self->data->sshuser;
     my $cmd = "rm $file";
 
     Net::SSH::sshopen2("$user\@$host", *READER, *WRITER, "$cmd") || die "ssh: $!";
