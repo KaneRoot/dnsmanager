@@ -28,6 +28,22 @@ sub is_domain_name {
     return $dn =~ $ndd;
 }
 
+sub is_reserved {
+    my ($domain) = @_;
+
+    my $filename = "reserved.zone";
+    open my $entree, '<:encoding(UTF-8)', $filename or 
+    die "Impossible d'ouvrir '$filename' en lecture : $!";
+
+    while(<$entree>) {
+        if(m/^$domain$/) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 # eventually change place
 sub initco {
 
@@ -301,7 +317,11 @@ prefix '/domain' => sub {
 
             my $creationSuccess = '';
 
-            if( param('domain') =~ /^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$|^[a-zA-Z0-9]+$/ )
+            if(is_reserved(param('domain'))) {
+                session errmsg =>
+                q{Le nom de domaine est réservé};
+            }
+            elsif( param('domain') =~ /^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$|^[a-zA-Z0-9]+$/)
             {
 
                 my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
