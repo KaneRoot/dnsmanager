@@ -18,7 +18,7 @@ has dbh => ( is => 'rw', builder => '_void');
 has dnsi => ( is => 'rw', builder => '_void');
 has dnsisec => ( is => 'rw', builder => '_void');
 has um => ( is => 'rw', builder => '_void');
-has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp dnsappsec sshhost sshhostsec sshuser sshusersec sshport sshportsec nsmasterv4 nsmasterv6 dnsslavekey/ ] => qw/is ro required 1/;
+has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp dnsappsec sshhost sshhostsec sshuser sshusersec sshport sshportsec nsmasterv4 nsmasterv6 nsslavev4 nsslavev6 dnsslavekey/ ] => qw/is ro required 1/;
 sub _void { my $x = ''; \$x; }
 
 ### users

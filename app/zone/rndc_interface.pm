@@ -19,7 +19,7 @@ sub addzone {
         $command .= "'$opt'";
     }
     else {
-        $command .= "'{ type master; file \"$zdir/$zname\"; };'"
+        $command .= "'{ type master; file \"$zdir/$zname\"; allow-transfer { ". $self->data->nsslavev4 . '; '. $self->data->nsslavev6 . "; }; notify yes; };'";
     }
 
     $command .= " 2>/dev/null 1>/dev/null";
