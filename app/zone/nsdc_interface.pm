@@ -14,7 +14,7 @@ sub reload_sec {
         . $self->data->sshusersec . '@' . $self->data->sshhostsec
         . ' sudo nsdc rebuild 2>/dev/null 1>/dev/null');
 
-    system('ssh ' . $self->data->sshportsec . ' '
+    system('ssh -p ' . $self->data->sshportsec . ' '
         . $self->data->sshusersec . '@' . $self->data->sshhostsec
         . ' sudo nsdc reload 2>/dev/null 1>/dev/null');
 }
