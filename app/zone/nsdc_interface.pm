@@ -53,6 +53,10 @@ sub _reload_conf {
 
     write_file($f, $data);
 
+    system('ssh -p ' . $self->data->sshportsec . ' '
+        . $self->data->sshusersec . '@' . $self->data->sshhostsec
+        . ' "sudo nsdc patch 2>/dev/null 1>/dev/null && sudo rm /var/nsd3/ixfr.db"');
+
     _scp_put($self->data->sshusersec
         , $self->data->sshhostsec
         , $self->data->sshportsec
