@@ -5,12 +5,12 @@
 <title>DNSManager</title>
 
 <script type="text/javascript">/* <![CDATA[ */
-    !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/js/jquery.min.js"><\/script>')
+    !window.jQuery && document.write('<script type="text/javascript" src="http://netlib.re/js/jquery.min.js"><\/script>')
 /* ]]> */</script>
 
-<link rel="stylesheet" href="<% request.uri_base %>/css/bootstrap.min.css">
-<link rel="stylesheet" href="<% request.uri_base %>/css/bootstrap-theme.min.css">
-<script src="<% request.uri_base %>/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="http://netlib.re/css/bootstrap.min.css">
+<link rel="stylesheet" href="http://netlib.re/css/bootstrap-theme.min.css">
+<script src="http://netlib.re/js/bootstrap.min.js"></script>
 
 </head>
 
