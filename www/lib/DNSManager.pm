@@ -31,7 +31,7 @@ sub is_domain_name {
 sub is_reserved {
     my ($domain) = @_;
 
-    my $filename = "reserved.zone";
+    my $filename = "conf/reserved.zone";
     open my $entree, '<:encoding(UTF-8)', $filename or 
     die "Impossible d'ouvrir '$filename' en lecture : $!";
 
