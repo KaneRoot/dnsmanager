@@ -151,6 +151,7 @@
                             <div class="col-sm-3">
                                 <input type="text" id="value" name="value" class="form-control" placeholder="IP ou ndd" >
                             </div>
+                            Votre adresse IP : <% user_ip %>
                         </div>
 
                         <div class="form-group">

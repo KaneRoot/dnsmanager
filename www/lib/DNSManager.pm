@@ -283,6 +283,7 @@ prefix '/domain' => sub {
                     , admin         => session('admin')
                     , domain        => param('domain')
                     , domain_zone   => $zone->output()
+                    , user_ip       => request->address
                     , expert        => true	};
             }
             else
@@ -298,7 +299,8 @@ prefix '/domain' => sub {
                     , cname         => $zone->cname()
                     , ptr			=> $zone->ptr()
                     , mx			=> $zone->mx()
-                    , ns			=> $zone->ns()	};
+                    , ns			=> $zone->ns()
+                    , user_ip       => request->address };
             }
 
         }
