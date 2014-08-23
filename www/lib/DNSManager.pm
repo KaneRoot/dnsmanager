@@ -464,6 +464,44 @@ prefix '/domain' => sub {
 
         redirect '/domain/details/'. param('domain');
     };
+
+    get '/cli/:login/:pass/:domain/:name/:type/:host/:ttl/:ip' => sub {
+
+        my $pass = sha256_hex(param('pass'));
+        my $app = initco();
+        my ($auth_ok, $user, $isadmin) = $app->auth(param('login'), $pass);
+
+        unless ( $auth_ok && ( $isadmin 
+                || grep { $_ =~ param('domain') } @{$user->domains})) {
+
+            say "ERROR";
+            return;
+        }
+
+	my $name = param('name');
+	my $domain = param('domain');
+	my $type = param('type');
+	my $host = param('host');
+	my $ttl = param('ttl');
+	my $ip = param('ip');
+
+        $app->modify_entry( param('domain'),
+            {
+                type => $type
+                , name => $name
+                , host => $host
+                , ttl  => $ttl
+            },
+            {
+                newtype     => $type
+                , newname     => $name
+                , newhost     => $ip
+                , newttl      => $ttl
+                , newpriority => ''
+            });
+
+        say "OK";
+    };
 };
 
 any ['get', 'post'] => '/admin' => sub {
