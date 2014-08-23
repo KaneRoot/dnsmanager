@@ -29,11 +29,12 @@
 
     </div>
     <div class="col-md-6">
-    <h2>Prochainement</h2>
+    <h2>Mises à jour automatiques</h2>
 
     <p>
-        Nous aimerions proposer une mise à jour dynamique de votre adresse (style dyndns).
-        Ce sera notre prochaine étape.
+        Vous pouvez mettre à jour l'adresse IP d'un nom de domaine de façon dynamique (style dyndns).
+	Venez découvrir ça ! 
+	Téléchargez <a href="http://documents.arn-fai.net/netlib.re.tar.gz">ce script</a>, et c'est en place en 2 minutes !
     </p>
 
     </div>
