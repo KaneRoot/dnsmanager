@@ -1,6 +1,8 @@
 Gérer la création de zones par des utilisateurs.
 Les utilisateurs s'enregistrent, crééent des zones et les modifient comme ils le souhaitent.
 Des administrateurs peuvent supprimer des utilisateurs avec leurs zones.
+Les utilisateurs peuvent mettre leur adresse IP à jour de façon automatique grâce à un script.
+Ce qui permet d'être un remplaçant de DynDNS.
 
 ## Outils
 
@@ -15,11 +17,5 @@ Des administrateurs peuvent supprimer des utilisateurs avec leurs zones.
 
   * captcha
   * demander confirmation avant suppression d'une zone
-  * proposer la complétion de l'adresse IP du client dans les champs A, AAAA, MX…
   * rajouter les types de RR manquants dans l'interface
-  * mise à jour automatique via un script côté client de l'adresse IP (façon dyndns)
   * déléguer les zones
-
-Si on souhaite faire un client pour mettre à jour automatiquement une zone avec son IP:
-
-  * [Net::HTTPS::Any](https://metacpan.org/module/IVAN/Net-HTTPS-Any-0.10/lib/Net/HTTPS/Any.pm) est une piste
