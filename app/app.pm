@@ -1,7 +1,9 @@
 #!/usr/bin/env perl
 
+package app;
 use v5.14;
 use DBI;
+use Moo;
 
 use lib '../';
 use app::zone::interface;
@@ -11,14 +13,14 @@ use app::bdd::management;
 use app::bdd::admin;
 use app::bdd::lambda;
 
-package app;
-use Moose;
-
 has dbh => ( is => 'rw', builder => '_void');
 has dnsi => ( is => 'rw', builder => '_void');
 has dnsisec => ( is => 'rw', builder => '_void');
 has um => ( is => 'rw', builder => '_void');
-has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp dnsappsec sshhost sshhostsec sshuser sshusersec sshport sshportsec nsmasterv4 nsmasterv6 nsslavev4 nsslavev6 dnsslavekey/ ] => qw/is ro required 1/;
+has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp dnsappsec
+    sshhost sshhostsec sshuser sshusersec sshport sshportsec
+    nsmasterv4 nsmasterv6 nsslavev4 nsslavev6
+    dnsslavekey/ ] => qw/is ro required 1/;
 sub _void { my $x = ''; \$x; }
 
 ### users
@@ -165,107 +167,77 @@ sub new_tmp {
     $ze->new_tmp();
 }
 
-sub _mod_entry {
-    my ($self, $domain, $entryToDelete, $action, $newEntry) = @_;
+sub _is_same_record {
+    my ($a, $b) = @_;
+    (   $a->{name} eq $b->{name} && 
+        $a->{host} eq $b->{host} &&
+        $a->{priority} eq $b->{priority} &&
+        $a->{ttl} ==  $b->{ttl} );
+}
 
-    my $name     = $entryToDelete->{'name'};
-    my $type     = $entryToDelete->{'type'};
-    my $ttl      = $entryToDelete->{'ttl'};
-    my $host     = $entryToDelete->{'host'};
-    my $priority = $entryToDelete->{'priority'};
+# returns the lists of domains of a certain type
+sub _get_records {
+    my ($zone, $entry) = @_;
 
-    my $new_name     = $newEntry->{'newname'};
-    my $new_type     = $newEntry->{'newtype'};
-    my $new_ttl      = $newEntry->{'newttl'};
-    my $new_host     = $newEntry->{'newhost'};
-    my $new_priority = $newEntry->{'newpriority'};
-
-    # say "in _mod_entry : $action";
-    # say "in _mod_entry : $new_name";
-    my $zone = $self->get_domain($domain);
-    my $dump = $zone->dump;
-
-    my $record;
-    my $found = 0;
-
-    given( lc $type )
-    {
-        when ('a')
-        {
-            $record = $zone->a;
-            $found = 1;
-        }
-        when ('aaaa')
-        {
-            $record = $zone->aaaa;
-            $found = 1;
-        }
-        when ('cname')
-        {
-            $record = $zone->cname;
-            $found = 1;
-        }
-        when ('ns')
-        {
-            $record = $zone->ns;
-            $found = 1;
-        }
-        when ('mx')
-        {
-            $record = $zone->mx;
-            $found = 1;
-        }
-        when ('ptr')
-        {
-            $record = $zone->ptr;
-            $found = 1;
-        }
+    given( lc $entry->{type} ) {
+        when ('a')      { return $zone->a;     }
+        when ('aaaa')   { return $zone->aaaa;  }
+        when ('cname')  { return $zone->cname; }
+        when ('ns')     { return $zone->ns;    }
+        when ('mx')     { return $zone->mx;    }
+        when ('ptr')    { return $zone->ptr;   }
     }
-
-    if( $found )
-    {
-
-        foreach my $i ( 0 .. scalar @{$record}-1 )
-        {
-
-            if( $action eq 'del' )
-            {
-                delete $record->[$i]
-                if( $record->[$i]->{'name'} eq $name && 
-                    $record->[$i]->{'host'} eq $host &&
-                    $record->[$i]->{'ttl'} == $ttl );
-            }
-            if ( $action eq 'mod' )
-            {
-                if( $record->[$i]->{'name'} eq $name && 
-                    $record->[$i]->{'host'} eq $host &&
-                    $record->[$i]->{'ttl'} == $ttl )
-                {
-                    $record->[$i]->{'name'} = $new_name;
-                    $record->[$i]->{'host'} = $new_host;
-                    $record->[$i]->{'ttl'}  = $new_ttl;
-                    if( defined $new_priority )
-                    {
-                        $record->[$i]->{'priority'} = $new_priority 
-                    }
-                }
-            }
-
-        }
-
-    }
-
-    $self->update_domain( $zone, $domain );
+    
+    undef;
 }
 
 sub delete_entry {
     my ($self, $domain, $entryToDelete) = @_;
-    $self->_mod_entry( $domain, $entryToDelete, 'del' );
+
+    my $zone = $self->get_domain($domain);
+    my $dump = $zone->dump;
+
+    my $records = _get_records $zone, $entryToDelete;
+
+    if( defined $records ) {
+        foreach my $i ( 0 .. scalar @{$records}-1 ) {
+            if(_is_same_record($records->[$i], $entryToDelete)) {
+                delete $records->[$i];
+            }
+        }
+
+        $self->update_domain( $zone, $domain );
+    }
+
 }
 
 sub modify_entry {
-    my ($self, $domain, $entryToDelete, $newEntry) = @_;
-    $self->_mod_entry( $domain, $entryToDelete, 'mod', $newEntry );
+    my ($self, $domain, $entryToModify, $newEntry) = @_;
+
+    my $zone = $self->get_domain($domain);
+    my $dump = $zone->dump;
+
+    my $records = _get_records $zone, $entryToModify;
+
+    if( defined $records ) {
+
+        foreach my $i ( 0 .. scalar @{$records}-1 ) {
+
+            if(_is_same_record($records->[$i], $entryToModify)) {
+
+                $records->[$i]->{name} = $newEntry->{newname};
+                $records->[$i]->{host} = $newEntry->{newhost};
+                $records->[$i]->{ttl}  = $newEntry->{newttl};
+                $records->[$i]->{type}  = $newEntry->{newtype};
+
+                if( defined $newEntry->{newpriority} ) {
+                    $records->[$i]->{priority} = $newEntry->{newpriority};
+                }
+            }
+        }
+        $self->update_domain( $zone, $domain );
+    }
+
 }
 
 1;
