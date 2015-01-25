@@ -4,9 +4,7 @@ use Dancer ':syntax';
 use strict;
 use warnings;
 use v5.14;
-use Modern::Perl;
-use Data::Dump qw( dump );
-use Data::Structure::Util qw ( unbless );
+use YAML::XS;
 use File::Basename;
 use Config::Simple;
 use Crypt::Digest::SHA256 qw( sha256_hex ) ;
@@ -15,64 +13,13 @@ $Storable::Deparse = true;
 $Storable::Eval=true;
 use encoding 'utf-8'; # TODO check if this works well
 
+use util ':all';
+
 # Include other libs relative to current path
 use Find::Lib '../../'; # TODO remove it when it won't be usefull anymore
 use app::app;
 
 our $VERSION = '0.1';
-
-# TODO we can check if dn matches our domain name
-sub is_domain_name {
-    my ($dn) = @_;
-    my $ndd = qr/^([a-zA-Z0-9]+[a-zA-Z0-9-]*[a-zA-Z0-9]*.)*[a-zA-Z0-9]+[a-zA-Z0-9-]*[a-zA-Z0-9]$/;
-    return $dn =~ $ndd;
-}
-
-sub is_reserved {
-    my ($domain) = @_;
-
-    my $filename = "conf/reserved.zone";
-    open my $entree, '<:encoding(UTF-8)', $filename or 
-    die "Impossible d'ouvrir '$filename' en lecture : $!";
-
-    while(<$entree>) {
-        if(m/^$domain$/) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-# eventually change place
-sub initco {
-
-    my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
-    my $app = app->new( zdir => $cfg->param('zones_path')
-        , dbname => $cfg->param('dbname')
-        , dbhost => $cfg->param('host')
-        , dbport => $cfg->param('port')
-        , dbuser => $cfg->param('user')
-        , dbpass => $cfg->param('passwd')
-        , sgbd => $cfg->param('sgbd')
-        , nsmasterv4 => $cfg->param('nsmasterv4')
-        , nsmasterv6 => $cfg->param('nsmasterv6')
-        , nsslavev4 => $cfg->param('nsslavev4')
-        , nsslavev6 => $cfg->param('nsslavev6')
-        , sshhost => $cfg->param('sshhost')
-        , sshhostsec => $cfg->param('sshhostsec')
-        , sshuser => $cfg->param('sshuser')
-        , sshusersec => $cfg->param('sshusersec')
-        , sshport => $cfg->param('sshport')
-        , sshportsec => $cfg->param('sshportsec')
-        , dnsslavekey => $cfg->param('dnsslavekey')
-        , dnsapp => $cfg->param('dnsapp')
-        , dnsappsec => $cfg->param('dnsappsec') );
-
-    $app->init();
-
-    return $app;
-}
 
 sub get_errmsg {
     my $err = session 'errmsg';
@@ -243,7 +190,7 @@ prefix '/domain' => sub {
             }
 
             $zone->new_serial();
-            dump($zone);
+            Dump($zone);
 
             $app->update_domain( $zone , param('domain'));
 
@@ -288,7 +235,7 @@ prefix '/domain' => sub {
             }
             else
             {
-                # say dump( $zone->cname());
+                # say Dump( $zone->cname());
                 template details => {
                     login           => session('login')
                     , admin         => session('admin')
@@ -781,3 +728,5 @@ prefix '/user' => sub {
 
     };
 };
+
+1;
