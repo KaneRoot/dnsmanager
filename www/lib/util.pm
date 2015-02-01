@@ -1,13 +1,13 @@
 package util;
 use v5.10;
 
-use Config::Simple;
+use YAML::XS;
 use Exporter 'import';
 # what we want to export eventually
-our @EXPORT_OK = qw/ is_domain_name is_reserved initco/;
+our @EXPORT_OK = qw/ is_domain_name is_reserved/;
 
 # bundle of exports (tags)
-our %EXPORT_TAGS = ( all => [qw/is_domain_name is_reserved initco/] ); 
+our %EXPORT_TAGS = ( all => [qw/is_domain_name is_reserved/] ); 
 
 use Find::Lib '../../'; # TODO remove it when it won't be usefull anymore
 use app::app;
@@ -36,36 +36,6 @@ sub is_reserved {
     }
 
     return 0;
-}
-
-# eventually change place
-sub initco {
-
-    my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
-    my $app = app->new( zdir => $cfg->param('zones_path')
-        , dbname => $cfg->param('dbname')
-        , dbhost => $cfg->param('host')
-        , dbport => $cfg->param('port')
-        , dbuser => $cfg->param('user')
-        , dbpass => $cfg->param('passwd')
-        , sgbd => $cfg->param('sgbd')
-        , nsmasterv4 => $cfg->param('nsmasterv4')
-        , nsmasterv6 => $cfg->param('nsmasterv6')
-        , nsslavev4 => $cfg->param('nsslavev4')
-        , nsslavev6 => $cfg->param('nsslavev6')
-        , sshhost => $cfg->param('sshhost')
-        , sshhostsec => $cfg->param('sshhostsec')
-        , sshuser => $cfg->param('sshuser')
-        , sshusersec => $cfg->param('sshusersec')
-        , sshport => $cfg->param('sshport')
-        , sshportsec => $cfg->param('sshportsec')
-        , dnsslavekey => $cfg->param('dnsslavekey')
-        , dnsapp => $cfg->param('dnsapp')
-        , dnsappsec => $cfg->param('dnsappsec') );
-
-    $app->init();
-
-    return $app;
 }
 
 1;

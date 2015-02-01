@@ -1,18 +1,18 @@
 package DNSManager;
 
-use Dancer ':syntax';
+use v5.14;
 use strict;
 use warnings;
-use v5.14;
-use YAML::XS;
+
+use Dancer ':syntax';
 use File::Basename;
-use Config::Simple;
-use Crypt::Digest::SHA256 qw( sha256_hex ) ;
 use Storable qw( freeze thaw );
 $Storable::Deparse = true;
 $Storable::Eval=true;
 use encoding 'utf-8'; # TODO check if this works well
 
+use configuration ':all';
+use encryption ':all';
 use util ':all';
 
 # Include other libs relative to current path
@@ -414,7 +414,7 @@ prefix '/domain' => sub {
 
     get '/cli/:login/:pass/:domain/:name/:type/:host/:ttl/:ip' => sub {
 
-        my $pass = sha256_hex(param('pass'));
+        my $pass = encrypt(param('pass'));
         my $app = initco();
         my ($auth_ok, $user, $isadmin) = $app->auth(param('login'), $pass);
 
@@ -549,7 +549,7 @@ prefix '/user' => sub {
             return;
         }
 
-        my $pass = sha256_hex(param('password'));
+        my $pass = encrypt(param('password'));
 
         my $app = initco();
         my ($success) = $app->register_user(param('login'), $pass);
@@ -696,7 +696,7 @@ prefix '/user' => sub {
             {
 
                 my $app = initco();
-                my $pass = sha256_hex(param('password'));
+                my $pass = encrypt(param('password'));
                 my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
                     $pass );
 

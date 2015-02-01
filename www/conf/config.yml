@@ -1,0 +1,26 @@
+# TLD
+# Must contains the first "."
+tld:
+    - '.netlib.re'
+    - '.autre.tld'
+
+database:
+    type: mysql # other options : see DBI module
+    name: dnsmanager
+    host: localhost
+    port: 3306
+    user: monutilisateur
+    passwd: motdepasse
+
+primarydnsserver:
+    app: bind9
+    dnsslavekey: key-slave.netlib.re
+    zone-path: ssh://dnsmanager@host:2222/var/named/rndczones/
+    domain:
+        name: my.example.com
+        v4: 192.0.2.1       # optional
+        v6: 2001:db8::1     # optional
+
+secondarydnsserver:
+    - app: nsd3
+      cfg: ssh://dnsmanager@host:2222/etc/nsd3/nsd.conf

@@ -17,13 +17,25 @@ has dbh => ( is => 'rw', builder => '_void');
 has dnsi => ( is => 'rw', builder => '_void');
 has dnsisec => ( is => 'rw', builder => '_void');
 has um => ( is => 'rw', builder => '_void');
-has [ qw/zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp dnsappsec
+has [ qw/
+    dns_servers
+    zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp dnsappsec
     sshhost sshhostsec sshuser sshusersec sshport sshportsec
     nsmasterv4 nsmasterv6 nsslavev4 nsslavev6
     dnsslavekey/ ] => qw/is ro required 1/;
 sub _void { my $x = ''; \$x; }
 
 ### users
+
+sub get_interface {
+    my ($self, $type, $data) = @_;
+    given($type) {
+        when /rndc/ { simplebind9->new(data => $data) }
+        when /knot/ { simpleknot->new(data => $data) }
+        when /nsdc/ { simplensd->new(data => $data) }
+        default { undef }
+    }
+}
 
 sub init {
     my ($self) = @_;
@@ -40,13 +52,11 @@ sub init {
         , $self->dbpass) 
     || die "Could not connect to database: $DBI::errstr"; 
 
-    ($success, ${$self->dnsi}) = app::zone::interface ->new()
-    ->get_interface($self->dnsapp, $self);
+    ($success, ${$self->dnsi}) = get_interface($self->dnsapp, $self);
 
     die("zone interface") unless $success;
 
-    ($success, ${$self->dnsisec}) = app::zone::interface ->new()
-    ->get_interface($self->dnsappsec, $self);
+    ($success, ${$self->dnsisec}) = get_interface($self->dnsappsec, $self);
 
     die("zone interface (secondary ns)") unless $success;
 
