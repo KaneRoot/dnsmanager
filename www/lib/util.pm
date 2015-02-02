@@ -9,9 +9,6 @@ our @EXPORT_OK = qw/ is_domain_name is_reserved/;
 # bundle of exports (tags)
 our %EXPORT_TAGS = ( all => [qw/is_domain_name is_reserved/] ); 
 
-use Find::Lib '../../'; # TODO remove it when it won't be usefull anymore
-use app::app;
-
 # TODO we can check if dn matches our domain name
 sub is_domain_name {
     my ($dn) = @_;

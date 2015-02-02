@@ -14,11 +14,7 @@ use encoding 'utf-8'; # TODO check if this works well
 use configuration ':all';
 use encryption ':all';
 use util ':all';
-use app ':all';
-
-# Include other libs relative to current path
-use Find::Lib '../../'; # TODO remove it when it won't be usefull anymore
-use app::app;
+use app;
 
 our $VERSION = '0.1';
 
