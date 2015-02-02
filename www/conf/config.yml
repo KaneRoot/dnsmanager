@@ -4,6 +4,8 @@ tld:
     - '.netlib.re'
     - '.autre.tld'
 
+tmpdir: /tmp
+
 database:
     sgbd: mysql # other options : see DBI module
     name: dnsmanager
