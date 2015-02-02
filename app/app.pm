@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 package app;
 use v5.14;
 use DBI;
@@ -14,51 +12,60 @@ use app::bdd::admin;
 use app::bdd::lambda;
 
 has dbh => ( is => 'rw', builder => '_void');
-has dnsi => ( is => 'rw', builder => '_void');
+has dnsi => ( is => 'rw', builder => '_void_arr');
 has dnsisec => ( is => 'rw', builder => '_void');
 has um => ( is => 'rw', builder => '_void');
-has [ qw/
-    dns_servers
-    zdir dbname dbhost dbport dbuser dbpass sgbd dnsapp dnsappsec
-    sshhost sshhostsec sshuser sshusersec sshport sshportsec
-    nsmasterv4 nsmasterv6 nsslavev4 nsslavev6
-    dnsslavekey/ ] => qw/is ro required 1/;
+has [qw/ database primarydnsserver secondarydnsserver/] => qw/is ro required 1/;
 sub _void { my $x = ''; \$x; }
+sub _void_arr { [] }
 
 ### users
 
 sub get_interface {
-    my ($self, $type, $data) = @_;
+    my ($type, $data) = @_;
     given($type) {
-        when /rndc/ { simplebind9->new(data => $data) }
+        when /bind9/ { simplebind9->new(data => $data) }
         when /knot/ { simpleknot->new(data => $data) }
-        when /nsdc/ { simplensd->new(data => $data) }
+        when /nsd/ { simplensd->new(data => $data) }
         default { undef }
     }
+}
+
+sub init_dns_servers {
+    my ($primary, @secondaries) = @_;
+
+    my $primary_dns_server = get_interface($primary, $self);
+    die("zone interface") unless defined $primary_dns_server;
+
+    my @sec_dns_servers = ();
+    for(@secondaries) {
+        my $x = @$_[0];
+        my $sec_dns_server = get_interface($$x{app}, $self);
+        die("zone interface (secondary ns)") unless defined $sec_dns_server;
+        push @sec_dns_servers, $sec_dns_server;
+    }
+
+    ($primary_dns_server, @sec_dns_servers);
 }
 
 sub init {
     my ($self) = @_;
 
-    my $success;
+    my $db = $self->database;
 
-    my $dsn = 'dbi:' . $self->sgbd
-    . ':database=' . $self->dbname
-    . ';host=' .  $self->dbhost
-    . ';port=' . $self->dbport;
+    my $dsn = 'dbi:' . $$db{sgbd}
+    . ':database=' . $$db{name}
+    . ';host=' .  $$db{host}
+    . ';port=' . $$db{port};
 
-    ${$self->dbh} = DBI->connect($dsn
-        , $self->dbuser
-        , $self->dbpass) 
+    ${$self->dbh} = DBI->connect($dsn, $$db{user}, $$db{pass}) 
     || die "Could not connect to database: $DBI::errstr"; 
 
-    ($success, ${$self->dnsi}) = get_interface($self->dnsapp, $self);
+    my ($primary_dns_server, @sec_dns_servers) = 
+    init_dns_servers($$self{primarydnsserver}{app}, @$self{secondarydnsserver});
 
-    die("zone interface") unless $success;
-
-    ($success, ${$self->dnsisec}) = get_interface($self->dnsappsec, $self);
-
-    die("zone interface (secondary ns)") unless $success;
+    ${$self->dnsi} = $primary_dns_server;
+    push ${$self->dnsisec}, @sec_dns_servers;
 
     ${$self->um} = app::bdd::management->new(dbh => ${$self->dbh});
 }

@@ -5,7 +5,7 @@ tld:
     - '.autre.tld'
 
 database:
-    type: mysql # other options : see DBI module
+    sgbd: mysql # other options : see DBI module
     name: dnsmanager
     host: localhost
     port: 3306
