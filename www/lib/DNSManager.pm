@@ -14,6 +14,8 @@ use encoding 'utf-8'; # TODO check if this works well
 use configuration ':all';
 use encryption ':all';
 use util ':all';
+use rt::root ':all';
+use rt::domain ':all';
 use app;
 
 our $VERSION = '0.1';
@@ -24,6 +26,25 @@ sub get_errmsg {
     $err;
 }
 
+sub what_is_next {
+    my ($res) = @_;
+
+    if($$res{sessiondestroy}) {
+        session->destroy;
+    }
+
+    unless($$res{params}{errmsg}) {
+        $$res{params}{errmsg} = get_errmsg;
+    }
+
+    if($$res{redirect}) {
+        redirect $$res{route} => $$res{params};
+    }
+    else {
+        template $$res{route} => $$res{params};
+    }
+}
+
 # TODO check if the referer was from our website
 sub get_route {
     my $route = '/';
@@ -31,34 +52,9 @@ sub get_route {
     $route;
 }
 
-get '/' => sub {
-    if( session('login') )
-    {
-
-        my $app = initco();
-        my ($success, @domains) = $app->get_domains( session('login') );
-
-        if( $success ) {
-
-            template index => {
-                login   => session('login')
-                , admin   => session('admin')
-                , errmsg => get_errmsg
-                , domains => [ @domains ] };
-        }
-        else {
-            session->destroy;
-            template 'index';
-        }
-
-    }
-    else
-    {
-
-        template 'index' => {
-            errmsg => get_errmsg
-        };
-    }
+get '/' => sub { 
+    what_is_next 
+    rt_root session('login') , session('passwd'); 
 };
 
 prefix '/domain' => sub {
