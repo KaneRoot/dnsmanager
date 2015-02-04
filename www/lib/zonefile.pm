@@ -6,12 +6,9 @@ use DNS::ZoneParse;
 has zone => qw/is rw/ ;
 has [ qw/domain zonefile/ ] => qw/ is ro required 1/;
 
-sub BUILDARGS {
-    my ($class, @args) = @_;
-
+sub BUILD {
+    my ($self) = @_;
     $$self{zone} = DNS::ZoneParse->new($$self{zonefile}, $$self{domain});
-
-    return { @args };
 }
 
 sub new_serial {

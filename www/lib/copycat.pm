@@ -13,37 +13,6 @@ our @EXPORT_OK = qw/copycat/;
 # bundle of exports (tags)
 our %EXPORT_TAGS = ( all => [qw/copycat/] ); 
 
-# SUPPORT
-#   local to local
-#   distant to local
-#   local to distant
-
-sub copycat {
-    my ($source, $destination);
-    my $src = URI->new($source);
-    my $dest = URI->new($destination);
-
-    if($src->scheme eq 'file' && $dest->scheme eq 'file') {
-        cp $src->path, $dest->path;
-    }
-    elsif($src->scheme eq 'ssh' && $dest->scheme eq 'file') {
-
-        my $co = $src->userinfo . '@' . $src->host . ':' . $src->port;
-        _scp_get $co, $src->path, $dest->path;
-
-    }
-    elsif($src->scheme eq 'file' && $dest->scheme eq 'ssh') {
-
-        my $co = $dest->userinfo . '@' . $dest->host . ':' . $dest->port;
-        _scp_put $co, $src->path, $dest->path;
-
-    }
-    else {
-        die "CopyCat : wrong arguments";
-    }
-
-}
-
 sub _cp {
     my ($src, $dest) = @_;
     File::Copy::copy($src, $dest) or die "Copy failed: $! ($src -> $dest)";
@@ -61,6 +30,37 @@ sub _scp_get {
 
     my $ssh = Net::OpenSSH->new($co);
     $ssh->scp_get($src, $dest) or die "scp failed: " . $ssh->error;
+}
+
+# SUPPORT
+#   local to local
+#   distant to local
+#   local to distant
+
+sub copycat {
+    my ($source, $destination) = @_;
+    my $src = URI->new($source);
+    my $dest = URI->new($destination);
+
+    if($src->scheme eq 'file' && $dest->scheme eq 'file') {
+        _cp $src->path, $dest->path;
+    }
+    elsif($src->scheme eq 'ssh' && $dest->scheme eq 'file') {
+
+        my $co = $src->userinfo . '@' . $src->host . ':' . $src->port;
+        _scp_get $co, $src->path, $dest->path;
+
+    }
+    elsif($src->scheme eq 'file' && $dest->scheme eq 'ssh') {
+
+        my $co = $dest->userinfo . '@' . $dest->host . ':' . $dest->port;
+        _scp_put $co, $src->path, $dest->path;
+
+    }
+    else {
+        die "CopyCat : wrong arguments";
+    }
+
 }
 
 1;

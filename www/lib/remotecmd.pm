@@ -1,7 +1,6 @@
 package remotecmd;
 use v5.14;
 
-use URI;
 use Net::OpenSSH;
 use Net::SSH q<sshopen2>;
 
@@ -15,13 +14,23 @@ our %EXPORT_TAGS = ( all => [qw/remotecmd/] );
 sub remotecmd {
     my ($user, $host, $port, $cmd) = @_;
 
-    Net::SSH::sshopen2("$user\@$host:$port", *READER, *WRITER, "$cmd") 
-    || die "ssh: $!";
+    #sshopen2("-p '$port' $user\@$host", *READER, *WRITER, "$cmd") 
+    #|| die "ssh: $!";
 
     #system("ssh -p '$port' '$user". '@'. "$host' '$cmd'");
 
-    close(READER);
-    close(WRITER);
+    #my $ret = '';
+    #$ret .= $_ while(<READER>);
+
+    #close(READER);
+    #close(WRITER);
+
+    # adds some security tests
+    my @c = split /[;']/, $cmd;
+    $cmd = $c[0];
+
+    my $str = "ssh -p $port $user". '@' . "$host '$cmd'";
+    qx/$str/;
 }
 
 1;
