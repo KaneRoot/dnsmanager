@@ -12,7 +12,6 @@ $Storable::Eval=true;
 use encoding 'utf-8'; # TODO check if this works well
 
 use configuration ':all';
-use encryption ':all';
 use util ':all';
 use rt::root ':all';
 use rt::domain ':all';
@@ -57,19 +56,21 @@ sub get_param {
     $param_values;
 }
 
+sub get_request {
+    my $request_values;
+    for(@_) {
+        if(/^address$/)     { $$request_values{$_} = request->address; }
+        elsif(/^referer$/)  { $$request_values{$_} = request->referer; }
+    }
+    $request_values;
+}
+
 sub get_session {
     my $session_values;
     for(@_) {
         $$session_values{$_} = session "$_";
     }
     $session_values;
-}
-
-# TODO check if the referer was from our website
-sub get_route {
-    my $route = '/';
-    $route = request->referer if (defined request->referer);
-    $route;
 }
 
 get '/' => sub { 
@@ -95,7 +96,7 @@ prefix '/domain' => sub {
         what_is_next rt_dom_details
         get_session qw/login passwd/
         , get_param qw/domain expert/
-        , request->address;
+        , get_request qw/address referer/;
     };
 
     post '/add/' => sub {
@@ -105,153 +106,30 @@ prefix '/domain' => sub {
     };
 
     get '/del/:domain' => sub {
-
-        my $app = initco();
-        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-            session('password') );
-
-        unless ( $auth_ok && ( $isadmin 
-                || grep { $_ =~ param('domain') } @{$user->domains})) {
-
-            session errmsg => q{Auth non OK.};
-            redirect '/ ';
-            return;
-        }
-
-        unless( defined param('domain') ) {
-            session errmsg => q<Domaine non renseigné.>;
-            redirect get_route;
-            return;
-        }
-
-        if( ! is_domain_name(param('domain'))) {
-            session errmsg => q<Domaine non conforme.>;
-            redirect get_route;
-            return;
-        }
-
-        my $success = $app->delete_domain(session('login'), param('domain'));
-
-        unless($success) {
-            session errmsg => q{Impossible de supprimer le domaine.};
-        }
-
-        if( request->referer =~ "/domain/details" ) {
-            redirect '/user/home';
-        }
-        else {
-            redirect request->referer;
-        }
-
+        what_is_next rt_dom_del
+        get_session qw/login passwd/
+        , get_param qw/domain/
+        , get_request qw/address referer/;
     };
 
     get '/del/:domain/:name/:type/:host/:ttl' => sub {
-
-        # Load :domain and search for corresponding data
-        my $app = initco();
-
-        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-            session('password') );
-
-        unless ( $auth_ok && ( $isadmin 
-                || grep { $_ =~ param('domain') } @{$user->domains})) {
-
-            session errmsg => q{Auth non OK.};
-            redirect '/ ';
-            return;
-        }
-
-        unless( session( 'user' ) and defined param('domain') ) {
-            session errmsg => q<Domaine non renseigné.>;
-            redirect get_route;
-            return;
-        }
-
-        $app->delete_entry( param('domain'),
-            {
-                type => param('type'),
-                name => param('name'),
-                host => param('host'),
-                ttl  => param('ttl')
-            });
-
-        redirect '/domain/details/'. param('domain');
+        what_is_next rt_dom_del_entry
+        get_session qw/login passwd/
+        , get_param qw/domain name type host ttl/
+        , get_request qw/address referer/;
     };
 
     get '/mod/:domain/:name/:type/:host/:ttl' => sub {
-
-        my $app = initco();
-        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-            session('password') );
-
-        unless ( $auth_ok && ( $isadmin 
-                || grep { $_ =~ param('domain') } @{$user->domains})) {
-
-            session errmsg => q{Auth non OK.};
-            redirect '/ ';
-            return;
-        }
-
-        unless( session( 'user' ) and defined param('domain') ) {
-            session errmsg => q<Domaine non renseigné.>;
-            redirect get_route;
-            return;
-        }
-
-        $app->modify_entry( param('domain'),
-            {
-                type => param('type'),
-                name => param('name'),
-                host => param('host'),
-                ttl  => param('ttl')
-            },
-            {
-                newtype     => param('newtype'),
-                newname     => param('newname'),
-                newhost     => param('newhost'),
-                newttl      => param('newttl'),
-                newpriority => param('newpriority')
-            });
-
-        redirect '/domain/details/'. param('domain');
+        what_is_next rt_dom_mod_entry
+        get_session qw/login passwd/
+        , get_param qw/domain name type host ttl/
+        , get_request qw/address referer/;
     };
 
     get '/cli/:login/:pass/:domain/:name/:type/:host/:ttl/:ip' => sub {
-
-        my $pass = encrypt(param('pass'));
-        my $app = initco();
-        my ($auth_ok, $user, $isadmin) = $app->auth(param('login'), $pass);
-
-        unless ( $auth_ok && ( $isadmin 
-                || grep { $_ =~ param('domain') } @{$user->domains})) {
-
-            say "ERROR";
-            return;
-        }
-
-        my $name = param('name');
-        my $domain = param('domain');
-        my $type = param('type');
-        my $host = param('host');
-        my $ttl = param('ttl');
-        my $ip = param('ip');
-
-        $app->modify_entry( param('domain'),
-            {
-                type => $type
-                , name => $name
-                , host => $host
-                , ttl  => $ttl
-            },
-            {
-                newtype     => $type
-                , newname     => $name
-                , newhost     => $ip
-                , newttl      => $ttl
-                , newpriority => ''
-            });
-
-        say "OK";
+        what_is_next rt_dom_cli_mod_entry
+        get_session qw/login/
+        , get_param qw/passwd domain name type host ttl ip/;
     };
 };
 

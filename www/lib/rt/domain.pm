@@ -1,6 +1,7 @@
 package rt::domain;
 
 use configuration ':all';
+use encryption ':all';
 use app;
 
 use Exporter 'import';
@@ -19,6 +20,160 @@ our %EXPORT_TAGS = ( all => [qw/
         rt_dom_update
         rt_dom_updateraw
         /] ); 
+
+sub rt_dom_cli_mod_entry {
+    my ($session, $param, $request) = @_;
+    my $res;
+
+    my $pass = encrypt($$param{pass});
+    my $app = app->new(get_cfg());
+
+    my $user = $app->auth($$session{login}, $pass);
+
+    unless ( $user &&
+        ( $user->is_admin()
+            || grep { $_ eq $$param{domain} } @{$user->domains})) {
+        $$res{errmsg} = q{Auth non OK.};
+        return $res;
+    }
+
+    $app->modify_entry( $$param{domain}
+        , {
+            type    => $$param{type}
+            , name  => $$param{name}
+            , host  => $$param{host}
+            , ttl   => $$param{ttl}
+        }
+        , {
+            newtype         => $$param{type}
+            , newname       => $$param{name}
+            , newhost       => $$param{ip}
+            , newttl        => $$param{ttl}
+            , newpriority   => ''
+        });
+
+    say "OK"; # TODO remove this, debug
+    $res;
+}
+
+sub rt_dom_mod_entry {
+    my ($session, $param, $request) = @_;
+    my $res;
+
+    my $app = app->new(get_cfg());
+    my $user = $app->auth($$session{login}, $$session{passwd});
+
+    unless ( $user && 
+        ( $user->is_admin()
+            || grep { $_ eq $$param{domain} } @{$user->domains})) {
+        $$session{errmsg} = q{Auth non OK.};
+        $$res{route} = '/';
+        return $res;
+    }
+
+    unless( $$session{user} and defined $$param{domain} ) {
+        $$session{errmsg} = q<Domaine non renseigné.>;
+        $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+        return $res;
+    }
+
+    $app->modify_entry( $$param{domain}
+        , {
+            type => $$param{type}
+            , name => $$param{name}
+            , host => $$param{host}
+            , ttl  => $$param{ttl}
+        }
+        , {
+            newtype       => $$param{newtype}
+            , newname     => $$param{newname}
+            , newhost     => $$param{newhost}
+            , newttl      => $$param{newttl}
+            , newpriority => $$param{newpriority}
+        });
+
+    $$res{route} = '/domain/details/'. $$param{domain};
+
+    $res;
+}
+
+sub rt_dom_del_entry {
+    my ($session, $param, $request) = @_;
+    my $res;
+
+    # Load :domain and search for corresponding data
+    my $app = app->new(get_cfg());
+
+    my $user = $app->auth($$session{login}, $$session{passwd});
+
+    unless ( $user && 
+        ( $user->is_admin()
+            || grep { $_ eq $$param{domain} } @{$user->domains})) {
+        $$res{errmsg} = q{Auth non OK.};
+        $$res{route} = '/';
+        return $res;
+    }
+
+    unless( $session{user} and defined $param{domain} ) {
+        $$res{errmsg} = q<Domaine non renseigné.>;
+        $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+        return $res;
+    }
+
+    $app->delete_entry( $$param{domain}, {
+            type => $$param{type},
+            name => $$param{name},
+            host => $$param{host},
+            ttl  => $$param{ttl}
+        });
+
+    $$res{route} = '/domain/details/'. $$param{domain};
+
+    $res;
+}
+
+sub rt_dom_del {
+    my ($session, $param, $request) = @_;
+    my $res;
+
+    my $app = app->new(get_cfg());
+    my $user = $app->auth($$session{login}, $$session{passwd});
+
+    unless ( $user && 
+        ( $user->is_admin()
+            || grep { $_ eq $$param{domain} } @{$user->domains})) {
+        $$res{errmsg} = q{Auth non OK.};
+        $$res{route} = '/';
+        return $res;
+    }
+
+    unless( $$param{domain} ) {
+        $$res{errmsg} = q<Domaine non renseigné.>;
+        $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+        return $res;
+    }
+
+    if( ! is_domain_name($$param{domain})) {
+        $$res{errmsg} = q<Domaine non conforme.>;
+        $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+        return $res;
+    }
+
+    my $success = $app->delete_domain($session{login}, $param{domain});
+
+    unless($success) {
+        $$res{errmsg} = q{Impossible de supprimer le domaine.};
+    }
+
+    if( $$request{referer} =~ "/domain/details" ) {
+        $$res{route} = '/user/home';
+    }
+    else {
+        $$res{route} = $$request{referer};
+    }
+
+    $res;
+}
 
 sub rt_dom_add {
     my ($session, $param) = @_;
@@ -65,7 +220,7 @@ sub rt_dom_add {
 }
 
 sub rt_dom_details {
-    my ($session, $param, $ip) = @_;
+    my ($session, $param, $request) = @_;
     my $res;
 
     # check if user is logged & if domain parameter is set
@@ -96,7 +251,7 @@ sub rt_dom_details {
         , admin         => $user->is_admin()
         , domain        => $$param{domain}
         , domain_zone   => $zone->output()
-        , user_ip       => $ip
+        , user_ip       => $$request{address}
     };
 
     if($$param{expert}) {
@@ -131,7 +286,7 @@ sub rt_dom_update {
 
         $$res{errmsg} = q{Donnée privée, petit coquin. ;) };
         $$res{route} = '/';
-        return;
+        return $res;
     }
 
     my $zone = $app->get_domain( $$param{domain} );
