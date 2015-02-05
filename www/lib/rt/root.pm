@@ -11,34 +11,29 @@ our @EXPORT_OK = qw/rt_root/;
 our %EXPORT_TAGS = ( all => [qw/rt_root/] ); 
 
 sub rt_root {
-    my ($login, $passwd) = @_;
-    my $res = {};
+    my ($session, $param) = @_;
+    my $res;
 
-    $$res{route} = 'index';
+    $$res{template} = 'index';
 
     if($login) {
-        my $app = app->new(get_cfg('../conf/'));
-        my $user = $app->get_user($login, $passwd);
+        my $app = app->new(get_cfg());
+        my $user = $app->auth($$session{login}, $$session{passwd});
 
         # ancienne version pour récupérer les domaines :
         #my ($success, @domains) = $app->get_domains( $login );
 
         if( $user ) {
-
             $$res{params} = {
-                login   => $login
+                login   => $$session{login}
                 , admin   => $user->is_admin();
-                , domains => [ $user->get_domains() ] };
+                , domains => [ $user->get_domains() ]
+            };
         }
         else {
             $$res{sessiondestroy} = 1;
-            $$res{route} = 'index';
         }
 
-    }
-    else {
-
-        $$res{route} = 'index';
     }
     
     $res;

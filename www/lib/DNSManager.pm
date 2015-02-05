@@ -37,12 +37,32 @@ sub what_is_next {
         $$res{params}{errmsg} = get_errmsg;
     }
 
-    if($$res{redirect}) {
+    for(keys $$res{addsession}) {
+        session $_ => $$res{addsession}{$_};
+    }
+
+    if($$res{route}) {
         redirect $$res{route} => $$res{params};
     }
-    else {
-        template $$res{route} => $$res{params};
+    elsif($$res{template}) {
+        template $$res{template} => $$res{params};
     }
+}
+
+sub get_param {
+    my $param_values;
+    for(@_) {
+        $$param_values{$_} = param "$_";
+    }
+    $param_values;
+}
+
+sub get_session {
+    my $session_values;
+    for(@_) {
+        $$session_values{$_} = session "$_";
+    }
+    $session_values;
 }
 
 # TODO check if the referer was from our website
@@ -60,237 +80,28 @@ get '/' => sub {
 prefix '/domain' => sub {
 
     any ['post', 'get'] => '/updateraw/:domain' => sub {
-
-        # check if user is logged & if domain parameter is set
-        unless( session('login') && param('domain'))
-        {
-            redirect '/';
-        }
-        else
-        {
-
-            my $app = initco();
-            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-                session('password') );
-
-            if($auth_ok && ($isadmin || grep { $_ eq param('domain') } 
-                    @{$user->domains}) ) {
-
-                my $success = $app->update_domain_raw( param('zoneupdated')
-                    , param('domain'));
-
-                unless($success) {
-                    session errmsg => q{Problème de mise à jour du domaine.};
-                }
-
-                redirect '/domain/details/' . param('domain');
-            }
-            else {
-                session errmsg => q{Donnée privée, petit coquin. ;) };
-                redirect '/';
-            }
-        }
-
+        what_is_next rt_dom_updateraw 
+        get_session qw/login passwd/
+        , get_param qw/domain zoneupdated/; # TODO verify this
     };
 
     any ['post', 'get'] => '/update/:domain' => sub {
-
-        unless( session('login') && param('domain') )
-        {
-            redirect '/';
-        }
-        else
-        {
-
-            my $type  = param('type');
-            my $name  = param('name');
-            my $value = param('value');
-            my $ttl   = param('ttl');
-            my $priority   = param('priority');
-
-            my $app = initco();
-            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-                session('password') );
-
-            unless($auth_ok && ($isadmin || grep { $_ eq param('domain') } 
-                    @{$user->domains}) ) {
-
-                session errmsg => q{Donnée privée, petit coquin. ;) };
-                redirect '/';
-                return;
-            }
-
-            my $zone = $app->get_domain( param('domain') );
-            given( $type )
-            {
-
-                when ('A') { 
-                    my $a = $zone->a();
-                    push( @$a, {name  => $name
-                            , class => "IN"
-                            , host  => $value
-                            , ttl   => $ttl
-                            , ORIGIN => $zone->origin} );
-                }
-
-                when ('AAAA') { 
-                    my $aaaa = $zone->aaaa;
-                    push(@$aaaa, {name  => $name
-                            , class => "IN"
-                            , host  => $value
-                            , ttl   => $ttl
-                            , ORIGIN => $zone->origin} );
-                }
-
-                when ('CNAME') { 
-                    my $cname = $zone->cname;
-                    push(@$cname,
-                        {name  => $name
-                            , class => "IN"
-                            , host  => $value
-                            , ttl   => $ttl
-                            , ORIGIN => $zone->origin} );
-                }
-
-                when ('MX') { 
-                    my $mx = $zone->mx;
-                    push(@$mx, { name  => $name
-                            , class => "IN"
-                            , host  => $value
-                            , priority  => $priority
-                            , ttl   => $ttl
-                            , ORIGIN => $zone->origin} );
-                }
-
-                when ('PTR') { 
-                    my $ptr = $zone->ptr;
-                    push(@$ptr, {name  => $name
-                            , class => "IN"
-                            , host  => $value
-                            , ttl   => $ttl
-                            , ORIGIN => $zone->origin} );
-                }
-
-                when ('NS') { 
-                    my $ns = $zone->ns;
-                    push(@$ns, {name  => $name
-                            , class => "IN"
-                            , host  => $value
-                            , ttl   => $ttl
-                            , ORIGIN => $zone->origin} );
-                }
-
-            }
-
-            $zone->new_serial();
-            Dump($zone);
-
-            $app->update_domain( $zone , param('domain'));
-
-            redirect '/domain/details/' . param('domain');
-        }
+        what_is_next rt_dom_update
+        get_session qw/login passwd/
+        , get_param qw/type name value ttl priority domain/;
     };
 
     get '/details/:domain' => sub {
-
-        # check if user is logged & if domain parameter is set
-        unless( session('login') && param('domain'))
-        {
-            redirect '/';
-        }
-        else
-        {
-            my $app = initco();
-
-            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-                session('password') );
-
-            unless ( $auth_ok && ( $isadmin 
-                    || grep { $_ =~ param('domain') } @{$user->domains})) {
-
-                session errmsg => q{Auth non OK.};
-                redirect '/ ';
-                return;
-
-            }
-
-            my $zone = $app->get_domain(param('domain'));
-
-            if( param( 'expert' ) )
-            {
-                template details => {
-                    login           => session('login')
-                    , admin         => session('admin')
-                    , domain        => param('domain')
-                    , domain_zone   => $zone->output()
-                    , user_ip       => request->address
-                    , expert        => true	};
-            }
-            else
-            {
-                # say Dump( $zone->cname());
-                template details => {
-                    login           => session('login')
-                    , admin         => session('admin')
-                    , domain        => param('domain')
-                    , domain_zone   => $zone->output()
-                    , a             => $zone->a()
-                    , aaaa          => $zone->aaaa()
-                    , cname         => $zone->cname()
-                    , ptr			=> $zone->ptr()
-                    , mx			=> $zone->mx()
-                    , ns			=> $zone->ns()
-                    , user_ip       => request->address };
-            }
-
-        }
-
+        what_is_next rt_dom_details
+        get_session qw/login passwd/
+        , get_param qw/domain expert/
+        , request->address;
     };
 
     post '/add/' => sub {
-
-        # check if user is logged & if domain parameter is set
-        unless( session('login') && param('domain'))
-        {
-            redirect '/';
-        }
-        else
-        {
-
-            my $creationSuccess = '';
-
-            if(is_reserved(param('domain'))) {
-                session errmsg =>
-                q{Le nom de domaine est réservé};
-            }
-            elsif( param('domain') =~ /^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$|^[a-zA-Z0-9]+$/)
-            {
-
-                my $cfg = new Config::Simple(dirname(__FILE__).'/../conf/config.ini');
-                my $domain = param('domain').$cfg->param('tld');
-                my $app = initco();
-                my ($success) = $app->add_domain( session('login'), $domain );
-
-                if ($success) {
-                    $creationSuccess = q{Le nom de domaine a bien été réservé ! };
-                }
-                else {
-                    session errmsg => q{Le nom de domaine est déjà pris.};
-                }
-
-            }
-            else
-            {
-                session errmsg =>
-                q{Le nom de domaine entré contient des caractères invalides};
-            }
-
-            session creationSuccess => $creationSuccess;
-            session domainName => param('domain');
-            redirect '/user/home';
-
-        }
-
+        what_is_next rt_dom_add
+        get_session qw/login passwd/
+        , get_param qw/domain tld/;
     };
 
     get '/del/:domain' => sub {
@@ -418,12 +229,12 @@ prefix '/domain' => sub {
             return;
         }
 
-	my $name = param('name');
-	my $domain = param('domain');
-	my $type = param('type');
-	my $host = param('host');
-	my $ttl = param('ttl');
-	my $ip = param('ip');
+        my $name = param('name');
+        my $domain = param('domain');
+        my $type = param('type');
+        my $host = param('host');
+        my $ttl = param('ttl');
+        my $ip = param('ip');
 
         $app->modify_entry( param('domain'),
             {

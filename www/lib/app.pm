@@ -59,6 +59,7 @@ sub BUILD {
     ${$self->um} = db->new(dbh => ${$self->dbh});
 }
 
+# TODO it has to send the user if the auth is ok
 sub auth {
     my ($self, $login, $passwd) = @_;
     ${$self->um}->auth($login, $passwd);
