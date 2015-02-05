@@ -26,7 +26,7 @@ sub rt_root {
         if( $user ) {
             $$res{params} = {
                 login   => $$session{login}
-                , admin   => $user->is_admin();
+                , admin   => $user->is_admin()
                 , domains => [ $user->get_domains() ]
             };
         }

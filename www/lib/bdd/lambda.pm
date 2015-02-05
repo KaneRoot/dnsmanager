@@ -1,4 +1,4 @@
-package app::bdd::lambda;
+package bdd::lambda;
 use Moo;
 use v5.14;
 use autodie;

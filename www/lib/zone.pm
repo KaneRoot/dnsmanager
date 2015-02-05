@@ -12,6 +12,7 @@ use Data::Dump "dump";
 
 has [ qw/tmpdir data/ ] => qw/is ro required 1/;
 
+# TODO all this file is to redesign
 sub get {
     my ($self) = @_;
     my $dest = $self->tmpdir . '/' . $self->zname;
@@ -19,7 +20,7 @@ sub get {
 
     $self->_scp_get($file, $dest);
 
-    zonefile->new(domain => $domain, zonefile => $dest);
+    #zonefile->new(domain => $domain, zonefile => $dest);
 }
 
 =pod
@@ -38,13 +39,13 @@ sub addzone {
     $self->_scp_get($tpl, $tmpfile); # get the template
     $self->_sed($tmpfile); # sed CHANGEMEORIGIN by the real origin
 
-    my $zonefile = zonefile->new(zonefile => $tmpfile, domain => $domain);
-    $zonefile->new_serial(); # update the serial number
+    #my $zonefile = zonefile->new(zonefile => $tmpfile, domain => $domain);
+    #$zonefile->new_serial(); # update the serial number
 
     # write the new zone tmpfile to disk 
     my $newzone;
     open($newzone, '>', $tmpfile) or die "error";
-    print $newzone $zonefile->output();
+    #print $newzone $zonefile->output();
     close $newzone;
 
     my $file = $self->data->zdir.'/'.$self->zname;
@@ -61,7 +62,7 @@ sub addzone {
     ->get_interface($self->data->dnsappsec, $self->data);
     $sec->reload_sec();
 
-    return $zonefile;
+    #return $zonefile;
 }
 
 =pod
@@ -161,7 +162,7 @@ sub del {
     my $user = $self->data->sshuser;
     my $cmd = "rm $file";
 
-    remotecmd $user, $host, $port, $cmd;
+    #remotecmd $user, $host, $port, $cmd;
 }
 
 1;

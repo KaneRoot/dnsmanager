@@ -21,7 +21,7 @@ sub _void_arr { [] }
 ### users
 
 sub init_dns_servers {
-    my ($primary, @secondaries) = @_;
+    my ($self, $primary, @secondaries) = @_;
 
     my $primary_dns_server = getiface($primary, { data => $self });
     die("zone interface") unless defined $primary_dns_server;
@@ -51,10 +51,10 @@ sub BUILD {
     || die "Could not connect to database: $DBI::errstr"; 
 
     my ($primary_dns_server, @sec_dns_servers) = 
-    init_dns_servers($$self{primarydnsserver}{app}, @$self{secondarydnsserver});
+    $self->init_dns_servers($$self{primarydnsserver}{app}, @$self{secondarydnsserver});
 
     ${$self->dnsi} = $primary_dns_server;
-    push ${$self->dnsisec}, @sec_dns_servers;
+    push @{$$self{dnsisec}}, @sec_dns_servers;
 
     ${$self->um} = db->new(dbh => ${$self->dbh});
 }
@@ -186,13 +186,13 @@ sub _is_same_record {
 sub _get_records {
     my ($zone, $entry) = @_;
 
-    given( lc $entry->{type} ) {
-        when ('a')      { return $zone->a;     }
-        when ('aaaa')   { return $zone->aaaa;  }
-        when ('cname')  { return $zone->cname; }
-        when ('ns')     { return $zone->ns;    }
-        when ('mx')     { return $zone->mx;    }
-        when ('ptr')    { return $zone->ptr;   }
+    for( lc $entry->{type} ) {
+        if      ($_ eq 'a')      { return $zone->a;     }
+        elsif   ($_ eq 'aaaa')   { return $zone->aaaa;  }
+        elsif   ($_ eq 'cname')  { return $zone->cname; }
+        elsif   ($_ eq 'ns')     { return $zone->ns;    }
+        elsif   ($_ eq 'mx')     { return $zone->mx;    }
+        elsif   ($_ eq 'ptr')    { return $zone->ptr;   }
     }
     
     undef;

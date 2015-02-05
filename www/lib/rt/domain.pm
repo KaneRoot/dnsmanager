@@ -36,11 +36,11 @@ sub rt_dom_add {
     if(is_reserved($$param{domain})) {
         $$res{errmsg} = q{Le nom de domaine est réservé.};
     }
-    elsif ( ! is_domain_name $$param{domain} ) {
+    elsif ( ! is_domain_name($$param{domain}) ) {
         $$res{errmsg} = 
         q{Le nom de domaine entré contient des caractères invalides.};
     }
-    elsif ( ! is_valid_tld $$param{tld}) {
+    elsif ( ! is_valid_tld($$param{tld}) ) {
         $$res{errmsg} = 
         q{Vous avez entré un mauvais TLD.};
     }
