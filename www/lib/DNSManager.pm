@@ -15,6 +15,8 @@ use configuration ':all';
 use util ':all';
 use rt::root ':all';
 use rt::domain ':all';
+use rt::user ':all';
+use rt::admin ':all';
 use app;
 
 our $VERSION = '0.1';
@@ -32,12 +34,14 @@ sub what_is_next {
         session->destroy;
     }
 
-    unless($$res{params}{errmsg}) {
-        $$res{params}{errmsg} = get_errmsg;
+    $$res{params}{errmsg} //= get_errmsg;
+
+    for(keys %{$$res{addsession}}) {
+        session $_ => $$res{addsession}{$_};
     }
 
-    for(keys $$res{addsession}) {
-        session $_ => $$res{addsession}{$_};
+    for(keys %{$$res{delsession}}) {
+        session $_ => undef;
     }
 
     if($$res{route}) {
@@ -134,280 +138,56 @@ prefix '/domain' => sub {
 };
 
 any ['get', 'post'] => '/admin' => sub {
-
-    unless( session('login') )
-    {
-        redirect '/';
-        return;
-    }
-
-    my $app = initco();
-    my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-        session('password') );
-
-    unless ( $auth_ok && $isadmin ) {
-        session errmsg => q{Donnée privée, petit coquin. ;) };
-        redirect '/ ';
-        return;
-    }
-
-    my %alldomains = $app->get_all_domains;
-    my %allusers = $app->get_all_users;
-    my ($success, @domains) = $app->get_domains( session('login') );
-
-    template administration => {
-        login => session('login')
-        , admin => session('admin')
-        , errmsg => get_errmsg
-        , domains => [ @domains ]
-        , alldomains => { %alldomains }
-        , allusers => { %allusers } };
+    what_is_next rt_admin
+    get_session qw/login passwd/;
 };
 
 prefix '/user' => sub {
 
     get '/home' => sub {
-
-        unless( session('login') ) {
-            redirect '/';
-            return;
-        }
-
-        my $app = initco();
-
-        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-            session('password') );
-
-        unless( $auth_ok ) {
-            session errmsg => q/problème de connexion à votre compte/;
-            redirect '/';
-            return;
-        }
-
-        my ($success, @domains) = $app->get_domains( session('login') );
-
-        if( $success ) {
-
-            my $cs = session('creationSuccess');
-            my $dn = session('domainName');
-
-            session creationSuccess => '';
-            session domainName => '';
-
-            template home => {
-                login             => session('login')
-                , admin           => session('admin')
-                , domains         => [@domains]
-                , creationSuccess => $cs
-                , errmsg => get_errmsg
-                , domainName      => $dn  };
-
-        }
-        else {
-            session->destroy;
-            redirect '/ ';
-        }
-
+        what_is_next rt_user_home
+        get_session qw/login passwd/
+        , get_param qw//
+        , get_request qw//;
     };
-
 
     get '/logout' => sub {
         session->destroy;
         redirect '/';
     };
 
+    get '/del/:user' => sub {
+        what_is_next rt_user_del
+        get_session qw/login passwd/
+        , get_param qw/user/
+        , get_request qw/referer/;
+    };
+
     # add a user => registration
     post '/add/' => sub {
-
-        unless ( param('login') && param('password') && param('password2') ) {
-            session errmsg => q/Identifiant ou mot de passe non renseigné./;
-            redirect '/user/subscribe';
-            return;
-        }
-
-        unless ( param('password') eq param('password2')) {
-            session errmsg => q/Les mots de passes ne sont pas identiques./;
-            redirect '/user/subscribe';
-            return;
-        }
-
-        my $pass = encrypt(param('password'));
-
-        my $app = initco();
-        my ($success) = $app->register_user(param('login'), $pass);
-
-        if($success) {
-            session login => param('login');
-            session password => $pass;
-            redirect '/user/home';
-        }
-        else {
-            session errmsg => q/Ce pseudo est déjà pris./;
-            redirect '/user/subscribe';
-        }
-
+        what_is_next rt_user_add
+        get_session qw//
+        , get_param qw/login passord password2/
+        , get_request qw//;
     };
 
     get '/subscribe' => sub {
-
-        if( defined session('login') ) {
-            redirect '/user/home';
-        }
-        else {
-
-            template subscribe => {
-                errmsg => get_errmsg
-                , admin         => session('admin')
-            };
-        }
-
+        what_is_next rt_user_subscribe
+        get_session qw/login/;
     };
 
-    get '/unsetadmin/:user' => sub {
-
-        unless( defined param('user') ) {
-
-            session errmsg => "L'administrateur n'est pas défini." ;
-            redirect request->referer;
-            return;
-
-        }
-
-        if(! defined session('login') ) {
-
-            session errmsg => "Vous n'êtes pas connecté." ;
-            redirect '/';
-            return;
-        }
-
-        my $app = initco();
-
-        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-            session('password') );
-
-        unless ( $auth_ok && $isadmin ) {
-            session errmsg => q/Vous n'êtes pas administrateur./;
-        }
-        else {
-            $app->set_admin(param('user'), 0);
-        }
-
-        if( request->referer =~ "/admin" ) {
-            redirect request->referer;
-        }
-        else {
-            redirect '/';
-        }
-
-    };
-
-    get '/setadmin/:user' => sub {
-
-        unless( defined param('user') ) {
-
-            session errmsg => "L'utilisateur n'est pas défini." ;
-            redirect request->referer;
-            return;
-        }
-
-        if(! defined session('login') ) {
-
-            session errmsg => "Vous n'êtes pas connecté." ;
-            redirect '/';
-            return;
-        }
-
-        my $app = initco();
-
-        my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-            session('password') );
-
-        unless ( $auth_ok && $isadmin ) {
-            session errmsg => q/Vous n'êtes pas administrateur./;
-        }
-        else {
-            $app->set_admin(param('user'), 1);
-        }
-
-        if( request->referer =~ "/admin" ) {
-            redirect request->referer;
-        }
-        else {
-            redirect '/';
-        }
-
-    };
-
-    get '/del/:user' => sub {
-
-        if(defined param 'user') {
-
-            my $app = initco();
-
-            my ($auth_ok, $user, $isadmin) = $app->auth(session('login'),
-                session('password') );
-
-            if ( $auth_ok && $isadmin || session('login') eq param('user')) {
-                unless ( $app->delete_user(param('user'))) {
-                    session errmsg => "L'utilisateur " 
-                    . param 'user'
-                    . " n'a pas pu être supprimé.";
-                }
-            }
-        }
-        else {
-            session errmsg => q{Le nom d'utilisateur n'est pas renseigné.};
-        }
-
-        if( defined request->referer) {
-            redirect request->referer;
-        }
-        else {
-            redirect '/';
-        }
-
+    get '/toggleadmin/:user' => sub {
+        what_is_next rt_user_toggleadmin
+        get_session qw/login passwd/
+        , get_param qw/user/
+        , get_request qw/referer/;
     };
 
     post '/login' => sub {
-
-        # Check if user is already logged
-        unless ( session('login') )
-        {
-            # Check user login and password
-            if ( param('login') && param('password') )
-            {
-
-                my $app = initco();
-                my $pass = encrypt(param('password'));
-                my ($auth_ok, $user, $isadmin) = $app->auth(param('login'),
-                    $pass );
-
-                if( $auth_ok )
-                {
-
-                    session login => param('login');
-                    session password => $pass;
-                    session user  => freeze( $user );
-                    session admin => $isadmin;
-
-                    if( $isadmin ) {
-                        redirect '/admin';
-                        return;
-                    }
-
-                }
-                else
-                {
-
-                    session errmsg => q<Impossible de se connecter (login ou mot de passe incorrect).>;
-                    redirect '/';
-
-                }
-            }
-        }
-
-        redirect '/user/home';
-
+        what_is_next rt_user_login
+        get_session qw/login/
+        , get_param qw/login password/
+        , get_request qw/referer/;
     };
 };
 

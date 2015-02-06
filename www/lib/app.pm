@@ -65,9 +65,16 @@ sub auth {
     ${$self->um}->auth($login, $passwd);
 }
 
+# TODO die if there is a problem
 sub register_user {
     my ($self, $login, $passwd) = @_;
     ${$self->um}->register_user($login, $passwd);
+}
+
+# TODO
+sub toggle_admin {
+    my ($self, $login) = @_;
+    #${$self->um}->toggle_admin($login);
 }
 
 sub set_admin {
@@ -81,6 +88,7 @@ sub update_passwd {
     $user->passwd($new);
 }
 
+# TODO die if there is a problem
 sub delete_user {
     my ($self, $login) = @_;
     my ($success, @domains) = $self->get_domains($login);
@@ -101,6 +109,7 @@ sub _get_zone_edit {
         , data => $self );
 }
 
+# TODO die if there is a problem
 # return yes or no
 sub add_domain {
     my ($self, $login, $domain) = @_; 
@@ -118,6 +127,7 @@ sub add_domain {
     $ze->addzone();
 }
 
+# TODO die if there is a problem
 sub delete_domain {
     my ($self, $login, $domain) = @_; 
 

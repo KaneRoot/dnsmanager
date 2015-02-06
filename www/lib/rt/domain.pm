@@ -1,5 +1,6 @@
 package rt::domain;
 
+use v5.14;
 use configuration ':all';
 use encryption ':all';
 use app;
@@ -7,6 +8,10 @@ use app;
 use Exporter 'import';
 # what we want to export eventually
 our @EXPORT_OK = qw/
+rt_dom_cli_mod_entry
+rt_dom_mod_entry
+rt_dom_del_entry
+rt_dom_del
 rt_dom_add
 rt_dom_details
 rt_dom_update
@@ -15,10 +20,14 @@ rt_dom_updateraw
 
 # bundle of exports (tags)
 our %EXPORT_TAGS = ( all => [qw/
-        rt_dom_add
-        rt_dom_details
-        rt_dom_update
-        rt_dom_updateraw
+rt_dom_cli_mod_entry
+rt_dom_mod_entry
+rt_dom_del_entry
+rt_dom_del
+rt_dom_add
+rt_dom_details
+rt_dom_update
+rt_dom_updateraw
         /] ); 
 
 sub rt_dom_cli_mod_entry {
@@ -52,7 +61,7 @@ sub rt_dom_cli_mod_entry {
             , newpriority   => ''
         });
 
-    say "OK"; # TODO remove this, debug
+    say 'OK'; # TODO remove this, debug
     $res;
 }
 
@@ -71,7 +80,7 @@ sub rt_dom_mod_entry {
         return $res;
     }
 
-    unless( $$session{user} and defined $$param{domain} ) {
+    unless( $$param{domain} ) {
         $$session{errmsg} = q<Domaine non renseigné.>;
         $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
         return $res;
@@ -114,8 +123,8 @@ sub rt_dom_del_entry {
         return $res;
     }
 
-    unless( $session{user} and defined $param{domain} ) {
-        $$res{errmsg} = q<Domaine non renseigné.>;
+    unless( $$param{domain} ) {
+        $$res{errmsg} = q{Domaine non renseigné.};
         $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
         return $res;
     }
@@ -159,10 +168,12 @@ sub rt_dom_del {
         return $res;
     }
 
-    my $success = $app->delete_domain($session{login}, $param{domain});
+    eval { $app->delete_domain($$session{login}, $$param{domain}); } ;
 
-    unless($success) {
-        $$res{errmsg} = q{Impossible de supprimer le domaine.};
+    if($@) {
+        $$res{errmsg} = q{Impossible de supprimer le domaine. } . $@;
+        $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+        return $res;
     }
 
     if( $$request{referer} =~ "/domain/details" ) {
@@ -255,7 +266,7 @@ sub rt_dom_details {
     };
 
     if($$param{expert}) {
-        $$res{params}{expert} = true;
+        $$res{params}{expert} = 1;
     }
     else {
         $$res{params}{a}        = $zone->a();
