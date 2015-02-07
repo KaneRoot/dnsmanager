@@ -23,17 +23,18 @@ sub rt_admin {
         return $res;
     }
 
-    my %alldomains = $app->get_all_domains;
-    my %allusers = $app->get_all_users;
-    my ($success, @domains) = $app->get_domains( $$session{login} );
+    my $alldomains = $app->get_all_domains;
+    my $allusers = $app->get_all_users;
+    my $domains = $app->get_domains( $$session{login} );
 
     $$res{template} = 'administration'; 
     $$res{params} = {
         login => $$session{login}
         , admin => 1 # we know it, or we couldn't reach this
-        , domains => [ @domains ]
-        , alldomains => { %alldomains }
-        , allusers => { %allusers } };
+        , domains => $domains
+        , alldomains => $alldomains
+        , allusers => $allusers 
+    };
 
     $res;
 }

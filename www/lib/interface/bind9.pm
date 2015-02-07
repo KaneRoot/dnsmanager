@@ -4,23 +4,29 @@ use Moo;
 
 has [ qw/data/ ] => qw/is ro required 1/;
 
-# on suppose que tout est déjà mis à jour dans le fichier
 sub reload {
-    my ($self, $zname) = @_;
-    system("rndc reload $zname 2>/dev/null 1>/dev/null");
-    system("rndc notify $zname 2>/dev/null 1>/dev/null");
+    my ($self, $domain) = @_;
+    system("rndc reload $domain 2>/dev/null 1>/dev/null");
+    system("rndc notify $domain 2>/dev/null 1>/dev/null");
 }
 
 sub addzone {
-    my ($self, $zdir, $zname, $opt) = @_;
+    my ($self, $zdir, $domain, $opt) = @_;
 
-    my $command = "rndc addzone $zname ";
+    my $command = "rndc addzone $domain ";
 
     if(defined $opt) {
         $command .= "'$opt'";
     }
     else {
-        $command .= "'{ type master; file \"$zdir/$zname\"; allow-transfer { ". $self->data->nsslavev4 . '; '. $self->data->nsslavev6 . "; }; notify yes; };'";
+
+        $command .= "'{ type master; file \"$zdir/$domain\"; allow-transfer { ";
+        my $sec = $$self{data}{secondarydnsserver};
+        for(@$sec) {
+            $command .= $$_{domain}{v4} . '; ' if $$_{domain}{v4}; 
+            $command .= $$_{domain}{v6} . '; ' if $$_{domain}{v6};
+        }
+        . " }; notify yes; };'";
     }
 
     $command .= " 2>/dev/null 1>/dev/null";
@@ -29,13 +35,13 @@ sub addzone {
 }
 
 sub reconfig {
-    my ($self, $zname) = @_;
+    my ($self, $domain) = @_;
     system("rndc reconfig 2>/dev/null 1>/dev/null");
 }
 
 sub delzone {
-    my ($self, $zdir, $zname) = @_;
-    system("rndc delzone $zname 2>/dev/null 1>/dev/null");
+    my ($self, $zdir, $domain) = @_;
+    system("rndc delzone $domain 2>/dev/null 1>/dev/null");
 }
 
 1;

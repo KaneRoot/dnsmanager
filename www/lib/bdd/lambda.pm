@@ -1,4 +1,4 @@
-package bdd::lambda;
+package bdd::user;
 use Moo;
 use v5.14;
 use autodie;
@@ -7,11 +7,12 @@ use DBI;
 use lib '../../';
 use Data::Dump "dump";
 
-
 has qw/domains is rw/;
 has [ qw/login dbh/ ] => qw/is ro required 1/;
 has passwd => (is => 'rw', trigger => \&_update_passwd );
 #has qw/dbh is ro required 1/; # database handler
+
+sub is_admin { 0 }
 
 # $success delete_domain
 sub delete_domain {
@@ -19,18 +20,19 @@ sub delete_domain {
     my $sth;
 
     # check if we are the owner then delete
-    return 0 if (grep { $domain eq $_ } @{ $self->domains }) == 0;
+    if ((grep { $domain eq $_ } @{ $self->domains }) == 0) {
+        die "The user $self->login don't have the domain $domain.";
+    }
 
     $sth = $self->dbh->prepare('delete from domain where domain=?');
     unless ( $sth->execute($domain) ) {
         $sth->finish();
-        return 0;
+        die "Impossible to delete the $domain of the user $self->login.";
     }
 
     $sth->finish();
     # delete the domain from our domains
     @{ $self->domains } = grep { $_ ne $domain } @{ $self->domains };
-    return 1;
 }
 
 
@@ -42,24 +44,23 @@ sub add_domain {
     $sth = $self->dbh->prepare('select domain from domain where domain=?');
     unless ( $sth->execute($domain) ) {
         $sth->finish();
-        return 0;
+        die 'Impossible to search if the domain already exists.';
     }
 
     # if the domain already exists
     if (my $ref = $sth->fetchrow_arrayref) {
         $sth->finish();
-        return 0;
+        die 'The domain already exists.';
     }
 
     $sth = $self->dbh->prepare('insert into domain VALUES(?,?,?)');
     unless ( $sth->execute($domain, $self->login, 0) ) {
         $sth->finish();
-        return 0;
+        die 'Impossible to add a domain.';
     }
 
     $sth->finish();
     push @{ $self->domains }, $domain;
-    return 1;
 }
 
 sub _update_passwd {
@@ -69,10 +70,9 @@ sub _update_passwd {
     $sth = $self->dbh->prepare('update user set passwd=? where login=?');
     unless ( $sth->execute($new, $self->login) ) {
         $sth->finish();
-        return 0;
+        die q{The password can't be updated.};
     }
     $sth->finish();
-    return 1;
 }
 
 1;

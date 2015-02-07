@@ -4,14 +4,17 @@ use DBI;
 use Moo;
 
 use getiface ':all';
-
 use db;
-use bdd::admin;
-use bdd::lambda;
 
+# db handler
 has dbh => ( is => 'rw', builder => '_void');
+
+# primary dns interface 
 has dnsi => ( is => 'rw', builder => '_void_arr');
+
+# dns interface for secondary name servers
 has dnsisec => ( is => 'rw', builder => '_void');
+
 has um => ( is => 'rw', builder => '_void');
 has [qw/tmpdir database primarydnsserver secondarydnsserver/] 
 => qw/is ro required 1/;
@@ -20,21 +23,18 @@ sub _void_arr { [] }
 
 ### users
 
-sub init_dns_servers {
+sub get_dns_server_interfaces {
     my ($self, $primary, @secondaries) = @_;
 
-    my $primary_dns_server = getiface($primary, { data => $self });
-    die("zone interface") unless defined $primary_dns_server;
+    my $prim = getiface($$primary{app}, { mycfg => $primary, data => $self });
 
-    my @sec_dns_servers = ();
+    my $sec = [];
     for(@secondaries) {
         my $x = @$_[0];
-        my $sec_dns_server = getiface($$x{app}, { data => $self });
-        die("zone interface (secondary ns)") unless defined $sec_dns_server;
-        push @sec_dns_servers, $sec_dns_server;
+        push @$sec, getiface($$x{app}, { mycfg => $x, data => $self });
     }
 
-    ($primary_dns_server, @sec_dns_servers);
+    ($prim, $sec);
 }
 
 sub BUILD {
@@ -42,123 +42,85 @@ sub BUILD {
 
     my $db = $self->database;
 
-    my $dsn = 'dbi:' . $$db{sgbd}
-    . ':database=' . $$db{name}
-    . ';host=' .  $$db{host}
-    . ';port=' . $$db{port};
+    my $dsn = "dbi:$$db{sgbd}:database=$$db{name};"
+    . "host=$$db{host};port=$$db{port}";
 
-    ${$self->dbh} = DBI->connect($dsn, $$db{user}, $$db{pass}) 
+    $$self{dbh} = DBI->connect($dsn, $$db{user}, $$db{pass}) 
     || die "Could not connect to database: $DBI::errstr"; 
 
-    my ($primary_dns_server, @sec_dns_servers) = 
-    $self->init_dns_servers($$self{primarydnsserver}{app}, @$self{secondarydnsserver});
+    my ($primary_dns_server, $sec_dns_servers) = 
+    $self->get_dns_server_interfaces(
+        $$self{primarydnsserver}
+        , @$self{secondarydnsserver});
 
-    ${$self->dnsi} = $primary_dns_server;
-    push @{$$self{dnsisec}}, @sec_dns_servers;
+    $$self{dnsi} = $primary_dns_server;
+    $$self{dnsisec} = $sec_dns_servers;
 
-    ${$self->um} = db->new(dbh => ${$self->dbh});
+    $$self{um} = db->new(dbh => $$self{dbh});
 }
 
-# TODO it has to send the user if the auth is ok
 sub auth {
     my ($self, $login, $passwd) = @_;
     ${$self->um}->auth($login, $passwd);
 }
 
-# TODO die if there is a problem
 sub register_user {
     my ($self, $login, $passwd) = @_;
     ${$self->um}->register_user($login, $passwd);
 }
 
-# TODO
 sub toggle_admin {
     my ($self, $login) = @_;
-    #${$self->um}->toggle_admin($login);
-}
-
-sub set_admin {
-    my ($self, $login, $val) = @_;
-    ${$self->um}->set_admin($login, $val);
+    ${$self->um}->toggle_admin($login);
 }
 
 sub update_passwd {
     my ($self, $login, $new) = @_;
-    my ($success, $user, $isadmin) = ${$self->um}->get_user($login);
+    my $user = ${$self->um}->get_user($login);
     $user->passwd($new);
 }
 
-# TODO die if there is a problem
 sub delete_user {
     my ($self, $login) = @_;
-    my ($success, @domains) = $self->get_domains($login);
-
-    if($success) {
-        $self->delete_domain($login, $_) foreach(@domains);
-        ${$self->um}->delete_user($login);
-    }
+    my $domains = $self->get_domains($login);
+    $self->delete_domain($login, $_) foreach(@$domains);
+    ${$self->um}->delete_user($login);
 }
 
 ### domains 
 
-sub _get_zone_edit {
+sub _get_zone {
     my ($self, $domain) = @_; 
-
-    return zone->new(
-        zname => $domain
-        , data => $self );
+    zone->new( domain => $domain, data => $self );
 }
 
-# TODO die if there is a problem
-# return yes or no
 sub add_domain {
     my ($self, $login, $domain) = @_; 
-    my ($success, $user, $isadmin) = ${$self->um}->get_user($login);
-
-    unless($success) {
-        return 0;
-    }
-
-    unless ($user->add_domain($domain)) {
-        return 0;
-    }
-
-    my $ze = $self->_get_zone_edit($domain);
-    $ze->addzone();
+    my $user = ${$self->um}->get_user($login);
+    $user->add_domain($domain);
+    $self->_get_zone($domain)->addzone();
 }
 
-# TODO die if there is a problem
 sub delete_domain {
     my ($self, $login, $domain) = @_; 
-
-    my ($success, $user, $isadmin) = ${$self->um}->get_user($login);
-
-    return 0 unless $success;
-    return 0 unless $user->delete_domain($domain);
-
-    my $ze = $self->_get_zone_edit($domain);
-    $ze->del();
-
-    1;
+    my $user = ${$self->um}->get_user($login);
+    $user->delete_domain($domain);
+    $self->_get_zone($domain)->del();
 }
 
 sub update_domain_raw {
     my ($self, $zone, $domain) = @_; 
-
-    my $ze = $self->_get_zone_edit($domain);
-    $ze->update_raw($zone);
+    $self->_get_zone($domain)->update_raw($zone);
 }
 
 sub update_domain {
     my ($self, $zone, $domain) = @_; 
-    my $ze = $self->_get_zone_edit($domain);
-    $ze->update($zone);
+    $self->_get_zone($domain)->update($zone);
 }
 
 sub get_domain {
     my ($self, $domain) = @_; 
-    my $ze = $self->_get_zone_edit($domain);
-    $ze->get();
+    $self->_get_zone($domain)->get();
 }
 
 sub get_domains {
@@ -180,8 +142,7 @@ sub get_all_users {
 
 sub new_tmp {
     my ($self, $domain) = @_; 
-    my $ze = $self->_get_zone_edit($domain);
-    $ze->new_tmp();
+    $self->_get_zone($domain)->new_tmp();
 }
 
 sub _is_same_record {
@@ -204,8 +165,8 @@ sub _get_records {
         elsif   ($_ eq 'mx')     { return $zone->mx;    }
         elsif   ($_ eq 'ptr')    { return $zone->ptr;   }
     }
-    
-    undef;
+
+    die 'Impossible to get the entry type.';
 }
 
 sub delete_entry {

@@ -10,17 +10,17 @@ use zonefile;
 use Modern::Perl;
 use Data::Dump "dump";
 
-has [ qw/tmpdir data/ ] => qw/is ro required 1/;
+has [ qw/domain data/ ] => qw/is ro required 1/;
 
 # TODO all this file is to redesign
 sub get {
     my ($self) = @_;
-    my $dest = $self->tmpdir . '/' . $self->zname;
-    my $file = $self->data->zdir.'/'.$self->zname;
+    my $dest = $$self{data}{tmpdir} . '/' . $$self{domain};
+    my $file = $$self{data}{dnsi}{zdir} . '/'. $$self{domain};
 
-    $self->_scp_get($file, $dest);
+    copycat($file, $dest);
 
-    #zonefile->new(domain => $domain, zonefile => $dest);
+    zonefile->new(domain => $$self{domain}, zonefile => $dest);
 }
 
 =pod
@@ -33,8 +33,8 @@ sub get {
 sub addzone {
     my ($self) = @_;
 
-    my $tpl = $self->data->zdir."/tpl.zone";
-    my $tmpfile = $self->tmpdir . '/' . $self->zname;
+    my $tpl = $$self{data}{dnsi}{zdir}."/tpl.zone";
+    my $tmpfile = $$self{data}{tmpdir} . '/' . $$self{domain};
 
     $self->_scp_get($tpl, $tmpfile); # get the template
     $self->_sed($tmpfile); # sed CHANGEMEORIGIN by the real origin
@@ -48,18 +48,18 @@ sub addzone {
     #print $newzone $zonefile->output();
     close $newzone;
 
-    my $file = $self->data->zdir.'/'.$self->zname;
+    my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
     $self->_scp_put($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
     # add new zone on the primary ns
     my $prim = zone::interface->new()
-    ->get_interface($self->data->dnsapp, $self->data);
-    $prim->addzone($self->data->zdir, $self->zname);
+    ->get_interface($$self{data}{dnsapp}, $self->data);
+    $prim->addzone($$self{data}{dnsi}{zdir}, $$self{domain});
 
     # add new zone on the secondary ns
     my $sec = zone::interface->new()
-    ->get_interface($self->data->dnsappsec, $self->data);
+    ->get_interface($$self{data}{dnsappsec}, $self->data);
     $sec->reload_sec();
 
     #return $zonefile;
@@ -76,7 +76,7 @@ sub update {
     # update the serial number
     $zonefile->new_serial();
 
-    my $tmpfile = $self->tmpdir . '/' . $self->zname;
+    my $tmpfile = $$self{data}{tmpdir} . '/' . $$self{domain};
 
     # write the new zone tmpfile to disk 
     my $newzone;
@@ -84,13 +84,13 @@ sub update {
     print $newzone $zonefile->output();
     close $newzone;
 
-    my $file = $self->data->zdir.'/'.$self->zname;
+    my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
     $self->_scp_put($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
     my $prim = zone::interface->new()
     ->get_interface($self->data->dnsapp, $self->data);
-    $prim->reload($self->zname);
+    $prim->reload($$self{domain});
 }
 
 =pod
@@ -101,7 +101,7 @@ sub update_raw {
     my ($self, $zonetext) = @_;
 
     my $zonefile;
-    my $file = $self->tmpdir . '/' . $self->zname;
+    my $file = $$self{data}{tmpdir} . '/' . $$self{domain};
 
     # write the updated zone file to disk 
     my $newzone;
@@ -110,7 +110,7 @@ sub update_raw {
     close $newzone;
 
     eval { $zonefile = zonefile->new(zonnefile => $file
-            , domain => $self->zname); };
+            , domain => $$self{domain}); };
 
     if( $@ ) {
         unlink($file);
@@ -126,13 +126,13 @@ sub update_raw {
 sub new_tmp {
     my ($self) = @_;
 
-    my $tpl = $self->data->zdir . "/tpl.zone";
-    my $file = $self->tmpdir . '/' . $self->zname;
+    my $tpl = $$self{data}{dnsi}{zdir} . "/tpl.zone";
+    my $file = $$self{data}{tmpdir} . '/' . $$self{domain};
 
     $self->_scp($tpl, $file);
     $self->_sed($file);
 
-    my $zonefile = zonefile->new(zonefile => $file, domain => $self->zname);
+    my $zonefile = zonefile->new(zonefile => $file, domain => $$self{domain});
     $zonefile->new_serial(); # update the serial number
 
     unlink($file);
@@ -142,7 +142,7 @@ sub new_tmp {
 
 sub _sed {
     my ($self, $file) = @_;
-    my $orig = $self->zname;
+    my $orig = $$self{domain};
     my $cmd = qq[sed -i "s/CHANGEMEORIGIN/$orig/" $file 2>/dev/null 1>/dev/null];
 
     system($cmd);
@@ -150,19 +150,20 @@ sub _sed {
 
 sub del {
     my ($self) = @_;
-    my $prim = getiface $self->data->dnsapp, {data => $self->data };
-    $prim->delzone($self->data->zdir, $self->zname);
+    my $prim = $$self{data}{dnsi};
+    $prim->delzone($$prim{zdir}, $$self{domain});
     $prim->reconfig();
 
-    my $sec = getiface $self->data->dnsappsec, {data => $self->data };
+    my $sec = $$self{data}{dnsisec};
     $sec->reload_sec();
 
-    my $file = $self->data->zdir.'/'.$self->zname;
-    my $host = $self->data->sshhost;
-    my $user = $self->data->sshuser;
+    # TODO not ok right now (URI not path)
+    my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
+    my $host = $$self{data}{ssh}{host};
+    my $user = $$self{data}{ssh}{user};
     my $cmd = "rm $file";
 
-    #remotecmd $user, $host, $port, $cmd;
+    remotecmd $user, $host, $port, $cmd;
 }
 
 1;

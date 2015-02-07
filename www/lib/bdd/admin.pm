@@ -1,18 +1,10 @@
 package bdd::admin;
 use Moo;
-extends 'bdd::lambda';
+extends 'bdd::user';
 
-# ($success) activate_zone($domain)
-sub activate_zone {
-    my ($self, $domain) = @_; 
-}
+sub is_admin { 1 }
 
-# ($success) delete_zone($file_path)
-sub delete_zone {
-    my ($self, $domain) = @_;
-}
-
-# $success delete_domain
+# delete_domain
 sub delete_domain {
     my ($self, $domain) = @_;
     my $sth;
@@ -20,7 +12,6 @@ sub delete_domain {
     $sth = $self->dbh->prepare('delete from domain where domain=?');
     unless ( $sth->execute($domain) ) {
         $sth->finish();
-        return 0;
     }
 
     $sth->finish();
@@ -28,6 +19,5 @@ sub delete_domain {
     @{ $self->domains } = grep { $_ ne $domain } @{ $self->domains };
     return 1;
 }
-
 
 1;
