@@ -4,6 +4,7 @@ use Moo;
 
 use getiface ':all';
 use copycat ':all';
+use fileutil ':all';
 
 use zonefile;
 
@@ -15,10 +16,10 @@ has [ qw/domain data/ ] => qw/is ro required 1/;
 # TODO all this file is to redesign
 sub get {
     my ($self) = @_;
-    my $dest = $$self{data}{tmpdir} . '/' . $$self{domain};
     my $file = $$self{data}{dnsi}{zdir} . '/'. $$self{domain};
+    my $dest = $$self{data}{tmpdir} . '/' . $$self{domain};
 
-    copycat($file, $dest);
+    copycat ($file, $dest);
 
     zonefile->new(domain => $$self{domain}, zonefile => $dest);
 }
@@ -36,20 +37,18 @@ sub addzone {
     my $tpl = $$self{data}{dnsi}{zdir}."/tpl.zone";
     my $tmpfile = $$self{data}{tmpdir} . '/' . $$self{domain};
 
-    $self->_scp_get($tpl, $tmpfile); # get the template
-    $self->_sed($tmpfile); # sed CHANGEMEORIGIN by the real origin
+    copycat ($tpl, $tmpfile); # get the template
 
-    #my $zonefile = zonefile->new(zonefile => $tmpfile, domain => $domain);
-    #$zonefile->new_serial(); # update the serial number
+    mod_orig_template ($tmpfile, $$self{domain}); # sed CHANGEMEORIGIN by the real origin
+
+    my $zonefile = zonefile->new(zonefile => $tmpfile, domain => $$self{domain});
+    $zonefile->new_serial(); # update the serial number
 
     # write the new zone tmpfile to disk 
-    my $newzone;
-    open($newzone, '>', $tmpfile) or die "error";
-    #print $newzone $zonefile->output();
-    close $newzone;
+    write_file $tmpfile, $zonefile->output();
 
     my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
-    $self->_scp_put($tmpfile, $file); # put the final zone on the server
+    copycat ($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
     # add new zone on the primary ns
@@ -79,13 +78,10 @@ sub update {
     my $tmpfile = $$self{data}{tmpdir} . '/' . $$self{domain};
 
     # write the new zone tmpfile to disk 
-    my $newzone;
-    open($newzone, '>', $tmpfile) or die "error";
-    print $newzone $zonefile->output();
-    close $newzone;
+    write_file $tmpfile, $zonefile->output();
 
     my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
-    $self->_scp_put($tmpfile, $file); # put the final zone on the server
+    copycat ($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
     my $prim = zone::interface->new()
@@ -104,10 +100,7 @@ sub update_raw {
     my $file = $$self{data}{tmpdir} . '/' . $$self{domain};
 
     # write the updated zone file to disk 
-    my $newzone;
-    open($newzone, '>', $file) or die "error";
-    print $newzone $zonetext;
-    close $newzone;
+    write_file $file, $zonetext;
 
     eval { $zonefile = zonefile->new(zonnefile => $file
             , domain => $$self{domain}); };
@@ -129,8 +122,8 @@ sub new_tmp {
     my $tpl = $$self{data}{dnsi}{zdir} . "/tpl.zone";
     my $file = $$self{data}{tmpdir} . '/' . $$self{domain};
 
-    $self->_scp($tpl, $file);
-    $self->_sed($file);
+    copycat ($tpl, $file);
+    mod_orig_template ($file, $$self{domain});
 
     my $zonefile = zonefile->new(zonefile => $file, domain => $$self{domain});
     $zonefile->new_serial(); # update the serial number
@@ -140,11 +133,10 @@ sub new_tmp {
     return $zonefile;
 }
 
-sub _sed {
-    my ($self, $file) = @_;
-    my $orig = $$self{domain};
-    my $cmd = qq[sed -i "s/CHANGEMEORIGIN/$orig/" $file 2>/dev/null 1>/dev/null];
-
+# change the origin in a zone file template
+sub mod_orig_template {
+    my ($self, $file, $domain) = @_;
+    my $cmd = qq[sed -i "s/CHANGEMEORIGIN/$domain/" $file 2>/dev/null 1>/dev/null];
     system($cmd);
 }
 
@@ -159,8 +151,9 @@ sub del {
 
     # TODO not ok right now (URI not path)
     my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
-    my $host = $$self{data}{ssh}{host};
-    my $user = $$self{data}{ssh}{user};
+    my $host = $$self{data}{primarydnsserver}{host};
+    my $user = $$self{data}{primarydnsserver}{user};
+    my $port = $$self{data}{primarydnsserver}{port};
     my $cmd = "rm $file";
 
     remotecmd $user, $host, $port, $cmd;

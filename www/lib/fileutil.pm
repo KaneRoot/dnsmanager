@@ -23,11 +23,10 @@ sub read_file {
 sub write_file {
     my ($filename, $data) = @_;
 
-    open my $sortie, '>:encoding(UTF-8)', $filename or die "Impossible d'ouvrir '$filename' en écriture : $!";
+    open my $sortie, '>:encoding(UTF-8)', $filename or 
+    die "Impossible d'ouvrir '$filename' en écriture : $!";
     print $sortie $data;
     close $sortie;
-
-    return;
 }
 
 1;
