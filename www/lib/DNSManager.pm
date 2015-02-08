@@ -45,10 +45,20 @@ sub what_is_next {
     }
 
     if($$res{route}) {
-        redirect $$res{route} => $$res{params};
+        if($$res{params}) {
+            redirect $$res{route} => $$res{params};
+        }
+        else {
+            redirect $$res{route};
+        }
     }
     elsif($$res{template}) {
-        template $$res{template} => $$res{params};
+        if($$res{params}) {
+            template $$res{template} => $$res{params};
+        }
+        else {
+            template $$res{template};
+        }
     }
     # TODO route problem
 }
@@ -80,76 +90,76 @@ sub get_session {
 
 get '/' => sub { 
     what_is_next rt_root 
-    get_session qw/login passwd/;
+    get_session( qw/login passwd/ );
 };
 
 prefix '/domain' => sub {
 
     any ['post', 'get'] => '/updateraw/:domain' => sub {
         what_is_next rt_dom_updateraw 
-        get_session qw/login passwd/
-        , get_param qw/domain zoneupdated/; # TODO verify this
+        get_session( qw/login passwd/ )
+        , get_param( qw/domain zoneupdated/ ); # TODO verify this
     };
 
     any ['post', 'get'] => '/update/:domain' => sub {
         what_is_next rt_dom_update
-        get_session qw/login passwd/
-        , get_param qw/type name value ttl priority domain/;
+        get_session( qw/login passwd/ )
+        , get_param( qw/type name value ttl priority domain/ );
     };
 
     get '/details/:domain' => sub {
         what_is_next rt_dom_details
-        get_session qw/login passwd/
-        , get_param qw/domain expert/
-        , get_request qw/address referer/;
+        get_session( qw/login passwd/ )
+        , get_param( qw/domain expert/ )
+        , get_request( qw/address referer/ );
     };
 
     post '/add/' => sub {
         what_is_next rt_dom_add
-        get_session qw/login passwd/
-        , get_param qw/domain tld/;
+        get_session( qw/login passwd/ )
+        , get_param( qw/domain tld/ );
     };
 
     get '/del/:domain' => sub {
         what_is_next rt_dom_del
-        get_session qw/login passwd/
-        , get_param qw/domain/
-        , get_request qw/address referer/;
+        get_session( qw/login passwd/ )
+        , get_param( qw/domain/ )
+        , get_request( qw/address referer/ );
     };
 
     get '/del/:domain/:name/:type/:host/:ttl' => sub {
         what_is_next rt_dom_del_entry
-        get_session qw/login passwd/
-        , get_param qw/domain name type host ttl/
-        , get_request qw/address referer/;
+        get_session( qw/login passwd/ )
+        , get_param( qw/domain name type host ttl/ )
+        , get_request( qw/address referer/ );
     };
 
     get '/mod/:domain/:name/:type/:host/:ttl' => sub {
         what_is_next rt_dom_mod_entry
-        get_session qw/login passwd/
-        , get_param qw/domain name type host ttl/
-        , get_request qw/address referer/;
+        get_session( qw/login passwd/ )
+        , get_param( qw/domain name type host ttl/ )
+        , get_request( qw/address referer/ );
     };
 
     get '/cli/:login/:pass/:domain/:name/:type/:host/:ttl/:ip' => sub {
         what_is_next rt_dom_cli_mod_entry
-        get_session qw/login/
-        , get_param qw/passwd domain name type host ttl ip/;
+        get_session( qw/login/ )
+        , get_param( qw/passwd domain name type host ttl ip/ );
     };
 };
 
 any ['get', 'post'] => '/admin' => sub {
     what_is_next rt_admin
-    get_session qw/login passwd/;
+    get_session( qw/login passwd/ );
 };
 
 prefix '/user' => sub {
 
     get '/home' => sub {
         what_is_next rt_user_home
-        get_session qw/login passwd/
-        , get_param qw//
-        , get_request qw//;
+        get_session( qw/login passwd/ )
+        , get_param( qw// )
+        , get_request( qw// );
     };
 
     get '/logout' => sub {
@@ -159,36 +169,36 @@ prefix '/user' => sub {
 
     get '/del/:user' => sub {
         what_is_next rt_user_del
-        get_session qw/login passwd/
-        , get_param qw/user/
-        , get_request qw/referer/;
+        get_session( qw/login passwd/ )
+        , get_param( qw/user/ )
+        , get_request( qw/referer/ );
     };
 
     # add a user => registration
     post '/add/' => sub {
         what_is_next rt_user_add
-        get_session qw//
-        , get_param qw/login passord password2/
-        , get_request qw//;
+        get_session( qw// )
+        , get_param( qw/login passord password2/ )
+        , get_request( qw// );
     };
 
     get '/subscribe' => sub {
         what_is_next rt_user_subscribe
-        get_session qw/login/;
+        get_session( qw/login/ );
     };
 
     get '/toggleadmin/:user' => sub {
         what_is_next rt_user_toggleadmin
-        get_session qw/login passwd/
-        , get_param qw/user/
-        , get_request qw/referer/;
+        get_session( qw/login passwd/ )
+        , get_param( qw/user/ )
+        , get_request( qw/referer/ );
     };
 
     post '/login' => sub {
         what_is_next rt_user_login
-        get_session qw/login/
-        , get_param qw/login password/
-        , get_request qw/referer/;
+        get_session( qw/login/ )
+        , get_param( qw/login password/ )
+        , get_request( qw/referer/ );
     };
 };
 
