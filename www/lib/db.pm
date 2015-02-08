@@ -26,7 +26,7 @@ sub BUILD {
     my $dsn = "dbi:$$db{sgbd}:database=$$db{name};"
     . "host=$$db{host};port=$$db{port}";
 
-    $$self{dbh} = DBI->connect($dsn, $$db{user}, $$db{pass}) 
+    $$self{dbh} = DBI->connect($dsn, $$db{user}, $$db{passwd}) 
     || die "Could not connect to database: $DBI::errstr"; 
 
 }
