@@ -21,7 +21,7 @@ sub BUILD {
 
 sub auth {
     my ($self, $login, $passwd) = @_;
-    ${$self->db}->auth($login, $passwd);
+    $self->db->auth($login, $passwd);
 }
 
 sub register_user {
