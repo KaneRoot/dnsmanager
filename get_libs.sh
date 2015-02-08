@@ -5,7 +5,7 @@ sudo apt-get install libssl1.0.0 libssl-dev cpanminus make gcc
 
 ## En attendant de faire de vrais paquets pour l'application
 
-cpanm YAML
+cpanm YAML::XS
 cpanm Data::Dump 
 cpanm File::Basename 
 cpanm Find::Lib 
@@ -17,7 +17,6 @@ cpanm Config::Simple
 cpanm Crypt::Digest::SHA256
 cpanm Dancer::Session::Storable
 
-cpanm Moose
 cpanm Template
 cpanm Template::Toolkit
 cpanm Dancer 
