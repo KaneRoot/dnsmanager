@@ -41,7 +41,7 @@ sub is_conf_file {
 sub get_cfg {
     my ($cfgdir) = @_;
 
-    $cfgdir //= '../conf/';
+    $cfgdir //= './conf/';
     my $f = "$cfgdir/config.yml";
 
     is_conf_file $f;
