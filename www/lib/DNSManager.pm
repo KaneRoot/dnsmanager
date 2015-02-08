@@ -50,6 +50,7 @@ sub what_is_next {
     elsif($$res{template}) {
         template $$res{template} => $$res{params};
     }
+    # TODO route problem
 }
 
 sub get_param {
@@ -78,8 +79,8 @@ sub get_session {
 }
 
 get '/' => sub { 
-    what_is_next 
-    rt_root session('login') , session('passwd'); 
+    what_is_next rt_root 
+    get_session qw/login passwd/;
 };
 
 prefix '/domain' => sub {

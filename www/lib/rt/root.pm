@@ -11,7 +11,7 @@ our @EXPORT_OK = qw/rt_root/;
 our %EXPORT_TAGS = ( all => [qw/rt_root/] ); 
 
 sub rt_root {
-    my ($session, $param) = @_;
+    my ($session) = @_;
     my $res;
 
     $$res{template} = 'index';

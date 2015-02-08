@@ -4,7 +4,6 @@ use v5.14;
 use File::Copy;
 use URI;
 use Net::OpenSSH;
-use Net::SSH q<sshopen2>;
 
 use Exporter 'import';
 # what we want to export eventually

@@ -34,15 +34,9 @@ sub toggle_admin {
     ${$self->db}->toggle_admin($login);
 }
 
-sub update_passwd {
-    my ($self, $login, $new) = @_;
-    my $user = ${$self->db}->get_user($login);
-    $user->passwd($new);
-}
-
 sub delete_user {
     my ($self, $login) = @_;
-    my $domains = $self->get_domains($login);
+    my $domains = ${$self->db}->get_domains($login);
     $self->delete_domain($login, $_) foreach(@$domains);
     ${$self->db}->delete_user($login);
 }
@@ -55,15 +49,13 @@ sub _get_zone {
 }
 
 sub add_domain {
-    my ($self, $login, $domain) = @_; 
-    my $user = ${$self->db}->get_user($login);
+    my ($self, $user, $domain) = @_; 
     $user->add_domain($domain);
     $self->_get_zone($domain)->addzone();
 }
 
 sub delete_domain {
-    my ($self, $login, $domain) = @_; 
-    my $user = ${$self->db}->get_user($login);
+    my ($self, $user, $domain) = @_; 
     $user->delete_domain($domain);
     $self->_get_zone($domain)->del();
 }
@@ -91,11 +83,6 @@ sub update_domain {
 sub get_domain {
     my ($self, $domain) = @_; 
     $self->_get_zone($domain)->get();
-}
-
-sub get_domains {
-    my ($self, $login) = @_; 
-    ${$self->db}->get_domains($login);
 }
 
 sub get_all_domains {
