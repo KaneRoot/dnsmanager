@@ -5,12 +5,22 @@ use URI;
 use fileutil ':all';
 use Exporter 'import';
 # what we want to export eventually
-our @EXPORT_OK = qw/get_cfg is_reserved get_zpath_from_primary_server/;
+our @EXPORT_OK = qw/
+get_cfg is_reserved 
+get_zonedir_from_cfg
+get_host_from_cfg
+get_user_from_cfg
+get_port_from_cfg
+/;
 
 # bundle of exports (tags)
 our %EXPORT_TAGS = ( all => [qw/get_cfg 
         is_reserved 
-        get_zpath_from_primary_server/] ); 
+        get_zonedir_from_cfg
+        get_host_from_cfg
+        get_user_from_cfg
+        get_port_from_cfg
+        /] );
 
 sub is_conf_file {
     my $f = shift;
@@ -48,19 +58,55 @@ sub is_reserved {
     $data =~ /^$domain$/m;
 }
 
-sub get_zpath_from_primary_server {
-    my $primary_dns_server_cfg = shift;
-
-    my $u;
-    if($$primary_dns_server_cfg{zonedir}) {
-        $u = URI->new($$primary_dns_server_cfg{zonedir});
-    }
-    else {
+sub get_zonedir_from_cfg {
+    my $cfg = shift;
+    unless($$cfg{zonedir}) {
         die 'For now, the only way to get the zone path is to setup zonedir '
         . 'in the primaryserver configuration in config.yml.';
     }
+    URI->new($$cfg{zonedir})->path;
+}
 
-    $u->path;
+sub get_host_from_cfg {
+    my $cfg = shift;
+
+    if($$cfg{zonedir}) {
+        my $u = URI->new($$cfg{zonedir});
+        return $u->host;
+    }
+    elsif($$cfg{domain}{name}) {
+        return $$cfg{domain}{name};
+    }
+
+    die "Impossible to get the host from the configuration.";
+}
+
+sub get_user_from_cfg {
+    my $cfg = shift;
+
+    if($$cfg{zonedir}) {
+        my $u = URI->new($$cfg{zonedir});
+        return $u->user;
+    }
+    elsif($$cfg{domain}{user}) {
+        return $$cfg{domain}{user};
+    }
+
+    die "Impossible to get the user from the configuration.";
+}
+
+sub get_port_from_cfg {
+    my $cfg = shift;
+
+    if($$cfg{zonedir}) {
+        my $u = URI->new($$cfg{zonedir});
+        return $u->port;
+    }
+    elsif($$cfg{domain}{port}) {
+        return $$cfg{domain}{port};
+    }
+
+    die "Impossible to get the port from the configuration.";
 }
 
 1;

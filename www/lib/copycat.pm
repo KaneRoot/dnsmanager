@@ -39,6 +39,9 @@ sub _scp_get {
 
 sub copycat {
     my ($source, $destination) = @_;
+
+    # TODO if it's not URI
+
     my $src = URI->new($source);
     my $dest = URI->new($destination);
 

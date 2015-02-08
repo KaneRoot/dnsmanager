@@ -7,6 +7,7 @@ use Moo;
 use getiface ':all';
 use copycat ':all';
 use fileutil ':all';
+use configuration ':all';
 
 use zonefile;
 
@@ -25,6 +26,12 @@ sub _void_arr { [] }
 
 sub _get_ztpl_file { my $s = shift; "$$s{dnsi}{mycfg}{zonedir}/tpl.zone" }
 sub _get_ztmp_file { my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
+sub _get_tmpdir_domain { my $s = shift ; "$$s{data}{tmpdir}/$$s{domain}" }
+
+sub _get_remote_zf { 
+    my $self = shift; 
+    "$$self{dnsi}{mycfg}{zonedir}/$$self{domain}"
+}
 
 sub _is_same_record {
     my ($a, $b) = @_;
@@ -69,6 +76,14 @@ sub get_dns_server_interfaces {
 sub BUILD {
     my $self = shift;
     ($$self{dnsi}, $$self{dnsisec}) = $self->get_dns_server_interfaces();
+}
+
+sub reload_secondary_dns_servers {
+    my $self = shift;
+    my $sec = $$self{data}{dnsisec};
+    for(@$sec) {
+        $_->reload_sec();
+    }
 }
 
 sub delete_entry {
@@ -119,9 +134,9 @@ sub modify_entry {
 }
 
 sub get {
-    my ($self) = @_;
-    my $file = $$self{dnsi}{mycfg}{zonedir} . '/' . $$self{domain};
-    my $dest = $$self{data}{tmpdir} . '/' . $$self{domain};
+    my $self = shift;
+    my $file = $self->_get_remote_zf();
+    my $dest = $self->_get_tmpdir_domain();
 
     copycat ($file, $dest);
 
@@ -143,27 +158,25 @@ sub addzone {
 
     copycat ($tpl, $tmpfile); # get the template
 
-    mod_orig_template ($tmpfile, $$self{domain}); # sed CHANGEMEORIGIN by the real origin
+    # sed CHANGEMEORIGIN by the real origin
+    mod_orig_template ($tmpfile, $$self{domain});
 
-    my $zonefile = zonefile->new(zonefile => $tmpfile, domain => $$self{domain});
+    my $zonefile = zonefile->new(zonefile => $tmpfile
+        , domain => $$self{domain});
     $zonefile->new_serial(); # update the serial number
 
     # write the new zone tmpfile to disk 
     write_file $tmpfile, $zonefile->output();
 
-    my $file = $$self{dnsi}{mycfg}{zonedir}.'/'.$$self{domain};
+    my $file = $self->_get_remote_zf();
     copycat ($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
     # add new zone on the primary ns
-    $self->dnsi->addzone($$self{dnsi}{mycfg}{zonedir}, $$self{domain});
+    $self->dnsi->addzone($$self{domain});
 
-    # add new zone on the secondary ns
-    my $sec = zone::interface->new()
-    ->get_interface($$self{data}{dnsappsec}, $self->data);
-    $sec->reload_sec();
-
-    #return $zonefile;
+    # add new zone on secondary ns
+    $self->reload_secondary_dns_servers();
 }
 
 =pod
@@ -182,7 +195,7 @@ sub update {
     # write the new zone tmpfile to disk 
     write_file $tmpfile, $zonefile->output();
 
-    my $file = $$self{dnsi}{mycfg}{zonedir}.'/'.$$self{domain};
+    my $file = $self->_get_remote_zf();
     copycat ($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
@@ -197,17 +210,17 @@ sub update_raw {
     my ($self, $zonetext) = @_;
 
     my $zonefile;
-    my $file = $$self{data}{tmpdir} . '/' . $$self{domain};
+    my $file = $self->_get_tmpdir_domain();
 
     # write the updated zone file to disk 
     write_file $file, $zonetext;
 
-    eval { $zonefile = zonefile->new(zonnefile => $file
+    eval { $zonefile = zonefile->new(zonefile => $file
             , domain => $$self{domain}); };
 
     if( $@ ) {
         unlink($file);
-        die "app::zone update_raw : app::zonefile->new error";
+        die "zone update_raw : zonefile->new error";
     }
 
     unlink($file);
@@ -220,13 +233,15 @@ sub new_tmp {
     my ($self) = @_;
 
     my $tpl = $self->_get_ztpl_file();
-    my $file = $$self{data}{tmpdir} . '/' . $$self{domain};
+    my $file = $self->_get_tmpdir_domain();
 
     copycat ($tpl, $file);
+
+    # sed CHANGEMEORIGIN by the real origin
     mod_orig_template ($file, $$self{domain});
 
     my $zonefile = zonefile->new(zonefile => $file, domain => $$self{domain});
-    $zonefile->new_serial(); # update the serial number
+    $zonefile->new_serial();
 
     unlink($file);
 
@@ -245,15 +260,14 @@ sub del {
     $self->dnsi->delzone($$self{domain});
     $self->dnsi->reconfig();
 
-    my $sec = $$self{data}{dnsisec};
-    $sec->reload_sec();
+    $self->reload_secondary_dns_servers();
 
-    my $file = get_zpath_from_primary_server($$self{dnsi}{mycfg});
+    my $file = get_zonedir_from_cfg($$self{dnsi}{mycfg});
     $file .= "/$$self{domain}";
 
-    my $host = $$self{data}{primarydnsserver}{host};
-    my $user = $$self{data}{primarydnsserver}{user};
-    my $port = $$self{data}{primarydnsserver}{port};
+    my $host = get_host_from_cfg($$self{dnsi}{mycfg});
+    my $user = get_user_from_cfg($$self{dnsi}{mycfg});
+    my $port = get_port_from_cfg($$self{dnsi}{mycfg});
     my $cmd = "rm $file";
 
     remotecmd $user, $host, $port, $cmd;

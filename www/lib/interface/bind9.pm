@@ -1,6 +1,7 @@
 package interface::bind9;
 use v5.14;
 use Moo;
+use configuration ':all';
 
 has [ qw/mycfg data/ ] => qw/is ro required 1/;
 
@@ -20,7 +21,7 @@ sub addzone {
     }
     else {
 
-        my $dir = $$self{mycfg}{zonedir};
+        my $dir = get_zonedir_from_cfg($$self{mycfg});
         $command .= "'{ type master; file \"$dir/$domain\"; allow-transfer { ";
         my $sec = $$self{data}{secondarydnsserver};
         for(@$sec) {
