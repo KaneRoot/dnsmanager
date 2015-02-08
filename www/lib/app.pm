@@ -26,19 +26,19 @@ sub auth {
 
 sub register_user {
     my ($self, $login, $passwd) = @_;
-    ${$self->db}->register_user($login, $passwd);
+    $self->db->register_user($login, $passwd);
 }
 
 sub toggle_admin {
     my ($self, $login) = @_;
-    ${$self->db}->toggle_admin($login);
+    $self->db->toggle_admin($login);
 }
 
 sub delete_user {
     my ($self, $login) = @_;
     my $domains = ${$self->db}->get_domains($login);
     $self->delete_domain($login, $_) foreach(@$domains);
-    ${$self->db}->delete_user($login);
+    $self->db->delete_user($login);
 }
 
 ### domains 
@@ -88,13 +88,13 @@ sub get_domain {
 sub get_all_domains {
     my ($self) = @_; 
     # % domain login
-    ${$self->db}->get_all_domains;
+    $self->db->get_all_domains;
 }
 
 sub get_all_users {
     my ($self) = @_; 
     # % login admin
-    ${$self->db}->get_all_users;
+    $self->db->get_all_users;
 }
 
 sub new_tmp {
