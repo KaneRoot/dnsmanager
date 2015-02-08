@@ -2,6 +2,8 @@ package zone;
 use v5.14;
 use Moo;
 
+# TODO all this file is to redesign
+
 use getiface ':all';
 use copycat ':all';
 use fileutil ':all';
@@ -9,14 +11,116 @@ use fileutil ':all';
 use zonefile;
 
 use Modern::Perl;
-use Data::Dump "dump";
+
+# primary dns interface 
+has dnsi => ( is => 'rw', builder => '_void_arr');
+
+# dns interface for secondary name servers
+has dnsisec => ( is => 'rw', builder => '_void');
 
 has [ qw/domain data/ ] => qw/is ro required 1/;
 
-# TODO all this file is to redesign
+sub _void { my $x = ''; \$x; }
+sub _void_arr { [] }
+
+sub _get_ztpl_file { my $s = shift; "$$s{dnsi}{mycfg}{zonedir}/tpl.zone" }
+sub _get_ztmp_file { my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
+
+sub _is_same_record {
+    my ($a, $b) = @_;
+    (   $a->{name} eq $b->{name} && 
+        $a->{host} eq $b->{host} &&
+        $a->{priority} eq $b->{priority} &&
+        $a->{ttl} ==  $b->{ttl} );
+}
+
+# returns the lists of domains of a certain type
+sub _get_records {
+    my ($zone, $entry) = @_;
+
+    for( lc $entry->{type} ) {
+        if      ($_ eq 'a')      { return $zone->a;     }
+        elsif   ($_ eq 'aaaa')   { return $zone->aaaa;  }
+        elsif   ($_ eq 'cname')  { return $zone->cname; }
+        elsif   ($_ eq 'ns')     { return $zone->ns;    }
+        elsif   ($_ eq 'mx')     { return $zone->mx;    }
+        elsif   ($_ eq 'ptr')    { return $zone->ptr;   }
+    }
+
+    die 'Impossible to get the entry type.';
+}
+
+sub get_dns_server_interfaces {
+    my $self = shift;
+    my $primary = $$self{data}{primarydnsserver};
+    my $s = $$self{data}{secondarydnsserver};
+
+    my $prim = getiface($$primary{app}, { mycfg => $primary, data => $self });
+
+    my $sec = [];
+    for(@$s) {
+        my $x = @$_[0];
+        push @$sec, getiface($$x{app}, { mycfg => $x, data => $self });
+    }
+
+    ($prim, $sec);
+}
+
+sub BUILD {
+    my $self = shift;
+    ($$self{dnsi}, $$self{dnsisec}) = $self->get_dns_server_interfaces();
+}
+
+sub delete_entry {
+    my ($self, $entryToDelete) = @_;
+
+    my $zone = $self->get();
+
+    my $records = _get_records $zone, $entryToDelete;
+
+    if( defined $records ) {
+        foreach my $i ( 0 .. scalar @{$records}-1 ) {
+            if(_is_same_record($records->[$i], $entryToDelete)) {
+                delete $records->[$i];
+            }
+        }
+
+        $self->update_domain( $zone, $$self{domain} );
+    }
+
+}
+
+sub modify_entry {
+    my ($self, $entryToModify, $newEntry) = @_;
+
+    my $zone = $self->get();
+
+    my $records = _get_records $zone, $entryToModify;
+
+    if( defined $records ) {
+
+        foreach my $i ( 0 .. scalar @{$records}-1 ) {
+
+            if(_is_same_record($records->[$i], $entryToModify)) {
+
+                $records->[$i]->{name} = $newEntry->{newname};
+                $records->[$i]->{host} = $newEntry->{newhost};
+                $records->[$i]->{ttl}  = $newEntry->{newttl};
+                $records->[$i]->{type}  = $newEntry->{newtype};
+
+                if( defined $newEntry->{newpriority} ) {
+                    $records->[$i]->{priority} = $newEntry->{newpriority};
+                }
+            }
+        }
+        $self->update_domain( $zone, $$self{domain} );
+    }
+
+}
+
 sub get {
     my ($self) = @_;
-    my $file = $$self{data}{dnsi}{zdir} . '/'. $$self{domain};
+    my $file = $$self{dnsi}{mycfg}{zonedir} . '/' . $$self{domain};
     my $dest = $$self{data}{tmpdir} . '/' . $$self{domain};
 
     copycat ($file, $dest);
@@ -34,8 +138,8 @@ sub get {
 sub addzone {
     my ($self) = @_;
 
-    my $tpl = $$self{data}{dnsi}{zdir}."/tpl.zone";
-    my $tmpfile = $$self{data}{tmpdir} . '/' . $$self{domain};
+    my $tpl = $self->_get_ztpl_file();
+    my $tmpfile = $self->_get_ztmp_file();
 
     copycat ($tpl, $tmpfile); # get the template
 
@@ -47,14 +151,12 @@ sub addzone {
     # write the new zone tmpfile to disk 
     write_file $tmpfile, $zonefile->output();
 
-    my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
+    my $file = $$self{dnsi}{mycfg}{zonedir}.'/'.$$self{domain};
     copycat ($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
     # add new zone on the primary ns
-    my $prim = zone::interface->new()
-    ->get_interface($$self{data}{dnsapp}, $self->data);
-    $prim->addzone($$self{data}{dnsi}{zdir}, $$self{domain});
+    $self->dnsi->addzone($$self{dnsi}{mycfg}{zonedir}, $$self{domain});
 
     # add new zone on the secondary ns
     my $sec = zone::interface->new()
@@ -75,18 +177,16 @@ sub update {
     # update the serial number
     $zonefile->new_serial();
 
-    my $tmpfile = $$self{data}{tmpdir} . '/' . $$self{domain};
+    my $tmpfile = $self->_get_ztmp_file();
 
     # write the new zone tmpfile to disk 
     write_file $tmpfile, $zonefile->output();
 
-    my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
+    my $file = $$self{dnsi}{mycfg}{zonedir}.'/'.$$self{domain};
     copycat ($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
-    my $prim = zone::interface->new()
-    ->get_interface($self->data->dnsapp, $self->data);
-    $prim->reload($$self{domain});
+    $self->dnsi->reload($$self{domain});
 }
 
 =pod
@@ -119,7 +219,7 @@ sub update_raw {
 sub new_tmp {
     my ($self) = @_;
 
-    my $tpl = $$self{data}{dnsi}{zdir} . "/tpl.zone";
+    my $tpl = $self->_get_ztpl_file();
     my $file = $$self{data}{tmpdir} . '/' . $$self{domain};
 
     copycat ($tpl, $file);
@@ -135,22 +235,22 @@ sub new_tmp {
 
 # change the origin in a zone file template
 sub mod_orig_template {
-    my ($self, $file, $domain) = @_;
+    my ($file, $domain) = @_;
     my $cmd = qq[sed -i "s/CHANGEMEORIGIN/$domain/" $file 2>/dev/null 1>/dev/null];
     system($cmd);
 }
 
 sub del {
     my ($self) = @_;
-    my $prim = $$self{data}{dnsi};
-    $prim->delzone($$prim{zdir}, $$self{domain});
-    $prim->reconfig();
+    $self->dnsi->delzone($$self{domain});
+    $self->dnsi->reconfig();
 
     my $sec = $$self{data}{dnsisec};
     $sec->reload_sec();
 
-    # TODO not ok right now (URI not path)
-    my $file = $$self{data}{dnsi}{zdir}.'/'.$$self{domain};
+    my $file = get_zpath_from_primary_server($$self{dnsi}{mycfg});
+    $file .= "/$$self{domain}";
+
     my $host = $$self{data}{primarydnsserver}{host};
     my $user = $$self{data}{primarydnsserver}{user};
     my $port = $$self{data}{primarydnsserver}{port};

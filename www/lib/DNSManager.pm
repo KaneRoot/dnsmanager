@@ -9,7 +9,7 @@ use File::Basename;
 use Storable qw( freeze thaw );
 $Storable::Deparse = true;
 $Storable::Eval=true;
-use encoding 'utf-8'; # TODO check if this works well
+use utf8;
 
 use configuration ':all';
 use util ':all';

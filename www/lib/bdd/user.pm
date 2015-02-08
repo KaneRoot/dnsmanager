@@ -10,7 +10,6 @@ use Data::Dump "dump";
 has qw/domains is rw/;
 has [ qw/login dbh/ ] => qw/is ro required 1/;
 has passwd => (is => 'rw', trigger => \&_update_passwd );
-#has qw/dbh is ro required 1/; # database handler
 
 sub is_admin { 0 }
 

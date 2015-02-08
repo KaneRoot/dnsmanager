@@ -53,7 +53,7 @@ sub _reload_conf {
     my $f = "file://$$self{data}{tmpdir}/nsd.conf";
     my $remote = ($$self{mycfg}{cfg}) ? $$self{mycfg}{cfg} : undef;
 
-    $remote //= "ssh://$user". '@' . "$host/etc/nsd3/nsd.conf";
+    $remote //= "ssh://$$self{user}@" . "$$self{host}/etc/nsd3/nsd.conf";
 
     copycat $remote, $f;
 

@@ -10,7 +10,26 @@ use bdd::user;
 use bdd::admin;
 use getiface ':all';
 
-has [qw/dbh/] => qw/is rw required 1/;
+# db handler
+has dbh => ( is => 'rw', builder => '_void');
+
+sub _void { my $x = ''; \$x; }
+
+# reference to the application
+has data => qw/is ro required 1/;
+
+sub BUILD {
+    my $self = shift;
+
+    my $db = $$self{data}{database};
+
+    my $dsn = "dbi:$$db{sgbd}:database=$$db{name};"
+    . "host=$$db{host};port=$$db{port}";
+
+    $$self{dbh} = DBI->connect($dsn, $$db{user}, $$db{pass}) 
+    || die "Could not connect to database: $DBI::errstr"; 
+
+}
 
 sub auth {
     my ($self, $login, $passwd) = @_;
@@ -103,13 +122,13 @@ sub get_user {
     if(@$ref[2]) {
         $user = bdd::admin->new(login => @$ref[0]
             , passwd => @$ref[1]
-            , dbh => $self->dbh
+            , dbh => $$self{dbh}
             , domains => [@domains]); 
     }
     else {
         $user = bdd::lambda->new(login => @$ref[0]
             , passwd => @$ref[1]
-            , dbh => $self->dbh
+            , dbh => $$self{dbh}
             , domains => [@domains]); 
     }
 

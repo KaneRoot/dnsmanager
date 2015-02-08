@@ -2,7 +2,7 @@ package interface::bind9;
 use v5.14;
 use Moo;
 
-has [ qw/data/ ] => qw/is ro required 1/;
+has [ qw/mycfg data/ ] => qw/is ro required 1/;
 
 sub reload {
     my ($self, $domain) = @_;
@@ -11,7 +11,7 @@ sub reload {
 }
 
 sub addzone {
-    my ($self, $zdir, $domain, $opt) = @_;
+    my ($self, $domain, $opt) = @_;
 
     my $command = "rndc addzone $domain ";
 
@@ -20,13 +20,14 @@ sub addzone {
     }
     else {
 
-        $command .= "'{ type master; file \"$zdir/$domain\"; allow-transfer { ";
+        my $dir = $$self{mycfg}{zonedir};
+        $command .= "'{ type master; file \"$dir/$domain\"; allow-transfer { ";
         my $sec = $$self{data}{secondarydnsserver};
         for(@$sec) {
             $command .= $$_{domain}{v4} . '; ' if $$_{domain}{v4}; 
             $command .= $$_{domain}{v6} . '; ' if $$_{domain}{v6};
         }
-        . " }; notify yes; };'";
+        $command .= " }; notify yes; };'";
     }
 
     $command .= " 2>/dev/null 1>/dev/null";
@@ -40,7 +41,7 @@ sub reconfig {
 }
 
 sub delzone {
-    my ($self, $zdir, $domain) = @_;
+    my ($self, $domain) = @_;
     system("rndc delzone $domain 2>/dev/null 1>/dev/null");
 }
 

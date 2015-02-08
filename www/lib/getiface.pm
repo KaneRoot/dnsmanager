@@ -1,5 +1,5 @@
 package getiface;
-use v5.20;
+use v5.14;
 
 use Exporter 'import';
 # what we want to export eventually
@@ -7,6 +7,10 @@ our @EXPORT_OK = qw/getiface/;
 
 # bundle of exports (tags)
 our %EXPORT_TAGS = ( all => [qw/getiface/] ); 
+
+use interface::bind9;
+use interface::knot;
+use interface::nsd3;
 
 sub getiface {
     my ($type, $params) = @_;

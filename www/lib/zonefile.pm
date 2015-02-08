@@ -21,4 +21,17 @@ sub output {
     $self->zone->output();
 }
 
+sub dump {
+    my $self = shift;
+    $self->zone->dump();
+}
+
+# better encapsulation
+sub a       { my $self = shift; $self->zone->a }
+sub aaaa    { my $self = shift; $self->zone->aaaa }
+sub cname   { my $self = shift; $self->zone->cname }
+sub ns      { my $self = shift; $self->zone->ns }
+sub mx      { my $self = shift; $self->zone->mx }
+sub ptr     { my $self = shift; $self->zone->ptr }
+
 1;
