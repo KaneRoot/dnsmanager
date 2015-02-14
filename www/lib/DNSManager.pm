@@ -11,6 +11,7 @@ $Storable::Deparse = true;
 $Storable::Eval=true;
 use utf8;
 
+use YAML::XS;
 use configuration ':all';
 use util ':all';
 use rt::root ':all';
@@ -30,13 +31,16 @@ sub get_errmsg {
 sub what_is_next {
     my ($res) = @_;
 
+    debug(Dump $res);
+
     if($$res{sessiondestroy}) {
         session->destroy;
     }
 
-    $$res{params}{errmsg} //= get_errmsg;
+    #$$res{params}{errmsg} //= get_errmsg;
 
     for(keys %{$$res{addsession}}) {
+        debug( "HERE : $_ => $$res{addsession}{$_}");
         session $_ => $$res{addsession}{$_};
     }
 
@@ -45,20 +49,12 @@ sub what_is_next {
     }
 
     if($$res{route}) {
-        if($$res{params}) {
-            redirect $$res{route} => $$res{params};
-        }
-        else {
-            redirect $$res{route};
-        }
+        redirect $$res{route} => $$res{params};
     }
     elsif($$res{template}) {
-        if($$res{params}) {
-            template $$res{template} => $$res{params};
-        }
-        else {
-            template $$res{template};
-        }
+        template $$res{template} => $$res{params};
+    } else {
+        redirect '/';
     }
     # TODO route problem
 }
@@ -178,7 +174,7 @@ prefix '/user' => sub {
     post '/add/' => sub {
         what_is_next rt_user_add
         get_session( qw// )
-        , get_param( qw/login passord password2/ )
+        , get_param( qw/login password password2/ )
         , get_request( qw// );
     };
 

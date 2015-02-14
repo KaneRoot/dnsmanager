@@ -28,3 +28,6 @@ engines:
     end_tag:   '%>'
 
 session: "Storable"
+
+
+logging: "console"
