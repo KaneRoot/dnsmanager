@@ -4,7 +4,6 @@ use v5.14;
 use autodie;
 use DBI;
 
-use lib '../';
 use domain;
 
 has qw/domains is rw/;
@@ -33,14 +32,14 @@ sub delete_domain {
         die "The user $self->login don't have the domain $domain.";
     }
 
-    delete_domain($$self{dbh}, $domain);
+    domain::delete_domain($$self{dbh}, $domain);
 
     @{ $self->domains } = grep { $_ ne $domain } @{ $self->domains };
 }
 
 sub add_domain {
     my ($self, $domain) = @_;
-    add_domain($$self{dbh}, $$self{login}, $domain);
+    domain::add_domain($$self{dbh}, $$self{login}, $domain);
     push @{ $self->domains }, $domain;
 }
 

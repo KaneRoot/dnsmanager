@@ -3,6 +3,13 @@ use v5.14;
 use autodie;
 use DBI;
 
+use Exporter 'import';
+# what we want to export eventually
+our @EXPORT_OK = qw/delete_domain add_domain/;
+
+# bundle of exports (tags)
+our %EXPORT_TAGS = ( all => [qw/delete_domain add_domain/] ); 
+
 sub delete_domain {
     my ($dbh, $domain) = @_;
     my $sth;

@@ -5,10 +5,11 @@ use strict;
 use warnings;
 
 use Dancer ':syntax';
+use Dancer::Plugin::FlashMessage;
 use File::Basename;
-use Storable qw( freeze thaw );
-$Storable::Deparse = true;
-$Storable::Eval=true;
+#use Storable qw( freeze thaw );
+#$Storable::Deparse = true;
+#$Storable::Eval=true;
 use utf8;
 
 use YAML::XS;
@@ -22,25 +23,17 @@ use app;
 
 our $VERSION = '0.1';
 
-sub get_errmsg {
-    my $err = session 'errmsg';
-    session errmsg => '';
-    $err;
-}
-
 sub what_is_next {
     my ($res) = @_;
 
-    debug(Dump $res);
+    #debug(Dump $res);
 
     if($$res{sessiondestroy}) {
         session->destroy;
     }
 
-    #$$res{params}{errmsg} //= get_errmsg;
-
     for(keys %{$$res{addsession}}) {
-        debug( "HERE : $_ => $$res{addsession}{$_}");
+        #debug( "HERE : $_ => $$res{addsession}{$_}");
         session $_ => $$res{addsession}{$_};
     }
 
@@ -48,15 +41,17 @@ sub what_is_next {
         session $_ => undef;
     }
 
-    if($$res{route}) {
-        redirect $$res{route} => $$res{params};
+    if(exists $$res{route}) {
+        flash 'errmsg' => $$res{params}{errmsg};
+        redirect $$res{route};
     }
-    elsif($$res{template}) {
+    elsif(exists $$res{template}) {
+        $$res{params}{errmsg} //= flash('errmsg');
+        debug(Dump $res);
         template $$res{template} => $$res{params};
     } else {
         redirect '/';
     }
-    # TODO route problem
 }
 
 sub get_param {

@@ -23,7 +23,7 @@ sub BUILD {
 
     my $db = $$self{data}{database};
 
-    my $dsn = "dbi:$$db{sgbd}:database=$$db{name};"
+    my $dsn = "DBI:$$db{sgbd}:database=$$db{name};"
     . "host=$$db{host};port=$$db{port}";
 
     $$self{dbh} = DBI->connect($dsn, $$db{user}, $$db{passwd}) 
@@ -126,7 +126,7 @@ sub get_user {
             , domains => [@domains]); 
     }
     else {
-        $user = bdd::lambda->new(login => @$ref[0]
+        $user = bdd::user->new(login => @$ref[0]
             , passwd => @$ref[1]
             , dbh => $$self{dbh}
             , domains => [@domains]); 

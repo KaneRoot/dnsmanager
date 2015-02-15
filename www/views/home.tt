@@ -47,6 +47,11 @@
     <% ELSE %>
         <input type='text' name='domain' />
     <% END %>
+    <select name='tld' >
+    <% FOREACH dom in provideddomains %>
+            <option><% dom %></option>
+    <% END %>
+    </select>
     <input type='submit' name='submit' value="Créer mon domaine!" />
 </form>
 

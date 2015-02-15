@@ -2,6 +2,7 @@ package rt::root;
 
 use configuration ':all';
 use app;
+use utf8;
 
 use Exporter 'import';
 # what we want to export eventually
@@ -16,26 +17,27 @@ sub rt_root {
 
     $$res{template} = 'index';
 
-    if($login) {
-        my $app = app->new(get_cfg());
-        my $user = $app->auth($$session{login}, $$session{passwd});
+    if( exists $$session{login} && length $$session{login} > 0) {
+        eval {
+            my $app = app->new(get_cfg());
+            my $user = $app->auth($$session{login}, $$session{passwd});
 
-        # ancienne version pour récupérer les domaines :
-        #my ($success, @domains) = $app->get_domains( $login );
-
-        if( $user ) {
-            $$res{params} = {
-                login   => $$session{login}
-                , admin   => $user->is_admin()
-                , domains => [ $user->get_domains() ]
-            };
-        }
-        else {
+            if( $user ) {
+                $$res{params} = {
+                    login   => $$session{login}
+                    , admin   => $user->is_admin()
+                    , domains => [ @{$$user{domains}} ]
+                };
+            }
+        };
+        
+        if( $@ ) {
+            $$res{params}{errmsg} = q{Une erreur est survenue. } . $@;
             $$res{sessiondestroy} = 1;
         }
 
     }
-    
+
     $res;
 }
 

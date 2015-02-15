@@ -1,8 +1,10 @@
 package rt::user;
 
+use v5.14;
 use configuration ':all';
 use encryption ':all';
 use app;
+use utf8;
 
 use YAML::XS;
 
@@ -32,40 +34,51 @@ sub rt_user_login {
     my $res;
 
     # Check if user is already logged
-    if ( $$session{login} ) {
+    if ( exists $$session{login} && length $$session{login} > 0 ) {
         $$res{params}{errmsg} = q{Vous êtes déjà connecté.};
         $$res{route} = '/';
         return $res;
     }
 
     # Check user login and password
-    unless ( $$param{login} && $$param{password} ) {
+    unless ( exists $$param{login} 
+        && exists $$param{password} 
+        && length $$param{login} > 0
+        && length $$param{password} > 0 ) {
         $$res{params}{errmsg} = q{Vous n'avez pas renseigné tous les paramètres.};
         $$res{route} = '/';
         return $res;
     }
 
-    my $app = app->new(get_cfg());
-    my $pass = encrypt($$param{password});
-    my $user = $app->auth($$session{login}, $pass);
+    eval {
+        my $app = app->new(get_cfg());
+        my $pass = encrypt($$param{password});
+        my $user = $app->auth($$param{login}, $pass);
 
-    unless( $user ) {
-        $$res{params}{errmsg} = 
-        q{Impossible de se connecter (login ou mot de passe incorrect).};
+        unless( $user ) {
+            $$res{params}{errmsg} = 
+            q{Impossible de se connecter (login ou mot de passe incorrect).};
+            $$res{route} = '/';
+            return $res;
+        }
+
+        $$res{addsession}{login}  = $$param{login};
+        $$res{addsession}{passwd} = $pass;
+        # TODO adds a freeze feature, not used for now
+        # $$res{addsession}{user}     = freeze( $user );
+
+        if( $user->is_admin() ) {
+            $$res{route} = '/admin';
+        }
+        else {
+            $$res{route} = '/user/home';
+        }
+    };
+
+    if( $@ ) {
+        $$res{params}{errmsg} = q{Impossible de se connecter ! } . $@;
+        $$res{sessiondestroy} = 1;
         $$res{route} = '/';
-        return $res;
-    }
-
-    $$res{addsession}{login}  = $$param{login};
-    $$res{addsession}{passwd} = $pass;
-    # TODO adds a freeze feature, not used for now
-    # $$res{addsession}{user}     = freeze( $user );
-
-    if( $user->is_admin() ) {
-        $$res{route} = '/admin';
-    }
-    else {
-        $$res{route} = '/user/home';
     }
 
     $res;
@@ -188,6 +201,8 @@ sub rt_user_home {
     my ($session, $param, $request) = @_;
     my $res;
 
+    $$res{template} = 'home';
+
     eval {
         my $app = app->new(get_cfg());
 
@@ -195,37 +210,32 @@ sub rt_user_home {
 
         unless( $user ) {
             $$res{params}{errmsg} = q{Problème de connexion à votre compte.};
+            $$res{sessiondestroy} = 1;
             $$res{route} = '/';
             return $res;
         }
 
         my @domains = @{$user->domains};
 
-        if( @domains ) {
+        my $cs = $$session{creationSuccess};
+        my $dn = $$session{domainName};
 
-            my $cs = $$session{creationSuccess};
-            my $dn = $$session{domainName};
+        $$res{delsession}{creationSuccess};
+        $$res{delsession}{domainName};
 
-            $$res{delsession}{creationSuccess};
-            $$res{delsession}{domainName};
-
-            $$res{template} = 'home';
-            $$res{params} = {
-                login               => $$session{login}
-                , admin             => $user->is_admin()
-                , domains           => [@domains]
-                , creationSuccess   => $cs
-                , domainName        => $dn  
-            };
-        }
-        else {
-            $$res{sessiondestroy} = 1;
-            $$res{route} = '/';
-        }
+        $$res{params} = {
+            login               => $$session{login}
+            , admin             => $user->is_admin()
+            , domains           => [@domains]
+            , provideddomains   => $$app{tld}
+            , creationSuccess   => $cs
+            , domainName        => $dn  
+        };
     };
 
     if( $@ ) {
-        $$res{params}{errmsg} = q{On a chié quelque-part.};
+        $$res{sessiondestroy} = 1;
+        $$res{params}{errmsg} = q{On a chié quelque-part.} . $@;
         $$res{route} = '/';
     }
 

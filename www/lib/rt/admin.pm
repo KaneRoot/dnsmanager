@@ -2,6 +2,7 @@ package rt::admin;
 
 use configuration ':all';
 use app;
+use utf8;
 
 use Exporter 'import';
 # what we want to export eventually
@@ -25,7 +26,7 @@ sub rt_admin {
 
     my $alldomains = $app->get_all_domains;
     my $allusers = $app->get_all_users;
-    my $domains = $app->get_domains( $$session{login} );
+    my $domains = $user->domains;
 
     $$res{template} = 'administration'; 
     $$res{params} = {

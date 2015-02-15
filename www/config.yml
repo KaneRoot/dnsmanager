@@ -27,7 +27,8 @@ engines:
     start_tag: '<%'
     end_tag:   '%>'
 
-session: "Storable"
+#session: "Storable"
+session: "YAML"
 
 
 logging: "console"

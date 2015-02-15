@@ -7,7 +7,7 @@ use zone;
 
 has db => ( is => 'rw', builder => '_void');
 
-has [qw/tmpdir database primarydnsserver secondarydnsserver/] 
+has [qw/tld tmpdir database primarydnsserver secondarydnsserver/] 
 => qw/is ro required 1/;
 
 sub _void { my $x = ''; \$x; }
@@ -36,8 +36,8 @@ sub toggle_admin {
 
 sub delete_user {
     my ($self, $login) = @_;
-    my $domains = ${$self->db}->get_domains($login);
-    $self->delete_domain($login, $_) foreach(@$domains);
+    my $user = $self->db->get_user($login);
+    $self->delete_domain($login, $_) foreach(@{$$user{domains}});
     $self->db->delete_user($login);
 }
 

@@ -3,6 +3,8 @@
 sudo apt-get update
 sudo apt-get install libssl1.0.0 libssl-dev cpanminus make gcc
 
+cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
+
 ## En attendant de faire de vrais paquets pour l'application
 
 cpanm YAML::XS
@@ -21,6 +23,7 @@ cpanm Template
 cpanm Template::Toolkit
 cpanm Dancer 
 cpanm Dancer::Test 
+cpanm Dancer::Plugin::FlashMessage
 
 cpanm ExtUtils::MakeMaker 
 cpanm Storable 
@@ -29,3 +32,4 @@ cpanm Plack::Handler::FCGI
 cpanm Plack::Runner 
 cpanm DNS::ZoneParse
 cpanm Net::OpenSSH
+cpanm Net::SSH

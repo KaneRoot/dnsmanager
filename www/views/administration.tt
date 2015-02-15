@@ -53,11 +53,13 @@
             </td>
 
             <td>
+            <a href="/user/toggleadmin/<% pair.key %>">
             <% IF pair.value == 1 %>
-                <a href="/user/unsetadmin/<% pair.key %>"><button type="button" class="btn btn-danger">Passer utilisateur</button></a>
+                <button type="button" class="btn btn-danger">Passer utilisateur</button>
             <% ELSE %>
-                <a href="/user/setadmin/<% pair.key %>"><button type="button" class="btn btn-primary">Passer administrateur</button></a>
+                <button type="button" class="btn btn-primary">Passer administrateur</button>
             <% END %>
+            </a>
             </td>
 
             </tr>
