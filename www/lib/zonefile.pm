@@ -24,6 +24,11 @@ sub new_serial {
     $self->zone->new_serial();
 }
 
+sub origin {
+    my $self = shift;
+    $self->zone->origin();
+}
+
 sub output {
     my $self = shift;
     $self->zone->output();
