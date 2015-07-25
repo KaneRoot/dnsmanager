@@ -65,9 +65,12 @@ sub get_dns_server_interfaces {
     my $prim = getiface($$primary{app}, { mycfg => $primary, data => $self });
 
     my $sec = [];
-    for(@$s) {
-        my $x = @$_[0];
-        push @$sec, getiface($$x{app}, { mycfg => $x, data => $self });
+    for($s) {
+        for(@$_)
+        {
+            my $x = $_;
+            push @$sec, getiface($$x{app}, { mycfg => $x, data => $self });
+        }
     }
 
     ($prim, $sec);

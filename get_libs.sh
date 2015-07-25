@@ -2,10 +2,9 @@
 
 ## En attendant de faire de vrais paquets pour l'application
 
-
 sudo apt-get update
-sudo apt-get install libssl1.0.0 libssl-dev cpanminus make gcc 
-sudo apt-get install libdbi-perl libdbd-mysql-perl
+sudo apt-get install libssl1.0.0 libssl-dev cpanminus make gcc \
+    libdbi-perl libdbd-mysql-perl
 
 cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
 
@@ -30,3 +29,4 @@ cpanm DNS::ZoneParse
 cpanm Net::OpenSSH
 cpanm Template
 cpanm Template::Toolkit
+cpanm Net::SSH

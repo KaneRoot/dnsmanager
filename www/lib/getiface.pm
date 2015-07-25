@@ -18,7 +18,7 @@ sub getiface {
         if (/bind9/)    { interface::bind9->new($params) }
         elsif (/knot/)  { interface::knot->new($params) }
         elsif (/nsd/)   { interface::nsd3->new($params) }
-        default         { die "Interface for the $_ dns type not found."; }
+        else         { die "Interface for the $_ dns type not found."; }
     }
 }
 
