@@ -8,6 +8,7 @@ use getiface ':all';
 use copycat ':all';
 use fileutil ':all';
 use configuration ':all';
+use remotecmd ':all';
 
 use zonefile;
 
@@ -24,9 +25,9 @@ has [ qw/domain data/ ] => qw/is ro required 1/;
 sub _void { my $x = ''; \$x; }
 sub _void_arr { [] }
 
-sub _get_ztpl_file { my $s = shift; "$$s{dnsi}{mycfg}{zonedir}/tpl.zone" }
-sub _get_ztmp_file { my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
-sub _get_tmpdir_domain { my $s = shift ; "$$s{data}{tmpdir}/$$s{domain}" }
+sub _get_ztpl_file {my $s = shift; "$$s{dnsi}{mycfg}{zonedir}/tpl.zone" }
+sub _get_ztmp_file {my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
+sub _get_tmpdir_domain {my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
 
 sub _get_remote_zf { 
     my $self = shift; 

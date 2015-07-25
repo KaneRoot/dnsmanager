@@ -60,6 +60,7 @@ sub copycat {
 
     }
     else {
+
         die "CopyCat : wrong arguments";
     }
 

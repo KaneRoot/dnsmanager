@@ -1,4 +1,4 @@
-package app::zonefile;
+package zonefile;
 use v5.14;
 use Moo;
 use DNS::ZoneParse;
@@ -8,7 +8,15 @@ has [ qw/domain zonefile/ ] => qw/ is ro required 1/;
 
 sub BUILD {
     my ($self) = @_;
-    $$self{zone} = DNS::ZoneParse->new($$self{zonefile}, $$self{domain});
+
+    my $filename = $$self{zonefile};
+    if($filename =~ "://")
+    {
+        my $fileuri = URI->new($filename);
+        $filename = $fileuri->path;
+    } 
+
+    $$self{zone} = DNS::ZoneParse->new($filename, $$self{domain});
 }
 
 sub new_serial {

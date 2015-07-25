@@ -15,9 +15,9 @@ use interface::nsd3;
 sub getiface {
     my ($type, $params) = @_;
     for($type) {
-        if (/bind9/)    { interface::bind9->new($params) }
-        elsif (/knot/)  { interface::knot->new($params) }
-        elsif (/nsd/)   { interface::nsd3->new($params) }
+        if (/bind9/)    { return interface::bind9->new($params) }
+        elsif (/knot/)  { return interface::knot->new($params) }
+        elsif (/nsd/)   { return interface::nsd3->new($params) }
         else         { die "Interface for the $_ dns type not found."; }
     }
 }
