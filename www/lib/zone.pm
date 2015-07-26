@@ -9,6 +9,7 @@ use copycat ':all';
 use fileutil ':all';
 use configuration ':all';
 use remotecmd ':all';
+use Dancer ':syntax';
 
 use zonefile;
 
@@ -36,9 +37,13 @@ sub _get_remote_zf {
 
 sub _is_same_record {
     my ($a, $b) = @_;
+
+    #debug({ a => $a });
+    #debug({ b => $b });
+
+    #$a->{priority} eq $b->{priority} &&
     (   $a->{name} eq $b->{name} && 
         $a->{host} eq $b->{host} &&
-        $a->{priority} eq $b->{priority} &&
         $a->{ttl} ==  $b->{ttl} );
 }
 
@@ -104,7 +109,8 @@ sub delete_entry {
             }
         }
 
-        $self->update_domain( $zone, $$self{domain} );
+        # TODO verify if it's OK
+        $$self{data}->update_domain( $zone, $$self{domain} );
     }
 
 }
@@ -132,7 +138,9 @@ sub modify_entry {
                 }
             }
         }
-        $self->update_domain( $zone, $$self{domain} );
+
+        # TODO verify if it's OK
+        $$self{data}->update_domain( $zone, $$self{domain} );
     }
 
 }
