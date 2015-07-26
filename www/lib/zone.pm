@@ -2,6 +2,8 @@ package zone;
 use v5.14;
 use Moo;
 
+use Modern::Perl;
+
 # TODO all this file is to redesign
 
 use getiface ':all';
@@ -9,11 +11,8 @@ use copycat ':all';
 use fileutil ':all';
 use configuration ':all';
 use remotecmd ':all';
-use Dancer ':syntax';
 
 use zonefile;
-
-use Modern::Perl;
 
 # primary dns interface 
 has dnsi => ( is => 'rw', builder => '_void_arr');

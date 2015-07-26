@@ -1,11 +1,11 @@
-package DNSManager;
+package MyWeb::App;
 
 use v5.14;
 use strict;
 use warnings;
 
-use Dancer ':syntax';
-use Dancer::Plugin::FlashMessage;
+use Dancer2;
+use Dancer2::Plugin::Deferred;
 use File::Basename;
 #use Storable qw( freeze thaw );
 #$Storable::Deparse = true;
@@ -42,11 +42,11 @@ sub what_is_next {
     }
 
     if(exists $$res{route}) {
-        flash 'errmsg' => $$res{params}{errmsg};
+        deferred 'errmsg' => $$res{params}{errmsg};
         redirect $$res{route};
     }
     elsif(exists $$res{template}) {
-        $$res{params}{errmsg} //= flash('errmsg');
+        $$res{params}{errmsg} //= deferred('errmsg');
         debug(Dump $res);
         template $$res{template} => $$res{params};
     } else {
@@ -193,4 +193,4 @@ prefix '/user' => sub {
     };
 };
 
-1;
+true;

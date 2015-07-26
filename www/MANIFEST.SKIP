@@ -11,3 +11,7 @@ Makefile$
 ^cover_db
 ^.*\.log
 ^.*\.swp$
+MYMETA.*
+^.gitignore
+^.svn\/
+^MyWeb-App-

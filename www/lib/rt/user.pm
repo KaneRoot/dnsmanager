@@ -220,8 +220,8 @@ sub rt_user_home {
         my $cs = $$session{creationSuccess};
         my $dn = $$session{domainName};
 
-        $$res{delsession}{creationSuccess};
-        $$res{delsession}{domainName};
+        #$$res{delsession}{creationSuccess};
+        #$$res{delsession}{domainName};
 
         $$res{params} = {
             login               => $$session{login}

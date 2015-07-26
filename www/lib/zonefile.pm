@@ -46,5 +46,6 @@ sub cname   { my $self = shift; $self->zone->cname }
 sub ns      { my $self = shift; $self->zone->ns }
 sub mx      { my $self = shift; $self->zone->mx }
 sub ptr     { my $self = shift; $self->zone->ptr }
+sub txt     { my $self = shift; $self->zone->txt } # TODO TEST THIS
 
 1;

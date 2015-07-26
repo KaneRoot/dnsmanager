@@ -6,6 +6,7 @@ use encryption ':all';
 use util ':all';
 use app;
 use utf8;
+use Dancer ':syntax';
 
 use Exporter 'import';
 # what we want to export eventually
@@ -332,6 +333,7 @@ sub rt_dom_update {
         elsif( $_ eq 'MX')      { $x = $zone->mx; }
         elsif( $_ eq 'PTR')     { $x = $zone->ptr; }
         elsif( $_ eq 'NS')      { $x = $zone->ns; }
+        elsif( $_ eq 'TXT')      { $x = $zone->txt; } # TODO verify this
     }
 
     push(@$x, {
@@ -342,7 +344,8 @@ sub rt_dom_update {
             , ORIGIN    => $zone->origin} );
 
     $zone->new_serial();
-    #Dump($zone);
+
+    #debug(Dump $zone);
 
     $app->update_domain( $zone , $$param{domain} );
     $$res{route} = '/domain/details/' . $$param{domain};
