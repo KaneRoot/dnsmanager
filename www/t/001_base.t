@@ -1,5 +1,5 @@
-use Test::More tests => 1;
 use strict;
 use warnings;
 
-use_ok 'DNSManager';
+use Test::More tests => 1;
+use_ok 'MyWeb::App';

@@ -1,10 +1,15 @@
-use Test::More tests => 2;
 use strict;
 use warnings;
 
-# the order is important
-use DNSManager;
-use Dancer::Test;
+use MyWeb::App;
+use Test::More tests => 2;
+use Plack::Test;
+use HTTP::Request::Common;
 
-route_exists [GET => '/'], 'a route handler is defined for /';
-response_status_is ['GET' => '/'], 200, 'response status is 200 for /';
+my $app = MyWeb::App->to_app;
+is( ref $app, 'CODE', 'Got app' );
+
+my $test = Plack::Test->create($app);
+my $res  = $test->request( GET '/' );
+
+ok( $res->is_success, '[GET /] successful' );
