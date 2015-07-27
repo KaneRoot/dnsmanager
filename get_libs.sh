@@ -9,7 +9,8 @@ sudo apt-get install libssl1.0.0 libssl-dev cpanminus make gcc \
 cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
 
 cpanm Dancer2
-cpanm Dancer::Plugin::FlashMessage
+cpanm Dancer2::Plugin::Deferred
+#cpanm Dancer::Plugin::FlashMessage
 cpanm YAML::XS
 cpanm Data::Dump 
 cpanm File::Basename 
@@ -28,5 +29,5 @@ cpanm Plack::Runner
 cpanm DNS::ZoneParse
 cpanm Net::OpenSSH
 cpanm Template
-cpanm Template::Toolkit
 cpanm Net::SSH
+# cpanm Template::Toolkit non trouvé
