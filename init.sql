@@ -1,7 +1,11 @@
--- CREATE DATABASE dnsmanager;
--- CREATE USER "myuser"@'localhost';
--- set password for "myuser"@'localhost' = password('my-not-so-dummy-password');
--- grant all on dnsmanager.* to "myuser"@'localhost';
+-- mysql -u root -p < init.sql
+
+CREATE DATABASE IF NOT EXISTS dnsmanager;
+CREATE USER "myuser"@'localhost';
+set password for "myuser"@'localhost' = password('my-not-so-dummy-password');
+grant all on dnsmanager.* to "myuser"@'localhost';
+
+USE dnsmanager;
 
 CREATE TABLE IF NOT EXISTS user (
     login varchar(50) NOT NULL,

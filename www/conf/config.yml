@@ -4,20 +4,20 @@ tld:
     - '.netlib.re'
     - '.autre.tld'
 
-tmpdir: /tmp
+tmpdir: file:///media/fast/
 
 database:
     sgbd: mysql # other options : see DBI module
     name: dnsmanager
     host: localhost
     port: 3306
-    user: monutilisateur
-    passwd: motdepasse
+    user: myuser
+    passwd: my-not-so-dummy-password
 
 primarydnsserver:
     app: bind9
     dnsslavekey: key-slave.netlib.re
-    zonedir: ssh://dnsmanager@host:2222/var/named/rndczones/
+    zonedir: ssh://root@localhost:22/var/named/rndczones/
     domain:
         name: my.example.com
         v4: 192.0.2.1       # optional
@@ -25,15 +25,15 @@ primarydnsserver:
 
 secondarydnsserver:
     - app: nsd3
-      cfg: ssh://dnsmanager@host2:2222/etc/nsd3/nsd.conf
+      cfg: ssh://root@nsd.lxc.localdomain:22/etc/nsd3/nsd.conf
       domain:
           name: second.example.com
           v4: 192.0.2.2       # optional
           v6: 2001:db8::2     # optional
 
-    - app: nsd3
-      cfg: ssh://dnsmanager@host3:2222/etc/nsd3/nsd.conf
-      domain:
-          name: third.example.com
-          v4: 192.0.2.3       # optional
-          v6: 2001:db8::3     # optional
+#    - app: nsd3
+#      cfg: ssh://dnsmanager@host3:2222/etc/nsd3/nsd.conf
+#      domain:
+#          name: third.example.com
+#          v4: 192.0.2.3       # optional
+#          v6: 2001:db8::3     # optional

@@ -29,7 +29,8 @@ sub what_is_next {
     #debug(Dump $res);
 
     if($$res{sessiondestroy}) {
-        session->destroy;
+        # TODO
+        #session->destroy;
     }
 
     for(keys %{$$res{addsession}}) {
