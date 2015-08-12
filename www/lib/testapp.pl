@@ -98,6 +98,8 @@ my $test_add_user = sub {
     , { qw// };
 };
 
+say "Tests - ";
+
 #    get '/subscribe' => sub {
 #        rt_user_subscribe
 #        get_session( qw/login/ );

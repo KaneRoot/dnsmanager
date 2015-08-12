@@ -155,7 +155,8 @@ prefix '/user' => sub {
     };
 
     get '/logout' => sub {
-        session->destroy;
+        # TODO
+        #session->destroy;
         redirect '/';
     };
 
