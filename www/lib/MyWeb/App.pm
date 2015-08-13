@@ -29,8 +29,7 @@ sub what_is_next {
     #debug(Dump $res);
 
     if($$res{sessiondestroy}) {
-        # TODO
-        #session->destroy;
+        app->destroy_session;
     }
 
     for(keys %{$$res{addsession}}) {
@@ -155,8 +154,7 @@ prefix '/user' => sub {
     };
 
     get '/logout' => sub {
-        # TODO
-        #session->destroy;
+        app->destroy_session;
         redirect '/';
     };
 
