@@ -39,7 +39,6 @@ sub delete_user {
     my $user = $self->db->get_user($login);
     my @domains_to_del = @{$$user{domains}};
     for(@domains_to_del) {
-        say "delete domain $_";
         $self->delete_domain($user, $_);
     }
     $self->db->delete_user($login);

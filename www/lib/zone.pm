@@ -25,7 +25,21 @@ has [ qw/domain data/ ] => qw/is ro required 1/;
 sub _void { my $x = ''; \$x; }
 sub _void_arr { [] }
 
-sub _get_ztpl_file {my $s = shift; "$$s{dnsi}{mycfg}{zonedir}/tpl.zone" }
+sub _get_ztpl_dir  {my $s = shift; "$$s{dnsi}{mycfg}{zonedir}" }
+sub _get_ztpl_file {
+    my $s = shift;
+
+    # for each TLD
+    for(@{$$s{data}{tld}}) {
+        # if our domain is part of this TLD, get the right template
+        if($$s{domain} =~ $_) {
+            return $s->_get_ztpl_dir() . '/' . $_ . '.tpl';
+        }
+    }
+
+    die "There is no template for $$s{domain}";
+}
+
 sub _get_ztmp_file {my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
 sub _get_tmpdir_domain {my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
 
