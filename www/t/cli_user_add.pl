@@ -16,15 +16,12 @@ if( @ARGV != 0 && @ARGV != 2 ) {
     exit 1;
 }
 
-my ($login, $passwd) = qw/test test/;
+my ($login, $passwd) = (qw/test test/);
 ($login, $passwd) = ($ARGV[0], $ARGV[1]) if ( @ARGV == 2 );
 
 eval {
     my $app = app->new(get_cfg());
-    my $user = $app->auth($login, encrypt($passwd));
-    dump($user);
-    if($user->is_admin()) { say "ADMIN" }
-    else                  { say "NOT ADMIN" }
+    $app->register_user($login, encrypt($passwd));
 };
 
 if( $@ ) {

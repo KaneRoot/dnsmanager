@@ -37,7 +37,11 @@ sub toggle_admin {
 sub delete_user {
     my ($self, $login) = @_;
     my $user = $self->db->get_user($login);
-    $self->delete_domain($login, $_) foreach(@{$$user{domains}});
+    my @domains_to_del = @{$$user{domains}};
+    for(@domains_to_del) {
+        say "delete domain $_";
+        $self->delete_domain($user, $_);
+    }
     $self->db->delete_user($login);
 }
 

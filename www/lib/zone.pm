@@ -169,19 +169,22 @@ sub addzone {
 
     copycat ($tpl, $tmpfile); # get the template
 
-    # sed CHANGEMEORIGIN by the real origin
-    mod_orig_template ($tmpfile, $$self{domain});
+    # get the file path
+    my $f = URI->new($tmpfile);
 
-    my $zonefile = zonefile->new(zonefile => $tmpfile
+    # sed CHANGEMEORIGIN by the real origin
+    mod_orig_template ($f->path, $$self{domain});
+
+    my $zonefile = zonefile->new(zonefile => $f->path
         , domain => $$self{domain});
     $zonefile->new_serial(); # update the serial number
 
     # write the new zone tmpfile to disk 
-    write_file $tmpfile, $zonefile->output();
+    write_file $f->path, $zonefile->output();
 
     my $file = $self->_get_remote_zf();
     copycat ($tmpfile, $file); # put the final zone on the server
-    unlink($tmpfile); # del the temporary file
+    unlink($f->path); # del the temporary file
 
     # add new zone on the primary ns
     $self->dnsi->addzone($$self{domain});
@@ -248,13 +251,16 @@ sub new_tmp {
 
     copycat ($tpl, $file);
 
-    # sed CHANGEMEORIGIN by the real origin
-    mod_orig_template ($file, $$self{domain});
+    # get the file path
+    my $f = URI->new($file);
 
-    my $zonefile = zonefile->new(zonefile => $file, domain => $$self{domain});
+    # sed CHANGEMEORIGIN by the real origin
+    mod_orig_template ($f->path, $$self{domain});
+
+    my $zonefile = zonefile->new(zonefile => $f->path, domain => $$self{domain});
     $zonefile->new_serial();
 
-    unlink($file);
+    unlink($f->path);
 
     return $zonefile;
 }
@@ -262,8 +268,9 @@ sub new_tmp {
 # change the origin in a zone file template
 sub mod_orig_template {
     my ($file, $domain) = @_;
-    my $cmd = qq[sed -i "s/CHANGEMEORIGIN/$domain/" $file 2>/dev/null 1>/dev/null];
-    system($cmd);
+    #my $cmd = qq[sed -i "s/CHANGEMEORIGIN/$domain/" $file 2>/dev/null 1>/dev/null];
+    say "s/CHANGEMEORIGIN/$domain/ on $file";
+    qx[sed -i "s/CHANGEMEORIGIN/$domain/" $file];
 }
 
 sub del {
