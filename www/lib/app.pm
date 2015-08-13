@@ -15,6 +15,16 @@ sub _void { my $x = ''; \$x; }
 sub BUILD {
     my ($self) = @_;
     $$self{db} = db->new(data => $self);
+
+    my $db = $$self{database};
+    unless(exists $$db{sgbd} && exists $$db{name}
+        && exists $$db{host} && exists $$db{port}
+        && exists $$db{user} && exists $$db{passwd})
+    {
+        die "Unable to connect to the database.\n"
+        . "Check the existance of theses parameters in the config file :\n"
+        . "\tsgbd name host port user passwd";
+    }
 }
 
 ### users
