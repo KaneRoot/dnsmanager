@@ -11,7 +11,7 @@ database:
     name: dnsmanager
     host: localhost
     port: 3306
-    user: myuser
+    user: dnsmanageruser
     passwd: "my-not-so-dummy-password"
 
 primarydnsserver:

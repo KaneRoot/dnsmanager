@@ -30,4 +30,5 @@ cpanm DNS::ZoneParse
 cpanm Net::OpenSSH
 cpanm Template
 cpanm Net::SSH
+cpanm Date::Calc
 # cpanm Template::Toolkit non trouvé
