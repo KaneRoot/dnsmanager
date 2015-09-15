@@ -209,7 +209,7 @@ sub rt_dom_add {
     $$res{route} = '/user/home';
 
     # check if user is logged
-    unless( exists $$session{login}) { 
+    unless( $$session{login}) { 
         $$res{params}{errmsg} = q{Vous n'êtes pas enregistré. };
         $$res{sessiondestroy} = 1;
         $$res{route} = '/';
@@ -217,14 +217,14 @@ sub rt_dom_add {
     }
 
     # check if domain parameter is set
-    unless( exists $$param{domain} && length $$param{domain} > 0) {
+    unless( $$param{domain} && length $$param{domain} > 0) {
         $$res{params}{errmsg} = 
         q{Domaine personnel non renseigné correctement. };
         return $res;
     }
 
     # check if tld parameter is set
-    unless( exists $$param{tld} && length $$param{tld} > 0) {
+    unless( $$param{tld} && length $$param{tld} > 0) {
         $$res{params}{errmsg} = q{Choix du domaine non fait. };
         return $res;
     }
@@ -247,7 +247,7 @@ sub rt_dom_add {
         eval {
             my $app = app->new(get_cfg());
             my $user = $app->auth($$session{login}, $$session{passwd});
-            $app->add_domain( $user, $domain );
+            $app->add_domain( $$user{login}, $domain );
 
             $$res{addsession}{domainName} = $$param{domain};
             $$res{addsession}{creationSuccess} = 

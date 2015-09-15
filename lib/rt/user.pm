@@ -226,7 +226,7 @@ sub rt_user_home {
             return $res;
         }
 
-        my @domains = @{$app->get_domains($$session{login})};
+        my $domains = $app->get_domains($$session{login});
 
         my $cs = $$session{creationSuccess};
         my $dn = $$session{domainName};
@@ -237,7 +237,7 @@ sub rt_user_home {
         $$res{params} = {
             login               => $$session{login}
             , admin             => $$user{admin}
-            , domains           => [@domains]
+            , domains           => $domains
             , provideddomains   => $$app{tld}
             , creationSuccess   => $cs
             , domainName        => $dn  
