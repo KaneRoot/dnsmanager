@@ -25,8 +25,8 @@ sub rt_root {
             if( $user ) {
                 $$res{params} = {
                     login   => $$session{login}
-                    , admin   => $user->is_admin()
-                    , domains => [ @{$$user{domains}} ]
+                    , admin   => $$user{admin}
+                    , domains => $$user{domains}
                 };
             }
             $app->disconnect();

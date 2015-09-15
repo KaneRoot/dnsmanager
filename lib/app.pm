@@ -54,6 +54,11 @@ sub get_all_users {
     $self->db->get_all_users
 }
 
+sub is_owning_domain {
+    my ($self, $login, $domain) = @_; 
+    $self->db->is_owning_domain($login, $domain)
+}
+
 # DOMAIN
 
 sub _get_zone {
@@ -103,9 +108,13 @@ sub get_domain {
     $self->_get_zone($domain)->get()
 }
 
+sub get_domains {
+    my ($self, $login) = @_; 
+    $self->db->get_domains($login)
+}
+
 sub get_all_domains {
     my ($self) = @_; 
-    # % domain login
     $self->db->get_all_domains
 }
 

@@ -67,7 +67,7 @@ sub rt_user_login {
         # TODO adds a freeze feature, not used for now
         # $$res{addsession}{user}     = freeze( $user );
 
-        if( $user->is_admin() ) {
+        if( $$user{admin} ) {
             $$res{route} = '/admin';
         }
         else {
@@ -100,10 +100,8 @@ sub rt_user_del {
 
         my $user = $app->auth($$session{login}, $$session{passwd});
 
-        if ( $user && $user->is_admin() || $$session{login} eq $$param{user} ) {
-
+        if ( $user && $$user{admin} || $$session{login} eq $$param{user} ) {
             $app->delete_user($$param{user});
-
         }
         $app->disconnect();
     };
@@ -138,7 +136,7 @@ sub rt_user_toggleadmin {
 
         my $user = $app->auth($$session{login}, $$session{passwd});
 
-        unless ( $user && $user->is_admin() ) {
+        unless ( $user && $$user{admin} ) {
             $$res{params}{errmsg} = q{Vous n'êtes pas administrateur.};
             return $res;
         }
@@ -228,7 +226,7 @@ sub rt_user_home {
             return $res;
         }
 
-        my @domains = @{$user->domains};
+        my @domains = @{$app->get_domains($$session{login})};
 
         my $cs = $$session{creationSuccess};
         my $dn = $$session{domainName};
@@ -238,7 +236,7 @@ sub rt_user_home {
 
         $$res{params} = {
             login               => $$session{login}
-            , admin             => $user->is_admin()
+            , admin             => $$user{admin}
             , domains           => [@domains]
             , provideddomains   => $$app{tld}
             , creationSuccess   => $cs

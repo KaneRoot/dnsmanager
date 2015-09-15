@@ -43,10 +43,11 @@ sub rt_dom_cli_mod_entry {
 
         my $user = $app->auth($$session{login}, $pass);
 
-        unless ( $user &&
-            ( $user->is_admin()
-                || grep { $_ eq $$param{domain} } @{$user->domains})) {
-            $$res{params}{errmsg} = q{Auth non OK.};
+        unless ( $user && ( $$user{admin} || 
+                $app->is_owning_domain($$user{login}, $$param{domain}))) {
+            $app->disconnect();
+            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
+            $$res{route} = '/';
             return $res;
         }
 
@@ -79,10 +80,10 @@ sub rt_dom_mod_entry {
         my $app = app->new(get_cfg());
         my $user = $app->auth($$session{login}, $$session{passwd});
 
-        unless ( $user && 
-            ( $user->is_admin()
-                || grep { $_ eq $$param{domain} } @{$user->domains})) {
-            $$res{params}{errmsg} = q{Auth non OK.};
+        unless ( $user && ( $$user{admin} || 
+                $app->is_owning_domain($$user{login}, $$param{domain}))) {
+            $app->disconnect();
+            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
             $$res{route} = '/';
             return $res;
         }
@@ -125,10 +126,10 @@ sub rt_dom_del_entry {
 
         my $user = $app->auth($$session{login}, $$session{passwd});
 
-        unless ( $user && 
-            ( $user->is_admin()
-                || grep { $_ eq $$param{domain} } @{$user->domains})) {
-            $$res{params}{errmsg} = q{Auth non OK.};
+        unless ( $user && ( $$user{admin} || 
+                $app->is_owning_domain($$user{login}, $$param{domain}))) {
+            $app->disconnect();
+            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
             $$res{route} = '/';
             return $res;
         }
@@ -173,10 +174,10 @@ sub rt_dom_del {
         my $app = app->new(get_cfg());
         my $user = $app->auth($$session{login}, $$session{passwd});
 
-        unless ( $user && 
-            ( $user->is_admin()
-                || grep { $_ eq $$param{domain} } @{$user->domains})) {
-            $$res{params}{errmsg} = q{Auth non OK.};
+        unless ( $user && ( $$user{admin} || 
+                $app->is_owning_domain($$user{login}, $$param{domain}))) {
+            $app->disconnect();
+            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
             $$res{route} = '/';
             return $res;
         }
@@ -269,24 +270,31 @@ sub rt_dom_details {
     my $res;
 
     # check if user is logged & if domain parameter is set
-    unless( $$session{login} && $$param{domain}) {
+    unless($$session{login}) {
+        $$res{params}{errmsg} = q{Session inactive.};
         $$res{route} = '/';
         return $res;
     }
 
+    unless($$param{domain}) {
+        $$res{params}{errmsg} = q{Domaine non renseigné.};
+        $$res{route} = '/';
+        return $res;
+    }
+
+
+    my $app;
     eval {
-        my $app = app->new(get_cfg());
+        $app = app->new(get_cfg());
 
         my $user = $app->auth($$session{login}, $$session{passwd});
 
-        unless ( $user && 
-            ( $user->is_admin()
-                || grep { $_ eq $$param{domain} } @{$user->domains})) {
-
-            $$res{params}{errmsg} = q{Auth non OK.};
+        unless ( $user && ( $$user{admin} || 
+                $app->is_owning_domain($$user{login}, $$param{domain}))) {
+            $app->disconnect();
+            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
             $$res{route} = '/';
             return $res;
-
         }
 
         my $zone = $app->get_domain($$param{domain});
@@ -296,7 +304,7 @@ sub rt_dom_details {
         $$res{template} = 'details';
         $$res{params} = {
             login           => $$session{login}
-            , admin         => $user->is_admin()
+            , admin         => $$user{admin}
             , domain        => $$param{domain}
             , domain_zone   => $zone->output()
             , user_ip       => $$request{address}
@@ -315,7 +323,14 @@ sub rt_dom_details {
         }
     };
 
-    $res;
+    if($@) {
+        $app->disconnect() if $app;
+        $$res{params}{errmsg} = $@;
+        $$res{route} = '/';
+        return $res;
+    }
+
+    $res
 }
 
 sub rt_dom_update {
@@ -331,9 +346,9 @@ sub rt_dom_update {
         my $app = app->new(get_cfg());
         my $user = $app->auth($$session{login}, $$session{passwd});
 
-        unless($user && ($user->is_admin() || grep { $_ eq $$param{domain} } 
-                @{$user->domains}) ) {
-
+        unless ( $user && ( $$user{admin} || 
+                $app->is_owning_domain($$user{login}, $$param{domain}))) {
+            $app->disconnect();
             $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
             $$res{route} = '/';
             return $res;
@@ -390,10 +405,14 @@ sub rt_dom_updateraw {
 
         # if the user exists and if 
         # he is admin or he owns the requested domain
-        if($user && 
-            ($user->is_admin() 
-                || grep { $_ eq $$param{domain} } @{$user->domains}) ) {
-
+        unless ( $user && ( $$user{admin} || 
+                $app->is_owning_domain($$user{login}, $$param{domain}))) {
+            $app->disconnect();
+            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
+            $$res{route} = '/';
+            return $res;
+        }
+        else {
             my $success = 
             $app->update_domain_raw($$param{zoneupdated}, $$param{domain});
 
@@ -402,10 +421,6 @@ sub rt_dom_updateraw {
             }
 
             $$res{route} = '/domain/details/' . $$param{domain};
-        }
-        else {
-            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
-            $$res{route} = '/';
         }
 
         $app->disconnect();

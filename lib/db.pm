@@ -6,8 +6,6 @@ use Modern::Perl;
 use autodie;
 use DBI;
 
-use bdd::user;
-use bdd::admin;
 use getiface ':all';
 
 # db handler
@@ -248,6 +246,24 @@ sub get_all_domains {
 sub disconnect {
     my ($self) = @_;
     $$self{dbh}->disconnect()
+}
+
+sub is_owning_domain {
+    my ($self, $login, $domain) = @_; 
+
+    my $sth = 
+    $self->dbh->prepare('SELECT * FROM domain where login=? and domain=?');
+    unless ($sth->execute($login, $domain)) {
+        $sth->finish();
+        die "Impossible to check if the user $login has domains.";
+    }
+
+    unless($sth->fetchrow_hashref) {
+        $sth->finish();
+        return 0
+    }
+
+    1
 }
 
 1;

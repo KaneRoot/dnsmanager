@@ -41,12 +41,15 @@ sub what_is_next {
         session $_ => undef;
     }
 
+    deferred 'errmsg' => $$res{params}{errmsg} if($$res{params}{errmsg});
+
+    say "ERREUR : $$res{params}{errmsg}" if($$res{params}{errmsg});
+
     if(exists $$res{route}) {
-        deferred 'errmsg' => $$res{params}{errmsg};
         redirect $$res{route};
     }
     elsif(exists $$res{template}) {
-        $$res{params}{errmsg} //= deferred('errmsg');
+        #$$res{params}{errmsg} //= deferred('errmsg');
         debug(Dump $res);
         template $$res{template} => $$res{params};
     } else {

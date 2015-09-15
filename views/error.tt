@@ -1,8 +1,8 @@
-<% IF errmsg.defined && errmsg.length > 0 %>
+<% IF deferred.errmsg %>
 <div id="errmsg" >
     <div class="alert alert-danger">
         <p><strong>Oh !</strong>
-        <% errmsg %>
+        <% deferred.errmsg %>
         <span class="glyphicon glyphicon-remove"></span>
         </p>
     </div>

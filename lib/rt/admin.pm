@@ -19,7 +19,7 @@ sub rt_admin {
         my $app = app->new(get_cfg());
         my $user = $app->auth($$session{login}, $$session{passwd});
 
-        unless ($user && $user->is_admin()) {
+        unless ($user && $$user{admin}) {
             $$res{errmsg} = q{Donnée privée, petit coquin. ;) };
             $$res{route} = '/';
             return $res;
@@ -27,7 +27,7 @@ sub rt_admin {
 
         my $alldomains = $app->get_all_domains;
         my $allusers = $app->get_all_users;
-        my $domains = $user->domains;
+        my $domains = $app->get_domains($$session{login});
 
         $$res{template} = 'administration'; 
         $$res{params} = {
