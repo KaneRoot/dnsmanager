@@ -73,6 +73,8 @@ sub rt_user_login {
         else {
             $$res{route} = '/user/home';
         }
+
+        $app->disconnect();
     };
 
     if( $@ ) {
@@ -81,7 +83,7 @@ sub rt_user_login {
         $$res{route} = '/';
     }
 
-    $res;
+    $res
 }
 
 sub rt_user_del {
@@ -93,18 +95,22 @@ sub rt_user_del {
         return $res;
     }
 
-    my $app = app->new(get_cfg());
+    eval {
+        my $app = app->new(get_cfg());
 
-    my $user = $app->auth($$session{login}, $$session{passwd});
+        my $user = $app->auth($$session{login}, $$session{passwd});
 
-    if ( $user && $user->is_admin() || $$session{login} eq $$param{user} ) {
+        if ( $user && $user->is_admin() || $$session{login} eq $$param{user} ) {
 
-        eval { $app->delete_user($$param{user}); };
+            $app->delete_user($$param{user});
 
-        if ( $@ ) {
-            $$res{params}{errmsg} = 
-            "L'utilisateur $$res{user} n'a pas pu être supprimé. $@";
         }
+        $app->disconnect();
+    };
+
+    if ( $@ ) {
+        $$res{params}{errmsg} = 
+        "L'utilisateur $$res{user} n'a pas pu être supprimé. $@";
     }
 
     if( $$request{referer} ) {
@@ -114,7 +120,7 @@ sub rt_user_del {
         $$res{route} = '/';
     }
 
-    $res;
+    $res
 }
 
 sub rt_user_toggleadmin {
@@ -127,16 +133,19 @@ sub rt_user_toggleadmin {
         return $res;
     }
 
-    my $app = app->new(get_cfg());
+    eval {
+        my $app = app->new(get_cfg());
 
-    my $user = $app->auth($$session{login}, $$session{passwd});
+        my $user = $app->auth($$session{login}, $$session{passwd});
 
-    unless ( $user && $user->is_admin() ) {
-        $$res{params}{errmsg} = q{Vous n'êtes pas administrateur.};
-        return $res;
-    }
+        unless ( $user && $user->is_admin() ) {
+            $$res{params}{errmsg} = q{Vous n'êtes pas administrateur.};
+            return $res;
+        }
 
-    $app->toggle_admin($$param{user});
+        $app->toggle_admin($$param{user});
+        $app->disconnect();
+    };
 
     if( $$request{referer} =~ '/admin' ) {
         $$res{route} = $$request{referer};
@@ -145,7 +154,7 @@ sub rt_user_toggleadmin {
         $$res{route} = '/';
     }
 
-    $res;
+    $res
 }
 
 sub rt_user_subscribe {
@@ -159,7 +168,7 @@ sub rt_user_subscribe {
         $$res{template} = 'subscribe';
     }
 
-    $res;
+    $res
 }
 
 sub rt_user_add {
@@ -178,11 +187,14 @@ sub rt_user_add {
         return $res;
     }
 
-    my $pass = encrypt($$param{password});
+    eval {
+        my $pass = encrypt($$param{password});
 
-    my $app = app->new(get_cfg());
+        my $app = app->new(get_cfg());
 
-    eval { $app->register_user($$param{login}, $pass); };
+        $app->register_user($$param{login}, $pass);
+        $app->disconnect();
+    };
 
     if($@) {
         $$res{params}{errmsg} = q{Ce pseudo est déjà pris.} . $@;
@@ -194,7 +206,7 @@ sub rt_user_add {
     $$res{addsession}{passwd} = $pass;
     $$res{route} = '/user/home';
 
-    $res;
+    $res
 }
 
 sub rt_user_home {
@@ -231,6 +243,8 @@ sub rt_user_home {
             , creationSuccess   => $cs
             , domainName        => $dn  
         };
+
+        $app->disconnect();
     };
 
     if( $@ ) {
@@ -239,7 +253,7 @@ sub rt_user_home {
         $$res{route} = '/';
     }
 
-    $res;
+    $res
 }
 
 1;

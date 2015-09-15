@@ -37,111 +37,120 @@ sub rt_dom_cli_mod_entry {
     my ($session, $param, $request) = @_;
     my $res;
 
-    my $pass = encrypt($$param{pass});
-    my $app = app->new(get_cfg());
+    eval {
+        my $pass = encrypt($$param{pass});
+        my $app = app->new(get_cfg());
 
-    my $user = $app->auth($$session{login}, $pass);
+        my $user = $app->auth($$session{login}, $pass);
 
-    unless ( $user &&
-        ( $user->is_admin()
-            || grep { $_ eq $$param{domain} } @{$user->domains})) {
-        $$res{params}{errmsg} = q{Auth non OK.};
-        return $res;
-    }
-
-    $app->modify_entry( $$param{domain}
-        , {
-            type    => $$param{type}
-            , name  => $$param{name}
-            , host  => $$param{host}
-            , ttl   => $$param{ttl}
+        unless ( $user &&
+            ( $user->is_admin()
+                || grep { $_ eq $$param{domain} } @{$user->domains})) {
+            $$res{params}{errmsg} = q{Auth non OK.};
+            return $res;
         }
-        , {
-            newtype         => $$param{type}
-            , newname       => $$param{name}
-            , newhost       => $$param{ip}
-            , newttl        => $$param{ttl}
-            , newpriority   => ''
-        });
 
-    say 'OK'; # TODO remove this, debug
-    $res;
+        $app->modify_entry( $$param{domain}
+            , {
+                type    => $$param{type}
+                , name  => $$param{name}
+                , host  => $$param{host}
+                , ttl   => $$param{ttl}
+            }
+            , {
+                newtype         => $$param{type}
+                , newname       => $$param{name}
+                , newhost       => $$param{ip}
+                , newttl        => $$param{ttl}
+                , newpriority   => ''
+            });
+
+        $app->disconnect();
+    };
+
+    $res
 }
 
 sub rt_dom_mod_entry {
     my ($session, $param, $request) = @_;
     my $res;
 
-    my $app = app->new(get_cfg());
-    my $user = $app->auth($$session{login}, $$session{passwd});
+    eval {
+        my $app = app->new(get_cfg());
+        my $user = $app->auth($$session{login}, $$session{passwd});
 
-    unless ( $user && 
-        ( $user->is_admin()
-            || grep { $_ eq $$param{domain} } @{$user->domains})) {
-        $$res{params}{errmsg} = q{Auth non OK.};
-        $$res{route} = '/';
-        return $res;
-    }
-
-    unless( $$param{domain} ) {
-        $$res{params}{errmsg} = q<Domaine non renseigné.>;
-        $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
-        return $res;
-    }
-
-    $app->modify_entry( $$param{domain}
-        , {
-            type => $$param{type}
-            , name => $$param{name}
-            , host => $$param{host}
-            , ttl  => $$param{ttl}
+        unless ( $user && 
+            ( $user->is_admin()
+                || grep { $_ eq $$param{domain} } @{$user->domains})) {
+            $$res{params}{errmsg} = q{Auth non OK.};
+            $$res{route} = '/';
+            return $res;
         }
-        , {
-            newtype       => $$param{newtype}
-            , newname     => $$param{newname}
-            , newhost     => $$param{newhost}
-            , newttl      => $$param{newttl}
-            , newpriority => $$param{newpriority}
-        });
+
+        unless( $$param{domain} ) {
+            $$res{params}{errmsg} = q<Domaine non renseigné.>;
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
+
+        $app->modify_entry( $$param{domain}
+            , {
+                type => $$param{type}
+                , name => $$param{name}
+                , host => $$param{host}
+                , ttl  => $$param{ttl}
+            }
+            , {
+                newtype       => $$param{newtype}
+                , newname     => $$param{newname}
+                , newhost     => $$param{newhost}
+                , newttl      => $$param{newttl}
+                , newpriority => $$param{newpriority}
+            });
+        $app->disconnect();
+    };
 
     $$res{route} = '/domain/details/'. $$param{domain};
 
-    $res;
+    $res
 }
 
 sub rt_dom_del_entry {
     my ($session, $param, $request) = @_;
     my $res;
 
-    # Load :domain and search for corresponding data
-    my $app = app->new(get_cfg());
+    eval {
+        # Load :domain and search for corresponding data
+        my $app = app->new(get_cfg());
 
-    my $user = $app->auth($$session{login}, $$session{passwd});
+        my $user = $app->auth($$session{login}, $$session{passwd});
 
-    unless ( $user && 
-        ( $user->is_admin()
-            || grep { $_ eq $$param{domain} } @{$user->domains})) {
-        $$res{params}{errmsg} = q{Auth non OK.};
-        $$res{route} = '/';
-        return $res;
-    }
+        unless ( $user && 
+            ( $user->is_admin()
+                || grep { $_ eq $$param{domain} } @{$user->domains})) {
+            $$res{params}{errmsg} = q{Auth non OK.};
+            $$res{route} = '/';
+            return $res;
+        }
 
-    unless( $$param{domain} ) {
-        $$res{params}{errmsg} = q{Domaine non renseigné.};
-        $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
-        return $res;
-    }
+        unless( $$param{domain} ) {
+            $$res{params}{errmsg} = q{Domaine non renseigné.};
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
 
-    $app->delete_entry( $$param{domain}, {
-            type => $$param{type},
-            name => $$param{name},
-            host => $$param{host},
-            ttl  => $$param{ttl}
-        });
+        $app->delete_entry( $$param{domain}, {
+                type => $$param{type},
+                name => $$param{name},
+                host => $$param{host},
+                ttl  => $$param{ttl}
+            });
+        $app->disconnect();
+    };
 
     $$res{route} = '/domain/details/'. $$param{domain};
 
-    $res;
+    $res
 }
 
 sub rt_dom_del {
@@ -173,6 +182,7 @@ sub rt_dom_del {
         }
 
         $app->delete_domain($user, $$param{domain}); 
+        $app->disconnect();
     };
 
     if($@) {
@@ -188,7 +198,7 @@ sub rt_dom_del {
         $$res{route} = $$request{referer};
     }
 
-    $res;
+    $res
 }
 
 sub rt_dom_add {
@@ -241,6 +251,8 @@ sub rt_dom_add {
             $$res{addsession}{domainName} = $$param{domain};
             $$res{addsession}{creationSuccess} = 
             q{Le nom de domaine a bien été réservé ! };
+
+            $app->disconnect();
         };
 
         if( $@ ) {
@@ -249,7 +261,7 @@ sub rt_dom_add {
 
     }
 
-    $res;
+    $res
 }
 
 sub rt_dom_details {
@@ -262,42 +274,46 @@ sub rt_dom_details {
         return $res;
     }
 
-    my $app = app->new(get_cfg());
+    eval {
+        my $app = app->new(get_cfg());
 
-    my $user = $app->auth($$session{login}, $$session{passwd});
+        my $user = $app->auth($$session{login}, $$session{passwd});
 
-    unless ( $user && 
-        ( $user->is_admin()
-            || grep { $_ eq $$param{domain} } @{$user->domains})) {
+        unless ( $user && 
+            ( $user->is_admin()
+                || grep { $_ eq $$param{domain} } @{$user->domains})) {
 
-        $$res{params}{errmsg} = q{Auth non OK.};
-        $$res{route} = '/';
-        return $res;
+            $$res{params}{errmsg} = q{Auth non OK.};
+            $$res{route} = '/';
+            return $res;
 
-    }
+        }
 
-    my $zone = $app->get_domain($$param{domain});
+        my $zone = $app->get_domain($$param{domain});
 
-    $$res{template} = 'details';
-    $$res{params} = {
-        login           => $$session{login}
-        , admin         => $user->is_admin()
-        , domain        => $$param{domain}
-        , domain_zone   => $zone->output()
-        , user_ip       => $$request{address}
+        $app->disconnect();
+
+        $$res{template} = 'details';
+        $$res{params} = {
+            login           => $$session{login}
+            , admin         => $user->is_admin()
+            , domain        => $$param{domain}
+            , domain_zone   => $zone->output()
+            , user_ip       => $$request{address}
+        };
+
+        if($$param{expert}) {
+            $$res{params}{expert} = 1;
+        }
+        else {
+            $$res{params}{a}        = $zone->a();
+            $$res{params}{aaaa}     = $zone->aaaa();
+            $$res{params}{cname}    = $zone->cname();
+            $$res{params}{ptr}      = $zone->ptr();
+            $$res{params}{mx}       = $zone->mx();
+            $$res{params}{ns}       = $zone->ns();
+        }
     };
-
-    if($$param{expert}) {
-        $$res{params}{expert} = 1;
-    }
-    else {
-        $$res{params}{a}        = $zone->a();
-        $$res{params}{aaaa}     = $zone->aaaa();
-        $$res{params}{cname}    = $zone->cname();
-        $$res{params}{ptr}      = $zone->ptr();
-        $$res{params}{mx}       = $zone->mx();
-        $$res{params}{ns}       = $zone->ns();
-    }
 
     $res;
 }
@@ -311,46 +327,50 @@ sub rt_dom_update {
         return $res;
     }
 
-    my $app = app->new(get_cfg());
-    my $user = $app->auth($$session{login}, $$session{passwd});
+    eval {
+        my $app = app->new(get_cfg());
+        my $user = $app->auth($$session{login}, $$session{passwd});
 
-    unless($user && ($user->is_admin() || grep { $_ eq $$param{domain} } 
-            @{$user->domains}) ) {
+        unless($user && ($user->is_admin() || grep { $_ eq $$param{domain} } 
+                @{$user->domains}) ) {
 
-        $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
-        $$res{route} = '/';
-        return $res;
-    }
+            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
+            $$res{route} = '/';
+            return $res;
+        }
 
-    my $zone = $app->get_domain( $$param{domain} );
+        my $zone = $app->get_domain( $$param{domain} );
 
-    # TODO better naming convention
-    my $x;
-    for( $$param{type} ) {
-        if($_ eq 'A')           { $x = $zone->a(); }
-        elsif( $_ eq 'AAAA')    { $x = $zone->aaaa; }
-        elsif( $_ eq 'CNAME')   { $x = $zone->cname; }
-        elsif( $_ eq 'MX')      { $x = $zone->mx; }
-        elsif( $_ eq 'PTR')     { $x = $zone->ptr; }
-        elsif( $_ eq 'NS')      { $x = $zone->ns; }
-        elsif( $_ eq 'TXT')      { $x = $zone->txt; } # TODO verify this
-    }
+        # TODO better naming convention
+        my $x;
+        for( $$param{type} ) {
+            if($_ eq 'A')           { $x = $zone->a(); }
+            elsif( $_ eq 'AAAA')    { $x = $zone->aaaa; }
+            elsif( $_ eq 'CNAME')   { $x = $zone->cname; }
+            elsif( $_ eq 'MX')      { $x = $zone->mx; }
+            elsif( $_ eq 'PTR')     { $x = $zone->ptr; }
+            elsif( $_ eq 'NS')      { $x = $zone->ns; }
+            elsif( $_ eq 'TXT')      { $x = $zone->txt; } # TODO verify this
+        }
 
-    push(@$x, {
-            name        => $$param{name}
-            , class     => "IN"
-            , host      => $$param{value}
-            , ttl       => $$param{ttl}
-            , ORIGIN    => $zone->origin} );
+        push(@$x, {
+                name        => $$param{name}
+                , class     => "IN"
+                , host      => $$param{value}
+                , ttl       => $$param{ttl}
+                , ORIGIN    => $zone->origin} );
 
-    $zone->new_serial();
+        $zone->new_serial();
 
-    #debug(Dump $zone);
+        #debug(Dump $zone);
 
-    $app->update_domain( $zone , $$param{domain} );
+        $app->update_domain( $zone , $$param{domain} );
+        $app->disconnect();
+    };
+
     $$res{route} = '/domain/details/' . $$param{domain};
 
-    $res;
+    $res
 }
 
 sub rt_dom_updateraw {
@@ -364,30 +384,34 @@ sub rt_dom_updateraw {
         return $res;
     }
 
-    my $app = app->new(get_cfg());
-    my $user = $app->auth($$session{login}, $$session{passwd});
+    eval {
+        my $app = app->new(get_cfg());
+        my $user = $app->auth($$session{login}, $$session{passwd});
 
-    # if the user exists and if 
-    # he is admin or he owns the requested domain
-    if($user && 
-        ($user->is_admin() 
-            || grep { $_ eq $$param{domain} } @{$user->domains}) ) {
+        # if the user exists and if 
+        # he is admin or he owns the requested domain
+        if($user && 
+            ($user->is_admin() 
+                || grep { $_ eq $$param{domain} } @{$user->domains}) ) {
 
-        my $success = 
-        $app->update_domain_raw($$param{zoneupdated}, $$param{domain});
+            my $success = 
+            $app->update_domain_raw($$param{zoneupdated}, $$param{domain});
 
-        unless($success) {
-            $$res{params}{errmsg} = q{Problème de mise à jour du domaine.};
+            unless($success) {
+                $$res{params}{errmsg} = q{Problème de mise à jour du domaine.};
+            }
+
+            $$res{route} = '/domain/details/' . $$param{domain};
+        }
+        else {
+            $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
+            $$res{route} = '/';
         }
 
-        $$res{route} = '/domain/details/' . $$param{domain};
-    }
-    else {
-        $$res{params}{errmsg} = q{Donnée privée, petit coquin. ;) };
-        $$res{route} = '/';
-    }
+        $app->disconnect();
+    };
 
-    $res;
+    $res
 }
 
 1;

@@ -115,4 +115,9 @@ sub new_tmp {
     $self->_get_zone($domain)->new_tmp();
 }
 
+sub disconnect {
+    my ($self) = @_; 
+    $self->db->disconnect();
+}
+
 1;

@@ -29,6 +29,7 @@ sub rt_root {
                     , domains => [ @{$$user{domains}} ]
                 };
             }
+            $app->disconnect();
         };
         
         if( $@ ) {
@@ -38,7 +39,7 @@ sub rt_root {
 
     }
 
-    $res;
+    $res
 }
 
 1;

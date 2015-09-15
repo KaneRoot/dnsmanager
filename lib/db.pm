@@ -210,4 +210,9 @@ sub toggle_admin {
     $sth->finish();
 }
 
+sub disconnect {
+    my ($self) = @_;
+    $$self{dbh}->disconnect();
+}
+
 1;
