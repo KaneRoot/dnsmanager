@@ -19,8 +19,6 @@ eval {
     my $app = app->new(get_cfg());
     my $users = $app->get_all_users();
     dump($users);
-    my @keys = keys %$users;
-    say " $keys[0] is_utf8 : " . (utf8::is_utf8($keys[0]) ? "oui" : "non");
 };
 
 

@@ -187,6 +187,7 @@ sub rt_user_add {
         return $res;
     }
 
+
     eval {
         my $pass = encrypt($$param{password});
 
@@ -194,6 +195,10 @@ sub rt_user_add {
 
         $app->register_user($$param{login}, $pass);
         $app->disconnect();
+
+        $$res{addsession}{login} = $$param{login};
+        $$res{addsession}{passwd} = $pass;
+        $$res{route} = '/user/home';
     };
 
     if($@) {
@@ -201,10 +206,6 @@ sub rt_user_add {
         $$res{route} = '/user/subscribe';
         return $res;
     }
-
-    $$res{addsession}{login} = $$param{login};
-    $$res{addsession}{passwd} = $pass;
-    $$res{route} = '/user/home';
 
     $res
 }

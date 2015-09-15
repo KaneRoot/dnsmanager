@@ -9,18 +9,17 @@ use encryption ':all';
 use app;
 use utf8;
 
-if( @ARGV != 1 && @ARGV != 3 ) {
-    say "usage : ./$0 [ login passwd ] ndd ";
+if( @ARGV != 3 ) {
+    say "usage : ./$0 login passwd ndd ";
     exit 1;
 }
 
-my ($login, $passwd, $dom) = (qw/test test/, $ARGV[0]);
-($login, $passwd, $dom) = ($ARGV[0], $ARGV[1], $ARGV[2]) if ( @ARGV == 3 );
+my ($login, $passwd, $dom) = ($ARGV[0], $ARGV[1], $ARGV[2]);
 
 eval {
     my $app = app->new(get_cfg());
     my $user = $app->auth($login, encrypt($passwd));
-    $app->delete_domain( $user, $dom );
+    $app->delete_domain( $login, $dom );
 };
 
 if( $@ ) {

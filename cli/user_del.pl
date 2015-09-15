@@ -10,13 +10,12 @@ use configuration ':all';
 use app;
 use utf8;
 
-if( @ARGV != 0 && @ARGV != 1 ) {
-    say "usage : ./$0 [user]";
+if( @ARGV != 1 ) {
+    say "usage : ./$0 user";
     exit 1;
 }
 
-my $login = qw/test/;
-$login = $ARGV[0] if @ARGV == 1;
+my $login = $ARGV[0];
 
 eval {
     my $app = app->new(get_cfg());

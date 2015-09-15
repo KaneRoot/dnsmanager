@@ -181,7 +181,7 @@ sub rt_dom_del {
             return $res;
         }
 
-        $app->delete_domain($user, $$param{domain}); 
+        $app->delete_domain($$param{domain}); 
         $app->disconnect();
     };
 

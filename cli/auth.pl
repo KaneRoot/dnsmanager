@@ -23,8 +23,8 @@ eval {
     my $app = app->new(get_cfg());
     my $user = $app->auth($login, encrypt($passwd));
     dump($user);
-    if($user->is_admin()) { say "ADMIN" }
-    else                  { say "NOT ADMIN" }
+    if($$user{admin})       { say "ADMIN" }
+    else                    { say "NOT ADMIN" }
 };
 
 if( $@ ) {
