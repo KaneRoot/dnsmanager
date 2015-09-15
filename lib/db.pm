@@ -28,6 +28,8 @@ sub BUILD {
 
     $$self{dbh} = DBI->connect($dsn, $$db{user}, $$db{passwd}) 
     || die "Could not connect to database: $DBI::errstr"; 
+    $$self{dbh}->{mysql_enable_utf8} = 1;
+    $$self{dbh}->do('SET NAMES \'utf8\';') || die;
 
 }
 
