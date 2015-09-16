@@ -87,7 +87,8 @@ prefix '/domain' => sub {
     any ['post', 'get'] => '/updateraw/:domain' => sub {
         what_is_next rt_dom_updateraw 
         get_session( qw/login passwd/ )
-        , get_param( qw/domain zoneupdated/ ); # TODO verify this
+        , get_param( qw/domain zoneupdated/)
+        , get_request( qw/address referer/ );
     };
 
     any ['post', 'get'] => '/update/:domain' => sub {
@@ -126,7 +127,8 @@ prefix '/domain' => sub {
     get '/mod/:domain/:name/:type/:host/:ttl' => sub {
         what_is_next rt_dom_mod_entry
         get_session( qw/login passwd/ )
-        , get_param( qw/domain name type host ttl/ )
+        , get_param( qw/domain name type host ttl 
+            newpriority newhost newname newvalue newttl/ )
         , get_request( qw/address referer/ );
     };
 

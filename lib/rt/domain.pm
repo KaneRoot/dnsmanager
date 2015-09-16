@@ -76,6 +76,32 @@ sub rt_dom_mod_entry {
     my ($session, $param, $request) = @_;
     my $res;
 
+    $$res{route} = '/domain/details/'. $$param{domain};
+
+    # check if user is logged
+    unless( $$session{login}) { 
+        $$res{deferred}{errmsg} = q{Vous n'êtes pas enregistré. };
+        $$res{sessiondestroy} = 1;
+        return $res;
+    }
+
+    my @missingitems;
+
+    for(qw/type name ttl domain name type host ttl 
+            newhost newname newttl/) {
+        push @missingitems, $_ unless($$param{$_});
+    }
+
+    if($$param{type} eq 'MX' && ! $$param{newpriority}) {
+        push @missingitems, "newpriority";
+    }
+
+    if(@missingitems != 0) {
+        $$res{deferred}{errmsg} = "Il manque : " . join ', ', @missingitems;
+        return $res;
+    }
+
+
     eval {
         my $app = app->new(get_cfg());
         my $user = $app->auth($$session{login}, $$session{passwd});
@@ -84,7 +110,6 @@ sub rt_dom_mod_entry {
                 $app->is_owning_domain($$user{login}, $$param{domain}))) {
             $app->disconnect();
             $$res{deferred}{errmsg} = q{Donnée privée, petit coquin. ;) };
-            $$res{route} = '/';
             return $res;
         }
 
@@ -110,8 +135,6 @@ sub rt_dom_mod_entry {
             });
         $app->disconnect();
     };
-
-    $$res{route} = '/domain/details/'. $$param{domain};
 
     $res
 }
@@ -282,7 +305,6 @@ sub rt_dom_details {
         return $res;
     }
 
-
     my $app;
     eval {
         $app = app->new(get_cfg());
@@ -342,6 +364,23 @@ sub rt_dom_update {
         return $res;
     }
 
+    $$res{route} = '/domain/details/'. $$param{domain};
+
+    my @missingitems;
+
+    for(qw/type name value ttl domain/) {
+        push @missingitems, $_ unless($$param{$_});
+    }
+    
+    if($$param{type} eq 'MX' && ! $$param{priority}) {
+        push @missingitems, "priority";
+    }
+
+    if(@missingitems != 0) {
+        $$res{deferred}{errmsg} = "Il manque : " . join ', ', @missingitems;
+        return $res;
+    }
+
     eval {
         my $app = app->new(get_cfg());
         my $user = $app->auth($$session{login}, $$session{passwd});
@@ -357,33 +396,37 @@ sub rt_dom_update {
         my $zone = $app->get_domain( $$param{domain} );
 
         # TODO better naming convention
-        my $x;
+        my $entries;
         for( $$param{type} ) {
-            if($_ eq 'A')           { $x = $zone->a(); }
-            elsif( $_ eq 'AAAA')    { $x = $zone->aaaa; }
-            elsif( $_ eq 'CNAME')   { $x = $zone->cname; }
-            elsif( $_ eq 'MX')      { $x = $zone->mx; }
-            elsif( $_ eq 'PTR')     { $x = $zone->ptr; }
-            elsif( $_ eq 'NS')      { $x = $zone->ns; }
-            elsif( $_ eq 'TXT')      { $x = $zone->txt; } # TODO verify this
+            if($_ eq 'A')           { $entries = $zone->a }
+            elsif( $_ eq 'AAAA')    { $entries = $zone->aaaa }
+            elsif( $_ eq 'CNAME')   { $entries = $zone->cname }
+            elsif( $_ eq 'MX')      { $entries = $zone->mx }
+            elsif( $_ eq 'PTR')     { $entries = $zone->ptr }
+            elsif( $_ eq 'NS')      { $entries = $zone->ns }
+            elsif( $_ eq 'TXT')     { $entries = $zone->txt } # TODO verify this
         }
 
-        push(@$x, {
-                name        => $$param{name}
-                , class     => "IN"
-                , host      => $$param{value}
-                , ttl       => $$param{ttl}
-                , ORIGIN    => $zone->origin} );
+        my $new_entry = {
+            name        => $$param{name}
+            , class     => "IN"
+            , host      => $$param{value}
+            , ttl       => $$param{ttl}
+            , ORIGIN    => $zone->origin
+        };
+
+        $$new_entry{priority} = $$param{priority} if $$param{type} eq 'MX';
+        push @$entries, $new_entry;
 
         $zone->new_serial();
-
-        #debug(Dump $zone);
 
         $app->update_domain( $zone , $$param{domain} );
         $app->disconnect();
     };
 
-    $$res{route} = '/domain/details/' . $$param{domain};
+    if ( $@ ) {
+        $$res{deferred}{errmsg} = q{Problème de mise à jour du domaine. }. $@;
+    }
 
     $res
 }
@@ -396,6 +439,18 @@ sub rt_dom_updateraw {
     unless($$session{login} && $$param{domain}) {
         $$res{sessiondestroy} = 1;
         $$res{route} = '/';
+        return $res;
+    }
+
+    my @missingitems;
+
+    for(qw/domain zoneupdated/) {
+        push @missingitems, $_ unless($$param{$_});
+    }
+
+    if(@missingitems != 0) {
+        $$res{deferred}{errmsg} = "Il manque : " . join ', ', @missingitems;
+        $$res{route} = '/user/home';
         return $res;
     }
 
@@ -425,6 +480,11 @@ sub rt_dom_updateraw {
 
         $app->disconnect();
     };
+
+    if($@) {
+        $$res{deferred}{errmsg} = $@;
+        $$res{route} = '/user/home';
+    }
 
     $res
 }
