@@ -9,17 +9,16 @@ use encryption ':all';
 use app;
 use utf8;
 
-if( @ARGV != 3 ) {
-    say "usage : ./$0 login passwd ndd ";
+if( @ARGV != 1 ) {
+    say "usage : ./$0 ndd ";
     exit 1;
 }
 
-my ($login, $passwd, $dom) = ($ARGV[0], $ARGV[1], $ARGV[2]);
+my $dom = $ARGV[0];
 
 eval {
     my $app = app->new(get_cfg());
-    my $user = $app->auth($login, encrypt($passwd));
-    $app->delete_domain( $login, $dom );
+    $app->delete_domain( $dom );
 };
 
 if( $@ ) {
