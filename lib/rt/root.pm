@@ -33,7 +33,7 @@ sub rt_root {
         };
         
         if( $@ ) {
-            $$res{params}{errmsg} = q{Une erreur est survenue. } . $@;
+            $$res{deferred}{errmsg} = q{Une erreur est survenue. } . $@;
             $$res{sessiondestroy} = 1;
         }
 

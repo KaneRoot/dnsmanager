@@ -35,7 +35,7 @@ sub rt_user_login {
 
     # Check if user is already logged
     if ( exists $$session{login} && length $$session{login} > 0 ) {
-        $$res{params}{errmsg} = q{Vous êtes déjà connecté.};
+        $$res{deferred}{errmsg} = q{Vous êtes déjà connecté.};
         $$res{route} = '/';
         return $res;
     }
@@ -45,7 +45,7 @@ sub rt_user_login {
         && exists $$param{password} 
         && length $$param{login} > 0
         && length $$param{password} > 0 ) {
-        $$res{params}{errmsg} = q{Vous n'avez pas renseigné tous les paramètres.};
+        $$res{deferred}{errmsg} = q{Vous n'avez pas renseigné tous les paramètres.};
         $$res{route} = '/';
         return $res;
     }
@@ -56,7 +56,7 @@ sub rt_user_login {
         my $user = $app->auth($$param{login}, $pass);
 
         unless( $user ) {
-            $$res{params}{errmsg} = 
+            $$res{deferred}{errmsg} = 
             q{Impossible de se connecter (login ou mot de passe incorrect).};
             $$res{route} = '/';
             return $res;
@@ -78,7 +78,7 @@ sub rt_user_login {
     };
 
     if( $@ ) {
-        $$res{params}{errmsg} = q{Impossible de se connecter ! } . $@;
+        $$res{deferred}{errmsg} = q{Impossible de se connecter ! } . $@;
         $$res{sessiondestroy} = 1;
         $$res{route} = '/';
     }
@@ -91,7 +91,7 @@ sub rt_user_del {
     my $res;
 
     unless ( $$param{user} ) {
-        $$res{params}{errmsg} = q{Le nom d'utilisateur n'est pas renseigné.};
+        $$res{deferred}{errmsg} = q{Le nom d'utilisateur n'est pas renseigné.};
         return $res;
     }
 
@@ -107,7 +107,7 @@ sub rt_user_del {
     };
 
     if ( $@ ) {
-        $$res{params}{errmsg} = 
+        $$res{deferred}{errmsg} = 
         "L'utilisateur $$res{user} n'a pas pu être supprimé. $@";
     }
 
@@ -126,7 +126,7 @@ sub rt_user_toggleadmin {
     my $res;
 
     unless( $$param{user} ) {
-        $$res{params}{errmsg} = q{L'utilisateur n'est pas défini.};
+        $$res{deferred}{errmsg} = q{L'utilisateur n'est pas défini.};
         $$res{route} = $$request{referer};
         return $res;
     }
@@ -137,7 +137,7 @@ sub rt_user_toggleadmin {
         my $user = $app->auth($$session{login}, $$session{passwd});
 
         unless ( $user && $$user{admin} ) {
-            $$res{params}{errmsg} = q{Vous n'êtes pas administrateur.};
+            $$res{deferred}{errmsg} = q{Vous n'êtes pas administrateur.};
             return $res;
         }
 
@@ -174,13 +174,13 @@ sub rt_user_add {
     my $res;
 
     unless ( $$param{login} && $$param{password} && $$param{password2} ) {
-        $$res{params}{errmsg} = q{Identifiant ou mot de passe non renseigné.};
+        $$res{deferred}{errmsg} = q{Identifiant ou mot de passe non renseigné.};
         $$res{route} = '/user/subscribe';
         return $res;
     }
 
     unless ( $$param{password} eq $$param{password2} ) {
-        $$res{params}{errmsg} = q{Les mots de passes ne sont pas identiques.};
+        $$res{deferred}{errmsg} = q{Les mots de passes ne sont pas identiques.};
         $$res{route} = '/user/subscribe';
         return $res;
     }
@@ -200,7 +200,7 @@ sub rt_user_add {
     };
 
     if($@) {
-        $$res{params}{errmsg} = q{Ce pseudo est déjà pris.} . $@;
+        $$res{deferred}{errmsg} = q{Ce pseudo est déjà pris.} . $@;
         $$res{route} = '/user/subscribe';
         return $res;
     }
@@ -220,7 +220,7 @@ sub rt_user_home {
         my $user = $app->auth($$session{login}, $$session{passwd});
 
         unless( $user ) {
-            $$res{params}{errmsg} = q{Problème de connexion à votre compte.};
+            $$res{deferred}{errmsg} = q{Problème de connexion à votre compte.};
             $$res{sessiondestroy} = 1;
             $$res{route} = '/';
             return $res;
@@ -228,10 +228,8 @@ sub rt_user_home {
 
         my $domains = $app->get_domains($$session{login});
 
-        my $cs = $$session{creationSuccess};
         my $dn = $$session{domainName};
 
-        #$$res{delsession}{creationSuccess};
         #$$res{delsession}{domainName};
 
         $$res{params} = {
@@ -239,7 +237,6 @@ sub rt_user_home {
             , admin             => $$user{admin}
             , domains           => $domains
             , provideddomains   => $$app{tld}
-            , creationSuccess   => $cs
             , domainName        => $dn  
         };
 
@@ -248,7 +245,7 @@ sub rt_user_home {
 
     if( $@ ) {
         $$res{sessiondestroy} = 1;
-        $$res{params}{errmsg} = q{On a chié quelque-part.} . $@;
+        $$res{deferred}{errmsg} = q{On a chié quelque-part.} . $@;
         $$res{route} = '/';
     }
 

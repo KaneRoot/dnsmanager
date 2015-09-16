@@ -112,25 +112,6 @@ sub get_user {
     $user
 }
 
-sub get_domains {
-    my ($self, $login) = @_; 
-    my ($sth);
-    my $domains = [];
-
-    $sth = $self->dbh->prepare('SELECT * FROM domain where login=?');
-    unless ($sth->execute($login)) {
-        $sth->finish();
-        die "Impossible to check if the user $login has domains.";
-    }
-
-    while(my $ref = $sth->fetchrow_hashref) {
-        push @$domains, $ref;
-    }
-
-    $sth->finish();
-    $domains
-}
-
 sub get_all_users {
     my ($self) = @_; 
     my ($sth, $users);
@@ -176,6 +157,25 @@ sub update_passwd {
 }
 
 # DOMAIN
+
+sub get_domains {
+    my ($self, $login) = @_; 
+    my ($sth);
+    my $domains = [];
+
+    $sth = $self->dbh->prepare('SELECT * FROM domain where login=?');
+    unless ($sth->execute($login)) {
+        $sth->finish();
+        die "Impossible to check if the user $login has domains.";
+    }
+
+    while(my $ref = $sth->fetchrow_hashref) {
+        push @$domains, $ref;
+    }
+
+    $sth->finish();
+    $domains
+}
 
 sub delete_domain {
     my ($self, $domain) = @_;

@@ -8,3 +8,13 @@
     </div>
 </div>
 <% END %>
+
+<!-- Permettra une mise en forme plus propre. -->
+<% IF deferred.succmsg %>
+<div class="alert alert-success">
+    <p><strong>Bien !</strong>
+    <% deferred.succmsg %>
+    <span class="glyphicon glyphicon-ok"></span>
+    </p>
+</div>
+<% END %>

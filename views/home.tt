@@ -4,16 +4,6 @@
 
 <div id="page">
 
-    <!-- Permettra une mise en forme plus propre. -->
-    <% IF creationSuccess.defined && creationSuccess.length > 0 %>
-      <div class="alert alert-success">
-        <p><strong>Bien !</strong>
-        <% creationSuccess %>
-        <span class="glyphicon glyphicon-ok"></span>
-        </p>
-      </div>
-    <% END %>
-
 <% IF domains && domains.size %>
     <h3>Vos domaines :</h3>
     <table class="table">

@@ -26,14 +26,15 @@ our $VERSION = '0.1';
 sub what_is_next {
     my ($res) = @_;
 
-    #debug(Dump $res);
-
     if($$res{sessiondestroy}) {
         app->destroy_session;
     }
 
+    for(keys %{$$res{deferred}}) {
+        deferred $_ => $$res{deferred}{$_};
+    }
+
     for(keys %{$$res{addsession}}) {
-        #debug( "HERE : $_ => $$res{addsession}{$_}");
         session $_ => $$res{addsession}{$_};
     }
 
@@ -41,16 +42,10 @@ sub what_is_next {
         session $_ => undef;
     }
 
-    deferred 'errmsg' => $$res{params}{errmsg} if($$res{params}{errmsg});
-
-    say "ERREUR : $$res{params}{errmsg}" if($$res{params}{errmsg});
-
     if(exists $$res{route}) {
         redirect $$res{route};
     }
     elsif(exists $$res{template}) {
-        #$$res{params}{errmsg} //= deferred('errmsg');
-        debug(Dump $res);
         template $$res{template} => $$res{params};
     } else {
         redirect '/';

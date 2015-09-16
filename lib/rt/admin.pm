@@ -20,7 +20,7 @@ sub rt_admin {
         my $user = $app->auth($$session{login}, $$session{passwd});
 
         unless ($user && $$user{admin}) {
-            $$res{errmsg} = q{Donnée privée, petit coquin. ;) };
+            $$res{deferred}{errmsg} = q{Donnée privée, petit coquin. ;) };
             $$res{route} = '/';
             return $res;
         }
