@@ -88,7 +88,7 @@ sub delete_user {
         die "Impossible to delete the user $login.";
     }
     $sth->finish();
-    delete_domains_from_user($self->dbh, $login)
+    $self->delete_domains_from_user($login)
 }
 
 sub get_user {

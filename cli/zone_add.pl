@@ -9,16 +9,15 @@ use encryption ':all';
 use app;
 use utf8;
 
-if( @ARGV != 3 ) {
-    say "usage : ./$0 login passwd ndd ";
+if( @ARGV != 2 ) {
+    say "usage : ./$0 login ndd ";
     exit 1;
 }
 
-my ($login, $passwd, $dom) = ($ARGV[0], $ARGV[1], $ARGV[2]);
+my ($login, $dom) = ($ARGV[0], $ARGV[1]);
 
 eval {
     my $app = app->new(get_cfg());
-    my $user = $app->auth($login, encrypt($passwd));
     $app->add_domain( $login, $dom );
     my $zone = $app->get_domain($dom);
     say $zone->output();
