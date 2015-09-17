@@ -34,6 +34,11 @@ sub auth {
     $self->db->auth($login, $passwd)
 }
 
+sub update_passwd {
+    my ($self, $login, $newpass) = @_;
+    $self->db->update_passwd($login, $newpass)
+}
+
 sub register_user {
     my ($self, $login, $passwd) = @_;
     $self->db->register_user($login, $passwd)
