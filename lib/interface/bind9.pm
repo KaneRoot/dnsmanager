@@ -51,8 +51,8 @@ sub delzone {
     my $file = get_zonedir_from_cfg($$self{mycfg});
     $file .= "/$domain";
 
-    my $host = get_host_from_cfg($$self{mycfg});
     my $user = get_user_from_cfg($$self{mycfg});
+    my $host = get_host_from_cfg($$self{mycfg});
     my $port = get_port_from_cfg($$self{mycfg});
     my $cmd = "rm $file";
 

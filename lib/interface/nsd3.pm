@@ -76,19 +76,13 @@ sub _reload_conf {
 
         if($v4) {
             # allow notify & request xfr, v4 & v6
-            $nouveau .=
-            "\tallow-notify: $v4 " 
-            . "$dnsslavekey \n"
-            . "\trequest-xfr: $v4 " 
-            . "$dnsslavekey \n\n";
+            $nouveau .= "\tallow-notify: $v4 $dnsslavekey \n"
+            . "\trequest-xfr: $v4 $dnsslavekey \n\n";
         }
 
         if($v6) {
-            $nouveau .=
-            "\tallow-notify: $v6 " 
-            . "$dnsslavekey \n"
-            . "\trequest-xfr: $v6 " 
-            . "$dnsslavekey \n\n";
+            $nouveau .= "\tallow-notify: $v6 $dnsslavekey \n"
+            . "\trequest-xfr: $v6 $dnsslavekey \n\n";
         }
     }
 

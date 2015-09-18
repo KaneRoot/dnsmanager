@@ -62,14 +62,27 @@ sub is_reserved {
     $data =~ /^$domain$/m;
 }
 
+# TODO : tests
 sub get_v6_from_name {
     my $name = shift;
-    die q{There is no available v6. TODO.}
+
+    my $val = qx/host -t AAAA $name | grep -oE '[^[:space:]]+\$'/;
+    chomp $val;
+
+    die q{There is no available v6. TODO.} if($val =~ 'NXDOMAIN');
+
+    $val
 }
 
 sub get_v4_from_name {
     my $name = shift;
-    die q{There is no available v4. TODO.}
+
+    my $val = qx/host -t A $name | grep -oE '[^[:space:]]+\$'/;
+    chomp $val;
+
+    die q{There is no available v4. TODO.} if($val =~ 'NXDOMAIN');
+
+    $val
 }
 
 sub get_v6_from_cfg {
