@@ -26,7 +26,7 @@ sub _void { my $x = ''; \$x; }
 sub _void_arr { [] }
 
 sub _get_ztpl_dir  {my $s = shift; "$$s{dnsi}{mycfg}{zonedir}" }
-sub _get_ztpl_file {
+sub get_ztpl_file_ {
     my $s = shift;
 
     # for each TLD
@@ -40,8 +40,8 @@ sub _get_ztpl_file {
     die "There is no template for $$s{domain}";
 }
 
-sub _get_ztmp_file {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
-sub _get_tmpdir_domain {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
+sub get_ztmp_file_ {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
+sub get_tmpdir_domain_ {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
 
 sub get_dnsserver_interface {
     my ($self, $dnsserver) = @_;
@@ -172,7 +172,7 @@ sub modify_entry {
 sub get {
     my $self = shift;
     my $file = $self->_get_remote_zf();
-    my $dest = $self->_get_tmpdir_domain();
+    my $dest = $self->get_tmpdir_domain_();
 
     copycat ($file, $dest);
 
@@ -189,8 +189,8 @@ sub get {
 sub addzone {
     my ($self) = @_;
 
-    my $tpl = $self->_get_ztpl_file();
-    my $tmpfile = $self->_get_ztmp_file();
+    my $tpl = $self->get_ztpl_file_();
+    my $tmpfile = $self->get_ztmp_file_();
 
     copycat ($tpl, $tmpfile); # get the template
 
@@ -215,7 +215,7 @@ sub addzone {
     $self->dnsi->primary_addzone($$self{domain});
 
     # add new zone on secondary ns
-    $self->reload_secondary_dns_servers();
+    $self->reload_secondary_dns_servers()
 }
 
 =pod
@@ -229,7 +229,7 @@ sub update {
     # update the serial number
     $zonefile->new_serial();
 
-    my $tmpfile = $self->_get_ztmp_file();
+    my $tmpfile = $self->get_ztmp_file_();
 
     # write the new zone tmpfile to disk 
     write_file $tmpfile, $zonefile->output();
@@ -249,7 +249,7 @@ sub update_raw {
     my ($self, $zonetext) = @_;
 
     my $zonefile;
-    my $file = $self->_get_tmpdir_domain();
+    my $file = $self->get_tmpdir_domain_();
 
     # write the updated zone file to disk 
     write_file $file, $zonetext;
