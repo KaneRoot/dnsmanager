@@ -68,12 +68,13 @@ sub is_owning_domain {
 
 sub _get_zone {
     my ($self, $domain) = @_; 
-    zone->new( domain => $domain, data => $self )
-}
-
-sub new_tmp {
-    my ($self, $domain) = @_; 
-    $self->_get_zone($domain)->new_tmp()
+    zone->new( domain => $domain, tmpdir => $$self{tmpdir}
+        , tld => $$self{tld}
+        , domain => $$self{domain}
+        , primarydnsserver => $$self{primarydnsserver}
+        , secondarydnsserver => $$self{secondarydnsserver}
+        , slavedzones => $self->get_all_domains()
+    )
 }
 
 sub add_domain {

@@ -8,6 +8,10 @@ use Exporter 'import';
 our @EXPORT_OK = qw/
 get_cfg is_reserved 
 get_zonedir_from_cfg
+get_v4_from_name
+get_v6_from_name
+get_v4_from_cfg
+get_v6_from_cfg
 get_host_from_cfg
 get_user_from_cfg
 get_port_from_cfg
@@ -56,6 +60,26 @@ sub is_reserved {
 
     my $data = read_file $filename;
     $data =~ /^$domain$/m;
+}
+
+sub get_v6_from_name {
+    my $name = shift;
+    die q{There is no available v6. TODO.}
+}
+
+sub get_v4_from_name {
+    my $name = shift;
+    die q{There is no available v4. TODO.}
+}
+
+sub get_v6_from_cfg {
+    my $cfg = shift;
+    $$cfg{domain}{v6} // get_v4_from_name($$cfg{domain}{name})
+}
+
+sub get_v4_from_cfg {
+    my $cfg = shift;
+    $$cfg{domain}{v4} // get_v4_from_name($$cfg{domain}{name})
 }
 
 sub get_zonedir_from_cfg {

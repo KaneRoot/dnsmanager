@@ -7,7 +7,7 @@ use remotecmd ':all';
 use copycat ':all';
 
 has [ qw/user host port v4 v6/ ] => qw/is rw/;
-has [ qw/mycfg data/ ] => qw/is ro required 1/;
+has [ qw/mycfg primarydnsserver secondarydnsserver/ ] => qw/is ro required 1/;
 
 sub BUILD {
     my $self = shift;
@@ -35,61 +35,75 @@ sub BUILD {
 
 # on suppose que tout est déjà mis à jour dans le fichier
 sub reload_sec {
-    my ($self) = @_;
+    my ($self, $slavedzones) = @_;
 
-    $self->_reload_conf();
+    $self->_reload_conf($slavedzones);
 
     my $cmd = "sudo nsdc rebuild 2>/dev/null 1>/dev/null && "
     . " sudo nsdc restart 2>/dev/null 1>/dev/null ";
 
-    remotecmd $$self{user}, $$self{host}, $$self{port}, $cmd;
+    my $user = get_user_from_cfg($$self{mycfg});
+    my $host = get_host_from_cfg($$self{mycfg});
+    my $port = get_port_from_cfg($$self{mycfg});
+
+    remotecmd $user, $host, $port, $cmd
 }
 
 # get, modify, push the file
 
 sub _reload_conf {
-    my ($self) = @_;
+    my ($self, $slavedzones) = @_;
 
-    my $f = "file://$$self{data}{tmpdir}/nsd.conf";
+    my $f = "file://$$self{tmpdir}/nsd.conf";
     my $remote = ($$self{mycfg}{cfg}) ? $$self{mycfg}{cfg} : undef;
 
     $remote //= "ssh://$$self{user}@" . "$$self{host}/etc/nsd3/nsd.conf";
 
     copycat $remote, $f;
 
-    my $slavedzones = $self->data->get_all_domains();
-
     my $data = read_file $f;
     my $debut = "## BEGIN_GENERATED";
     my $nouveau = '';
+    my $dnsslavekey = get_dnsslavekey_from_cfg($$self{primarydnsserver});
 
     for(keys %$slavedzones) {
+
         $nouveau .= "zone:\n\n\tname: \"$_\"\n"
         . "\tzonefile: \"slave/$_\"\n\n";
 
-        # allow notify & request xfr, v4 & v6
-        $nouveau .=
-        "\tallow-notify: $$self{data}{primarydnsserver}{v4} " 
-        . "$$self{data}{primarydnsserver}{dnsslavekey} \n"
-        . "\trequest-xfr: $$self{data}{primarydnsserver}{v4} " 
-        . "$$self{data}{primarydnsserver}{dnsslavekey} \n\n";
+        my $v4 = get_v4_from_cfg($$self{primarydnsserver});
+        my $v6 = get_v6_from_cfg($$self{primarydnsserver});
 
+        if($v4) {
+            # allow notify & request xfr, v4 & v6
+            $nouveau .=
+            "\tallow-notify: $v4 " 
+            . "$dnsslavekey \n"
+            . "\trequest-xfr: $v4 " 
+            . "$dnsslavekey \n\n";
+        }
 
-        $nouveau .=
-        "\tallow-notify: $$self{data}{primarydnsserver}{v6} " 
-        . "$$self{data}{primarydnsserver}{dnsslavekey} \n"
-        . "\trequest-xfr: $$self{data}{primarydnsserver}{v6} " 
-        . "$$self{data}{primarydnsserver}{dnsslavekey} \n\n";
+        if($v6) {
+            $nouveau .=
+            "\tallow-notify: $v6 " 
+            . "$dnsslavekey \n"
+            . "\trequest-xfr: $v6 " 
+            . "$dnsslavekey \n\n";
+        }
     }
 
     $data =~ s/$debut.*/$debut\n$nouveau/gsm;
 
     write_file $f, $data;
 
+    my $user = get_user_from_cfg($$self{mycfg});
+    my $host = get_host_from_cfg($$self{mycfg});
+    my $port = get_port_from_cfg($$self{mycfg});
+
     my $cmd = "sudo nsdc patch 2>/dev/null 1>/dev/null && "
     . " sudo rm /var/nsd3/ixfr.db";
 
-    remotecmd $$self{user}, $$self{host}, $$self{port}, $cmd;
+    remotecmd $user, $host, $port, $cmd;
     copycat $f, $remote;
 }
 

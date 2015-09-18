@@ -10,7 +10,6 @@ use getiface ':all';
 use copycat ':all';
 use fileutil ':all';
 use configuration ':all';
-use remotecmd ':all';
 
 use zonefile;
 
@@ -20,7 +19,8 @@ has dnsi => ( is => 'rw', builder => '_void_arr');
 # dns interface for secondary name servers
 has dnsisec => ( is => 'rw', builder => '_void');
 
-has [ qw/domain data/ ] => qw/is ro required 1/;
+has [ qw/tld tmpdir domain primarydnsserver secondarydnsserver slavedzones/ ]
+=> qw/is ro required 1/;
 
 sub _void { my $x = ''; \$x; }
 sub _void_arr { [] }
@@ -30,7 +30,7 @@ sub _get_ztpl_file {
     my $s = shift;
 
     # for each TLD
-    for(@{$$s{data}{tld}}) {
+    for(@{$$s{tld}}) {
         # if our domain is part of this TLD, get the right template
         if($$s{domain} =~ $_) {
             return $s->_get_ztpl_dir() . '/' . $_ . '.tpl';
@@ -40,72 +40,83 @@ sub _get_ztpl_file {
     die "There is no template for $$s{domain}";
 }
 
-sub _get_ztmp_file {my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
-sub _get_tmpdir_domain {my $s = shift; "$$s{data}{tmpdir}/$$s{domain}" }
+sub _get_ztmp_file {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
+sub _get_tmpdir_domain {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
+
+sub get_dnsserver_interface {
+    my ($self, $dnsserver) = @_;
+    my $cfg = {
+        mycfg => $dnsserver
+        , primarydnsserver => $$self{primarydnsserver}
+        , secondarydnsserver => $$self{secondarydnsserver}
+    };
+
+    getiface $$dnsserver{app}, $cfg
+}
+
+sub get_dns_server_interfaces {
+    my $self = shift;
+    my $primary = $$self{primarydnsserver};
+    my $s = $$self{secondarydnsserver};
+
+    my $prim = $self->get_dnsserver_interface($primary);
+
+    my $sec = [];
+    for(@{$s}) {
+        push @$sec, $self->get_dnsserver_interface($_) for(@$_);
+    }
+
+    ($prim, $sec)
+}
+
+sub BUILD {
+    my $self = shift;
+    ($$self{dnsi}, $$self{dnsisec}) = $self->get_dns_server_interfaces()
+}
+
+# change the origin in a zone file template
+sub mod_orig_template {
+    my ($file, $domain) = @_;
+    say "s/CHANGEMEORIGIN/$domain/ on $file";
+    qx[sed -i "s/CHANGEMEORIGIN/$domain/" $file];
+}
 
 sub _get_remote_zf { 
     my $self = shift; 
     "$$self{dnsi}{mycfg}{zonedir}/$$self{domain}"
 }
 
-sub _is_same_record {
+sub are_same_records_ {
     my ($a, $b) = @_;
 
     #debug({ a => $a });
     #debug({ b => $b });
 
     #$a->{priority} eq $b->{priority} &&
-    (   $a->{name} eq $b->{name} && 
-        $a->{host} eq $b->{host} &&
-        $a->{ttl} ==  $b->{ttl} );
+    (   $$a{name} eq $$b{name} && 
+        $$a{host} eq $$b{host} &&
+        $$a{ttl} ==  $$b{ttl} )
 }
 
 # returns the lists of domains of a certain type
 sub _get_records {
     my ($zone, $entry) = @_;
 
-    for( lc $entry->{type} ) {
-        if      ($_ eq 'a')      { return $zone->a;     }
-        elsif   ($_ eq 'aaaa')   { return $zone->aaaa;  }
-        elsif   ($_ eq 'cname')  { return $zone->cname; }
-        elsif   ($_ eq 'ns')     { return $zone->ns;    }
-        elsif   ($_ eq 'mx')     { return $zone->mx;    }
-        elsif   ($_ eq 'ptr')    { return $zone->ptr;   }
+    for( lc $$entry{type} ) {
+        if      ($_ eq 'a')      { return $zone->a     }
+        elsif   ($_ eq 'aaaa')   { return $zone->aaaa  }
+        elsif   ($_ eq 'cname')  { return $zone->cname }
+        elsif   ($_ eq 'ns')     { return $zone->ns    }
+        elsif   ($_ eq 'mx')     { return $zone->mx    }
+        elsif   ($_ eq 'ptr')    { return $zone->ptr   }
     }
 
-    die 'Impossible to get the entry type.';
-}
-
-sub get_dns_server_interfaces {
-    my $self = shift;
-    my $primary = $$self{data}{primarydnsserver};
-    my $s = $$self{data}{secondarydnsserver};
-
-    my $prim = getiface($$primary{app}, { mycfg => $primary, data => $self });
-
-    my $sec = [];
-    for($s) {
-        for(@$_)
-        {
-            my $x = $_;
-            push @$sec, getiface($$x{app}, { mycfg => $x, data => $self });
-        }
-    }
-
-    ($prim, $sec);
-}
-
-sub BUILD {
-    my $self = shift;
-    ($$self{dnsi}, $$self{dnsisec}) = $self->get_dns_server_interfaces();
+    die 'Impossible to get the entry type.'
 }
 
 sub reload_secondary_dns_servers {
     my $self = shift;
-    my $sec = $$self{data}{dnsisec};
-    for(@$sec) {
-        $_->reload_sec();
-    }
+    $_->reload_sec($$self{slavedzones}) for(@{$$self{dnsisec}})
 }
 
 sub delete_entry {
@@ -117,13 +128,13 @@ sub delete_entry {
 
     if( defined $records ) {
         foreach my $i ( 0 .. scalar @{$records}-1 ) {
-            if(_is_same_record($records->[$i], $entryToDelete)) {
+            if(are_same_records_($records->[$i], $entryToDelete)) {
                 delete $records->[$i];
             }
         }
 
         # TODO verify if it's OK
-        $$self{data}->update_domain( $zone, $$self{domain} );
+        #$$self{data}->update_domain( $zone, $$self{domain} );
     }
 
 }
@@ -139,7 +150,7 @@ sub modify_entry {
 
         foreach my $i ( 0 .. scalar @{$records}-1 ) {
 
-            if(_is_same_record($records->[$i], $entryToModify)) {
+            if(are_same_records_($records->[$i], $entryToModify)) {
 
                 $records->[$i]->{name} = $newEntry->{newname};
                 $records->[$i]->{host} = $newEntry->{newhost};
@@ -153,7 +164,7 @@ sub modify_entry {
         }
 
         # TODO verify if it's OK
-        $$self{data}->update_domain( $zone, $$self{domain} );
+        #$$self{data}->update_domain( $zone, $$self{domain} );
     }
 
 }
@@ -201,7 +212,7 @@ sub addzone {
     unlink($f->path); # del the temporary file
 
     # add new zone on the primary ns
-    $self->dnsi->addzone($$self{domain});
+    $self->dnsi->primary_addzone($$self{domain});
 
     # add new zone on secondary ns
     $self->reload_secondary_dns_servers();
@@ -248,61 +259,19 @@ sub update_raw {
 
     if( $@ ) {
         unlink($file);
-        die "zone update_raw : zonefile->new error";
+        die 'zone update_raw, zonefile->new error. ' . $@;
     }
 
     unlink($file);
 
-    $self->update($zonefile);
-}
-
-# sera utile plus tard, pour l'interface
-sub new_tmp {
-    my ($self) = @_;
-
-    my $tpl = $self->_get_ztpl_file();
-    my $file = $self->_get_tmpdir_domain();
-
-    copycat ($tpl, $file);
-
-    # get the file path
-    my $f = URI->new($file);
-
-    # sed CHANGEMEORIGIN by the real origin
-    mod_orig_template ($f->path, $$self{domain});
-
-    my $zonefile = zonefile->new(zonefile => $f->path, domain => $$self{domain});
-    $zonefile->new_serial();
-
-    unlink($f->path);
-
-    return $zonefile;
-}
-
-# change the origin in a zone file template
-sub mod_orig_template {
-    my ($file, $domain) = @_;
-    #my $cmd = qq[sed -i "s/CHANGEMEORIGIN/$domain/" $file 2>/dev/null 1>/dev/null];
-    say "s/CHANGEMEORIGIN/$domain/ on $file";
-    qx[sed -i "s/CHANGEMEORIGIN/$domain/" $file];
+    $self->update($zonefile)
 }
 
 sub del {
     my ($self) = @_;
     $self->dnsi->delzone($$self{domain});
     $self->dnsi->reconfig();
-
-    $self->reload_secondary_dns_servers();
-
-    my $file = get_zonedir_from_cfg($$self{dnsi}{mycfg});
-    $file .= "/$$self{domain}";
-
-    my $host = get_host_from_cfg($$self{dnsi}{mycfg});
-    my $user = get_user_from_cfg($$self{dnsi}{mycfg});
-    my $port = get_port_from_cfg($$self{dnsi}{mycfg});
-    my $cmd = "rm $file";
-
-    remotecmd $user, $host, $port, $cmd;
+    $self->reload_secondary_dns_servers()
 }
 
 1;
