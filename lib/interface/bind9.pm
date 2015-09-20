@@ -46,7 +46,7 @@ sub reconfig {
 
 sub delzone {
     my ($self, $domain) = @_;
-    system("rndc delzone $domain 2>/dev/null 1>/dev/null")
+    system("rndc delzone $domain 2>/dev/null 1>/dev/null");
 
     my $file = get_zonedir_from_cfg($$self{mycfg});
     $file .= "/$domain";
