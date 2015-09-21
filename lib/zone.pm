@@ -25,7 +25,8 @@ has [ qw/tld tmpdir domain primarydnsserver secondarydnsserver slavedzones/ ]
 sub _void { my $x = ''; \$x; }
 sub _void_arr { [] }
 
-sub _get_ztpl_dir  {my $s = shift; "$$s{dnsi}{mycfg}{zonedir}" }
+sub get_ztmp_file_  {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
+sub get_ztpl_dir_  {my $s = shift; "$$s{dnsi}{mycfg}{zonedir}" }
 sub get_ztpl_file_ {
     my $s = shift;
 
@@ -33,15 +34,12 @@ sub get_ztpl_file_ {
     for(@{$$s{tld}}) {
         # if our domain is part of this TLD, get the right template
         if($$s{domain} =~ $_) {
-            return $s->_get_ztpl_dir() . '/' . $_ . '.tpl';
+            return $s->get_ztpl_dir_() . '/' . $_ . '.tpl';
         }
     }
 
-    die "There is no template for $$s{domain}";
+    die "There is no template for $$s{domain}.";
 }
-
-sub get_ztmp_file_ {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
-sub get_tmpdir_domain_ {my $s = shift; "$$s{tmpdir}/$$s{domain}" }
 
 sub get_dnsserver_interface {
     my ($self, $dnsserver) = @_;
@@ -81,7 +79,7 @@ sub mod_orig_template {
     qx[sed -i "s/CHANGEMEORIGIN/$domain/" $file];
 }
 
-sub _get_remote_zf { 
+sub get_remote_zf_ { 
     my $self = shift; 
     "$$self{dnsi}{mycfg}{zonedir}/$$self{domain}"
 }
@@ -99,7 +97,7 @@ sub are_same_records_ {
 }
 
 # returns the lists of domains of a certain type
-sub _get_records {
+sub get_records_ {
     my ($zone, $entry) = @_;
 
     for( lc $$entry{type} ) {
@@ -124,7 +122,7 @@ sub delete_entry {
 
     my $zone = $self->get();
 
-    my $records = _get_records $zone, $entryToDelete;
+    my $records = get_records_ $zone, $entryToDelete;
 
     if( defined $records ) {
         foreach my $i ( 0 .. scalar @{$records}-1 ) {
@@ -132,11 +130,7 @@ sub delete_entry {
                 delete $records->[$i];
             }
         }
-
-        # TODO verify if it's OK
-        #$$self{data}->update_domain( $zone, $$self{domain} );
     }
-
 }
 
 sub modify_entry {
@@ -144,7 +138,7 @@ sub modify_entry {
 
     my $zone = $self->get();
 
-    my $records = _get_records $zone, $entryToModify;
+    my $records = get_records_ $zone, $entryToModify;
 
     if( defined $records ) {
 
@@ -162,17 +156,13 @@ sub modify_entry {
                 }
             }
         }
-
-        # TODO verify if it's OK
-        #$$self{data}->update_domain( $zone, $$self{domain} );
     }
-
 }
 
 sub get {
     my $self = shift;
-    my $file = $self->_get_remote_zf();
-    my $dest = $self->get_tmpdir_domain_();
+    my $file = $self->get_remote_zf_();
+    my $dest = $self->get_ztmp_file_();
 
     copycat ($file, $dest);
 
@@ -207,7 +197,7 @@ sub addzone {
     # write the new zone tmpfile to disk 
     write_file $f->path, $zonefile->output();
 
-    my $file = $self->_get_remote_zf();
+    my $file = $self->get_remote_zf_();
     copycat ($tmpfile, $file); # put the final zone on the server
     unlink($f->path); # del the temporary file
 
@@ -234,7 +224,7 @@ sub update {
     # write the new zone tmpfile to disk 
     write_file $tmpfile, $zonefile->output();
 
-    my $file = $self->_get_remote_zf();
+    my $file = $self->get_remote_zf_();
     copycat ($tmpfile, $file); # put the final zone on the server
     unlink($tmpfile); # del the temporary file
 
@@ -249,7 +239,7 @@ sub update_raw {
     my ($self, $zonetext) = @_;
 
     my $zonefile;
-    my $file = $self->get_tmpdir_domain_();
+    my $file = $self->get_ztmp_file_();
 
     # write the updated zone file to disk 
     write_file $file, $zonetext;

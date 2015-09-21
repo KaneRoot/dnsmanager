@@ -91,12 +91,14 @@ sub delete_domain {
 
 sub modify_entry {
     my ($self, $domain, $entryToModify, $newEntry) = @_;
-    $self->_get_zone($domain)->modify_entry( $entryToModify, $newEntry )
+    $self->_get_zone($domain)->modify_entry( $entryToModify, $newEntry );
+    $self->update_domain($domain)
 }
 
 sub delete_entry {
     my ($self, $domain, $entryToDelete) = @_;
-    $self->_get_zone($domain)->delete_entry( $entryToDelete )
+    $self->_get_zone($domain)->delete_entry( $entryToDelete );
+    $self->update_domain($domain)
 }
 
 sub update_domain_raw {
