@@ -5,9 +5,10 @@ use URI;
 use fileutil ':all';
 use remotecmd ':all';
 use copycat ':all';
+use configuration ':all';
 
 has [ qw/user host port v4 v6/ ] => qw/is rw/;
-has [ qw/mycfg primarydnsserver secondarydnsserver/ ] => qw/is ro required 1/;
+has [ qw/mycfg tmpdir primarydnsserver secondarydnsserver/ ] => qw/is ro required 1/;
 
 sub BUILD {
     my $self = shift;
@@ -57,7 +58,7 @@ sub _reload_conf {
     my $f = "file://$$self{tmpdir}/nsd.conf";
     my $remote = ($$self{mycfg}{cfg}) ? $$self{mycfg}{cfg} : undef;
 
-    $remote //= "ssh://$$self{user}@" . "$$self{host}/etc/nsd3/nsd.conf";
+    $remote //= "ssh://$$self{user}@" . "$$self{host}/etc/nsd/nsd.conf";
 
     copycat $remote, $f;
 
@@ -66,7 +67,7 @@ sub _reload_conf {
     my $nouveau = '';
     my $dnsslavekey = get_dnsslavekey_from_cfg($$self{primarydnsserver});
 
-    for(keys %$slavedzones) {
+    for(@{$slavedzones}) {
 
         $nouveau .= "zone:\n\n\tname: \"$_\"\n"
         . "\tzonefile: \"slave/$_\"\n\n";

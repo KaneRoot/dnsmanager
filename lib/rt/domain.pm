@@ -101,6 +101,11 @@ sub rt_dom_mod_entry {
         return $res;
     }
 
+    # TODO
+    for(qw/type name ttl domain name type host ttl 
+            newhost newname newttl/) {
+        say "$_ : $$param{$_}";
+    }
 
     eval {
         my $app = app->new(get_cfg());
@@ -432,7 +437,7 @@ sub rt_dom_update {
 }
 
 sub rt_dom_updateraw {
-    my ($session, $param) = @_;
+    my ($session, $param, $request) = @_;
     my $res;
 
     # check if user is logged & if domain parameter is set

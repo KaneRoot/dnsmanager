@@ -8,6 +8,7 @@ use Exporter 'import';
 our @EXPORT_OK = qw/
 get_cfg is_reserved 
 get_zonedir_from_cfg
+get_dnsslavekey_from_cfg
 get_v4_from_name
 get_v6_from_name
 get_v4_from_cfg
@@ -18,12 +19,17 @@ get_port_from_cfg
 /;
 
 # bundle of exports (tags)
-our %EXPORT_TAGS = ( all => [qw/get_cfg 
-        is_reserved 
-        get_zonedir_from_cfg
-        get_host_from_cfg
-        get_user_from_cfg
-        get_port_from_cfg
+our %EXPORT_TAGS = ( all => [qw/
+get_cfg is_reserved 
+get_zonedir_from_cfg
+get_dnsslavekey_from_cfg
+get_v4_from_name
+get_v6_from_name
+get_v4_from_cfg
+get_v6_from_cfg
+get_host_from_cfg
+get_user_from_cfg
+get_port_from_cfg
         /] );
 
 sub is_conf_file {
@@ -49,7 +55,7 @@ sub get_cfg {
     my $f = "$cfgdir/config.yml";
 
     is_conf_file $f;
-    YAML::XS::LoadFile($f);
+    YAML::XS::LoadFile($f)
 }
 
 sub is_reserved {
@@ -115,7 +121,17 @@ sub get_host_from_cfg {
         return $$cfg{domain}{name};
     }
 
-    die "Impossible to get the host from the configuration.";
+    die "Impossible to get the host from the configuration."
+}
+
+sub get_dnsslavekey_from_cfg {
+    my $cfg = shift;
+
+    if($$cfg{dnsslavekey}) {
+        return $$cfg{dnsslavekey};
+    }
+
+    die "Impossible to get the dns slave key from the configuration."
 }
 
 sub get_user_from_cfg {
@@ -129,7 +145,7 @@ sub get_user_from_cfg {
         return $$cfg{domain}{user};
     }
 
-    die "Impossible to get the user from the configuration.";
+    die "Impossible to get the user from the configuration."
 }
 
 sub get_port_from_cfg {
@@ -143,7 +159,7 @@ sub get_port_from_cfg {
         return $$cfg{domain}{port};
     }
 
-    die "Impossible to get the port from the configuration.";
+    die "Impossible to get the port from the configuration."
 }
 
 1;

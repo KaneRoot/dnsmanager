@@ -68,9 +68,18 @@ sub is_owning_domain {
 
 sub _get_zone {
     my ($self, $domain) = @_; 
-    zone->new( domain => $domain, tmpdir => $$self{tmpdir}
+
+#    say "";
+#    say "GET ZONE";
+#    say "";
+#    say "";
+#    say "domain $domain";
+#    say "tmpdir $$self{tmpdir}";
+#    say "tld $$self{tld}";
+
+    zone->new( domain => $domain
+        , tmpdir => $$self{tmpdir}
         , tld => $$self{tld}
-        , domain => $$self{domain}
         , primarydnsserver => $$self{primarydnsserver}
         , secondarydnsserver => $$self{secondarydnsserver}
         , slavedzones => $self->get_all_domains()

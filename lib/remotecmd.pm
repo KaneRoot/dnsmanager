@@ -30,6 +30,9 @@ sub remotecmd {
     $cmd = $c[0];
 
     my $str = "ssh -p $port $user". '@' . "$host '$cmd'";
+    say "";
+    say "CMD : $str";
+    say "";
     qx/$str/;
 }
 

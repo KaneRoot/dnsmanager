@@ -4,7 +4,7 @@ use Moo;
 use configuration ':all';
 use remotecmd ':all';
 
-has [ qw/mycfg primarydnsserver secondarydnsserver/ ] => qw/is ro required 1/;
+has [ qw/mycfg tmpdir primarydnsserver secondarydnsserver/ ] => qw/is ro required 1/;
 
 sub reload {
     my ($self, $domain) = @_;
@@ -36,16 +36,27 @@ sub primary_addzone {
     }
 
     $command .= " 2>/dev/null 1>/dev/null";
+
+    say "";
+    say "CMD : $command";
+    say "";
+
     system($command)
 }
 
 sub reconfig {
     my ($self, $domain) = @_;
+    say "";
+    say "CMD : rndc reconfig 2>/dev/null 1>/dev/null";
+    say "";
     system("rndc reconfig 2>/dev/null 1>/dev/null")
 }
 
 sub delzone {
     my ($self, $domain) = @_;
+    say "";
+    say "CMD : rndc delzone $domain 2>/dev/null 1>/dev/null";
+    say "";
     system("rndc delzone $domain 2>/dev/null 1>/dev/null");
 
     my $file = get_zonedir_from_cfg($$self{mycfg});

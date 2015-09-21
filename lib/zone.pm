@@ -47,6 +47,7 @@ sub get_dnsserver_interface {
         mycfg => $dnsserver
         , primarydnsserver => $$self{primarydnsserver}
         , secondarydnsserver => $$self{secondarydnsserver}
+        , tmpdir => $$self{tmpdir}
     };
 
     getiface $$dnsserver{app}, $cfg
@@ -59,12 +60,12 @@ sub get_dns_server_interfaces {
 
     my $prim = $self->get_dnsserver_interface($primary);
 
-    my $sec = [];
+    my @sec;
     for(@{$s}) {
-        push @$sec, $self->get_dnsserver_interface($_) for(@$_);
+        push @sec, $self->get_dnsserver_interface($_);
     }
 
-    ($prim, $sec)
+    ($prim, [ @sec ])
 }
 
 sub BUILD {

@@ -19,17 +19,21 @@ primarydnsserver:
     dnsslavekey: key-slave.netlib.re
     zonedir: ssh://root@localhost:22/var/named/rndczones/
     domain:
-        name: my.example.com
-        v4: 192.0.2.1       # optional
-        v6: 2001:db8::1     # optional
+        user: root
+        port: 22
+        host: localhost
+        name: localhost
+        v4: 127.0.0.1       # optional
+        v6: ::1             # optional
 
 secondarydnsserver:
     - app: nsd3
-      cfg: ssh://root@nsd.lxc.localdomain:22/etc/nsd3/nsd.conf
+      cfg: ssh://root@nsdl:22/etc/nsd/nsd.conf
+      zonedir: ssh://root@nsdl:22/etc/nsd/
       domain:
-          name: second.example.com
-          v4: 192.0.2.2       # optional
-          v6: 2001:db8::2     # optional
+          name: nsdl
+          v4: 192.168.0.61          # optional
+          v6: 2001:db8::2           # optional
 
 #    - app: nsd3
 #      cfg: ssh://dnsmanager@host3:2222/etc/nsd3/nsd.conf
