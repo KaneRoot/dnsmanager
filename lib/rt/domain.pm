@@ -7,6 +7,7 @@ use util ':all';
 use app;
 use utf8;
 use Dancer ':syntax';
+use Data::Dump qw( dump );
 
 use Exporter 'import';
 # what we want to export eventually
@@ -88,7 +89,7 @@ sub rt_dom_mod_entry {
     my @missingitems;
 
     for(qw/type name ttl domain name type host ttl 
-            newhost newname newttl/) {
+        newtype newhost newname newttl/) {
         push @missingitems, $_ unless($$param{$_});
     }
 
@@ -101,10 +102,9 @@ sub rt_dom_mod_entry {
         return $res;
     }
 
-    # TODO
     for(qw/type name ttl domain name type host ttl 
-            newhost newname newttl/) {
-        say "$_ : $$param{$_}";
+        newpriority newtype newhost newname newttl/) {
+        say "$_ : $$param{$_}" if $$param{$_};
     }
 
     eval {
@@ -347,6 +347,11 @@ sub rt_dom_details {
             $$res{params}{ptr}      = $zone->ptr();
             $$res{params}{mx}       = $zone->mx();
             $$res{params}{ns}       = $zone->ns();
+
+            for(qw/a aaaa cname ptr mx ns/) {
+                my $t = $_;
+                map { $$_{type} = uc $t } @{$$res{params}{$t}};
+            }
         }
     };
 

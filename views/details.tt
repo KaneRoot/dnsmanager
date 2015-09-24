@@ -29,7 +29,7 @@
             <form action='/domain/mod/<%domain%>/<%address.name%>/NS/<%address.host%>/<%address.ttl%>'>
                 <td><input type='text' name='newname' class="form-control" value='<% address.name %>' /></td>
                 <td><% address.class %></td>
-                <td>NS</td>
+                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
                 <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
                 <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
                 <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
@@ -43,7 +43,7 @@
             <form action='/domain/mod/<%domain%>/<%address.name%>/A/<%address.host%>/<%address.ttl%>'>
                 <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
                 <td><% address.class %></td>
-                <td>A</td>
+                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
                 <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
                 <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
                 <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
@@ -57,7 +57,7 @@
             <form action='/domain/mod/<%domain%>/<%address.name%>/AAAA/<%address.host%>/<%address.ttl%>'>
                 <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
                 <td><% address.class %></td>
-                <td>AAAA</td>
+                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
                 <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
                 <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
                 <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
@@ -71,7 +71,7 @@
             <form  action='/domain/mod/<%domain%>/<%address.name%>/CNAME/<%address.host%>/<%address.ttl%>'>
                 <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
                 <td><% address.class %></td>
-                <td>CNAME</td>
+                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
                 <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
                 <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
                 <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
@@ -85,7 +85,7 @@
             <form  action='/domain/mod/<%domain%>/<%address.name%>/PTR/<%address.host%>/<%address.ttl%>'>
                 <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
                 <td><% address.class %></td>
-                <td>PTR</td>
+                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
                 <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
                 <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
                 <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
@@ -99,7 +99,7 @@
             <form  action='/domain/mod/<%domain%>/<%address.name%>/MX/<%address.host%>/<%address.ttl%>'>
                 <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
                 <td><% address.class %></td>
-                <td>MX</td>
+                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
                 <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/><input type='number' name='newpriority' class="form-control" value='<%address.priority%>'/></td>
                 <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
                 <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />

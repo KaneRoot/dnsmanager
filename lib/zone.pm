@@ -10,6 +10,7 @@ use getiface ':all';
 use copycat ':all';
 use fileutil ':all';
 use configuration ':all';
+use Data::Dump qw( dump );
 
 use zonefile;
 
@@ -147,17 +148,29 @@ sub modify_entry {
 
             if(are_same_records_($records->[$i], $entryToModify)) {
 
+                say "ENTRY TO MODIFY";
+
+                say $records->[$i]->{name} . ' = ' . $newEntry->{newname};
+                say $records->[$i]->{host} . ' = ' . $newEntry->{newhost};
+                say $records->[$i]->{ttl}  . ' = ' . $newEntry->{newttl};
+                #say $records->[$i]->{type} . ' = ' . $newEntry->{newtype};
+
                 $records->[$i]->{name} = $newEntry->{newname};
                 $records->[$i]->{host} = $newEntry->{newhost};
                 $records->[$i]->{ttl}  = $newEntry->{newttl};
-                $records->[$i]->{type}  = $newEntry->{newtype};
+                #$records->[$i]->{type}  = $newEntry->{newtype};
 
-                if( defined $newEntry->{newpriority} ) {
+                if( $$newEntry{newtype} eq 'MX' ) {
+                    say 
+                    $records->[$i]->{priority}.' = '.$newEntry->{newpriority};
                     $records->[$i]->{priority} = $newEntry->{newpriority};
                 }
             }
         }
     }
+
+    dump($records);
+
 }
 
 sub get {
