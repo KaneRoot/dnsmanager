@@ -4,7 +4,8 @@ use Moo;
 use DNS::ZoneParse;
 
 has zone => qw/is rw/ ;
-has [ qw/domain zonefile/ ] => qw/ is ro required 1/;
+has [ qw/domain/ ] => qw/ is ro required 1/;
+has [ qw/zonefile/ ] => qw/ is rw required 1/;
 
 sub BUILD {
     my ($self) = @_;

@@ -133,6 +133,8 @@ sub delete_entry {
             }
         }
     }
+
+    $zone
 }
 
 sub modify_entry {
@@ -171,6 +173,7 @@ sub modify_entry {
 
     dump($records);
 
+    $zone
 }
 
 sub get {

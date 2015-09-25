@@ -100,14 +100,15 @@ sub delete_domain {
 
 sub modify_entry {
     my ($self, $domain, $entryToModify, $newEntry) = @_;
-    $self->_get_zone($domain)->modify_entry( $entryToModify, $newEntry );
-    $self->update_domain($domain)
+    my $zone = $self->_get_zone($domain)->modify_entry( 
+        $entryToModify, $newEntry );
+    $self->update_domain($zone, $domain)
 }
 
 sub delete_entry {
     my ($self, $domain, $entryToDelete) = @_;
-    $self->_get_zone($domain)->delete_entry( $entryToDelete );
-    $self->update_domain($domain)
+    my $zone = $self->_get_zone($domain)->delete_entry( $entryToDelete );
+    $self->update_domain($zone, $domain)
 }
 
 sub update_domain_raw {
