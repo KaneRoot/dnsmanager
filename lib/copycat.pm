@@ -14,6 +14,7 @@ our %EXPORT_TAGS = ( all => [qw/copycat/] );
 
 sub _cp {
     my ($src, $dest) = @_;
+    say "cp $src $dest";
     File::Copy::copy($src, $dest) or die "Copy failed: $! ($src -> $dest)";
 }
 
@@ -21,6 +22,7 @@ sub _scp_put {
     my ($co, $src, $dest) = @_;
 
     my $ssh = Net::OpenSSH->new($co);
+    say "scp put $src $dest";
     $ssh->scp_put($src, $dest) or die "scp failed: " . $ssh->error;
 }
 
@@ -28,6 +30,7 @@ sub _scp_get {
     my ($co, $src, $dest) = @_;
 
     my $ssh = Net::OpenSSH->new($co);
+    say "scp get $src $dest";
     $ssh->scp_get($src, $dest) or die "scp failed: " . $ssh->error;
 }
 

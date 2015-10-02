@@ -7,32 +7,7 @@ use remotecmd ':all';
 use copycat ':all';
 use configuration ':all';
 
-has [ qw/user host port v4 v6/ ] => qw/is rw/;
 has [ qw/mycfg tmpdir primarydnsserver secondarydnsserver/ ] => qw/is ro required 1/;
-
-sub BUILD {
-    my $self = shift;
-
-    if($$self{mycfg}{domain}) {
-        if($$self{mycfg}{domain}{v4}) {
-            $$self{v4} = $$self{mycfg}{domain}{v4};
-        }
-        if($$self{mycfg}{domain}{v6}) {
-            $$self{v6} = $$self{mycfg}{domain}{v6};
-        }
-
-        if($$self{mycfg}{domain}{name}) {
-            $$self{host} = $$self{mycfg}{domain}{name};
-        }
-    }
-
-    my $cfg = URI->new($$self{mycfg}{cfg});
-
-    $$self{host} //= $cfg->host;
-    $$self{port} //= $cfg->port;
-    $$self{user} //= $cfg->user;
-
-}
 
 # on suppose que tout est déjà mis à jour dans le fichier
 sub reload_sec {
@@ -40,8 +15,8 @@ sub reload_sec {
 
     $self->_reload_conf($slavedzones);
 
-    my $cmd = "sudo nsdc rebuild 2>/dev/null 1>/dev/null && "
-    . " sudo nsdc restart 2>/dev/null 1>/dev/null ";
+    my $cmd = "sudo nsdc rebuild && "
+    . " sudo nsdc restart ";
 
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});
@@ -58,7 +33,11 @@ sub _reload_conf {
     my $f = "file://$$self{tmpdir}/nsd.conf";
     my $remote = ($$self{mycfg}{cfg}) ? $$self{mycfg}{cfg} : undef;
 
-    $remote //= "ssh://$$self{user}@" . "$$self{host}/etc/nsd/nsd.conf";
+    my $user = get_user_from_cfg($$self{mycfg});
+    my $host = get_host_from_cfg($$self{mycfg});
+    my $port = get_port_from_cfg($$self{mycfg});
+
+    $remote //= "ssh://$user". '@' . "$host/etc/nsd/nsd.conf";
 
     copycat $remote, $f;
 
@@ -90,28 +69,22 @@ sub _reload_conf {
     $data =~ s/$debut.*/$debut\n$nouveau/gsm;
 
     write_file $f, $data;
+    copycat $f, $remote;
 
-    my $user = get_user_from_cfg($$self{mycfg});
-    my $host = get_host_from_cfg($$self{mycfg});
-    my $port = get_port_from_cfg($$self{mycfg});
-
-    my $cmd = "sudo nsdc patch 2>/dev/null 1>/dev/null && "
+    my $cmd = "sudo nsdc patch && "
     . " sudo rm /var/nsd3/ixfr.db";
 
     remotecmd $user, $host, $port, $cmd;
-    copycat $f, $remote;
 }
 
 sub reconfig {
     my ($self, $zname) = @_;
     die "nsd3 reconfig not implemented.";
-    #system("nsdc reconfig 2>/dev/null 1>/dev/null");
 }
 
 sub delzone {
     my ($self) = @_;
     die "nsd3 delzone not implemented.";
-    #system("nsdc delzone $zname 2>/dev/null 1>/dev/null");
 }
 
 1;

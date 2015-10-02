@@ -9,7 +9,7 @@ has [ qw/mycfg tmpdir primarydnsserver secondarydnsserver/ ] => qw/is ro require
 sub reload {
     my ($self, $domain) = @_;
 
-    my $cmd = "rndc reload $domain 2>/dev/null 1>/dev/null";
+    my $cmd = "rndc reload $domain ";
 
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});
@@ -17,7 +17,7 @@ sub reload {
 
     remotecmd $user, $host, $port, $cmd;
 
-    $cmd = "rndc notify $domain 2>/dev/null 1>/dev/null";
+    $cmd = "rndc notify $domain ";
     remotecmd $user, $host, $port, $cmd;
 }
 
@@ -44,8 +44,6 @@ sub primary_addzone {
         $cmd .= " }; notify yes; };\"";
     }
 
-    $cmd .= " 2>/dev/null 1>/dev/null";
-
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});
     my $port = get_port_from_cfg($$self{mycfg});
@@ -56,7 +54,7 @@ sub primary_addzone {
 sub reconfig {
     my ($self, $domain) = @_;
 
-    my $cmd = "rndc reconfig 2>/dev/null 1>/dev/null";
+    my $cmd = "rndc reconfig ";
 
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});
@@ -68,7 +66,7 @@ sub reconfig {
 sub delzone {
     my ($self, $domain) = @_;
 
-    my $cmd = "rndc delzone $domain 2>/dev/null 1>/dev/null";
+    my $cmd = "rndc delzone $domain ";
 
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});
