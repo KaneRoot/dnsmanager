@@ -17,7 +17,7 @@ database:
 primarydnsserver:
     app: bind9
     dnsslavekey: key-slave.netlib.re
-    zonedir: ssh://root@localhost:22/var/named/rndczones/
+    zonedir: ssh://root@localhost:22/var/named/zones/rndczones/
     domain:
         user: root
         port: 22
