@@ -8,64 +8,78 @@ has [ qw/mycfg tmpdir primarydnsserver secondarydnsserver/ ] => qw/is ro require
 
 sub reload {
     my ($self, $domain) = @_;
-    system("rndc reload $domain 2>/dev/null 1>/dev/null");
-    system("rndc notify $domain 2>/dev/null 1>/dev/null");
+
+    my $cmd = "rndc reload $domain 2>/dev/null 1>/dev/null";
+
+    my $user = get_user_from_cfg($$self{mycfg});
+    my $host = get_host_from_cfg($$self{mycfg});
+    my $port = get_port_from_cfg($$self{mycfg});
+
+    remotecmd $user, $host, $port, $cmd;
+
+    $cmd = "rndc notify $domain 2>/dev/null 1>/dev/null";
+    remotecmd $user, $host, $port, $cmd;
 }
 
 sub primary_addzone {
     my ($self, $domain, $opt) = @_;
 
-    my $command = "rndc addzone $domain ";
+    my $cmd = "rndc addzone $domain ";
 
     if(defined $opt) {
-        $command .= "'$opt'";
+        $cmd .= "'$opt'";
     }
     else {
         my $dir = get_zonedir_from_cfg($$self{mycfg});
-        $command .= "'{ type master; file \"$dir/$domain\"; allow-transfer { ";
+        $cmd .= "\"{ type master; file \\\"$dir/$domain\\\"; allow-transfer { ";
 
         my $sec = $$self{secondarydnsserver};
         for(@$sec) {
             my $v4 = get_v4_from_cfg($_);
             my $v6 = get_v6_from_cfg($_);
 
-            $command .= $v4 . '; ' if $v4; 
-            $command .= $v6 . '; ' if $v6;
+            $cmd .= $v4 . '; ' if $v4; 
+            $cmd .= $v6 . '; ' if $v6;
         }
-        $command .= " }; notify yes; };'";
+        $cmd .= " }; notify yes; };\"";
     }
 
-    $command .= " 2>/dev/null 1>/dev/null";
-
-    say "";
-    say "CMD : $command";
-    say "";
-
-    system($command)
-}
-
-sub reconfig {
-    my ($self, $domain) = @_;
-    say "";
-    say "CMD : rndc reconfig 2>/dev/null 1>/dev/null";
-    say "";
-    system("rndc reconfig 2>/dev/null 1>/dev/null")
-}
-
-sub delzone {
-    my ($self, $domain) = @_;
-    say "";
-    say "CMD : rndc delzone $domain 2>/dev/null 1>/dev/null";
-    say "";
-    system("rndc delzone $domain 2>/dev/null 1>/dev/null");
-
-    my $file = get_zonedir_from_cfg($$self{mycfg});
-    $file .= "/$domain";
+    $cmd .= " 2>/dev/null 1>/dev/null";
 
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});
     my $port = get_port_from_cfg($$self{mycfg});
-    my $cmd = "rm $file";
+
+    remotecmd $user, $host, $port, $cmd;
+}
+
+sub reconfig {
+    my ($self, $domain) = @_;
+
+    my $cmd = "rndc reconfig 2>/dev/null 1>/dev/null";
+
+    my $user = get_user_from_cfg($$self{mycfg});
+    my $host = get_host_from_cfg($$self{mycfg});
+    my $port = get_port_from_cfg($$self{mycfg});
+
+    remotecmd $user, $host, $port, $cmd;
+}
+
+sub delzone {
+    my ($self, $domain) = @_;
+
+    my $cmd = "rndc delzone $domain 2>/dev/null 1>/dev/null";
+
+    my $user = get_user_from_cfg($$self{mycfg});
+    my $host = get_host_from_cfg($$self{mycfg});
+    my $port = get_port_from_cfg($$self{mycfg});
+
+    remotecmd $user, $host, $port, $cmd;
+
+    my $file = get_zonedir_from_cfg($$self{mycfg});
+    $file .= "/$domain";
+
+    $cmd = "rm $file";
 
     remotecmd $user, $host, $port, $cmd
 }

@@ -25,10 +25,6 @@ sub remotecmd {
     #close(READER);
     #close(WRITER);
 
-    # adds some security tests
-    my @c = split /[;']/, $cmd;
-    $cmd = $c[0];
-
     my $str = "ssh -p $port $user". '@' . "$host '$cmd'";
     say "";
     say "CMD : $str";
