@@ -11,13 +11,15 @@ our %EXPORT_TAGS = ( all => [qw/getiface/] );
 use interface::bind9;
 use interface::knot;
 use interface::nsd3;
+use interface::nsd4;
 
 sub getiface {
     my ($type, $params) = @_;
     for($type) {
         if (/bind9/)    { return interface::bind9->new($params) }
         elsif (/knot/)  { return interface::knot->new($params) }
-        elsif (/nsd/)   { return interface::nsd3->new($params) }
+        elsif (/nsd3/)   { return interface::nsd3->new($params) }
+        elsif (/nsd/)   { return interface::nsd4->new($params) }
         else         { die "Interface for the $_ dns type not found."; }
     }
 }
