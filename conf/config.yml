@@ -3,6 +3,7 @@
 tld:
     - '.netlib.re'
     - '.autre.tld'
+    - '.codelib.re'
 
 tmpdir: file:///media/fast/
 
