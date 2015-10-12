@@ -21,10 +21,9 @@ primarydnsserver:
     domain:
         user: root
         port: 22
-        host: localhost
-        name: localhost
-        v4: 127.0.0.1       # optional
-        v6: ::1             # optional
+        host: web.loc
+        name: web.loc
+        v4: 192.168.0.60       # optional
 
 secondarydnsserver:
     - app: nsd
@@ -33,7 +32,6 @@ secondarydnsserver:
       domain:
           name: nsdl
           v4: 192.168.0.61          # optional
-          v6: 2001:db8::2           # optional
 
 #    - app: nsd
 #      cfg: ssh://dnsmanager@host3:2222/etc/nsd3/nsd.conf

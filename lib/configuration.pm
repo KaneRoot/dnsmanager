@@ -75,7 +75,8 @@ sub get_v6_from_name {
     my $val = qx/host -t AAAA $name | grep -oE '[^[:space:]]+\$'/;
     chomp $val;
 
-    die q{There is no available v6. TODO.} if($val =~ 'NXDOMAIN');
+    #die q{There is no available v6. TODO.} if($val =~ 'NXDOMAIN');
+    return undef if($val =~ 'NXDOMAIN');
 
     $val
 }
@@ -93,7 +94,7 @@ sub get_v4_from_name {
 
 sub get_v6_from_cfg {
     my $cfg = shift;
-    $$cfg{domain}{v6} // get_v4_from_name($$cfg{domain}{name})
+    $$cfg{domain}{v6} // get_v6_from_name($$cfg{domain}{name})
 }
 
 sub get_v4_from_cfg {

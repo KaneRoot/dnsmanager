@@ -45,28 +45,50 @@ sub _reload_conf {
     # if it's the first time we get the configuration, fresh start
     $data .= "\n## BEGIN_GENERATED" if( $data !~ /BEGIN_GENERATED/);
 
+    my $v4 = get_v4_from_cfg($$self{primarydnsserver});
+    my $v6 = get_v6_from_cfg($$self{primarydnsserver});
+
     my $debut = "## BEGIN_GENERATED";
+
     my $nouveau = '';
     my $dnsslavekey = get_dnsslavekey_from_cfg($$self{primarydnsserver});
 
+#    $nouveau .= "
+#remote-control:
+#    control-enable: yes
+#    control-interface: 127.0.0.1
+#    control-port: 8952
+#    server-key-file: '/etc/nsd/nsd_server.key'
+#    server-cert-file: '/etc/nsd/nsd_server.pem'
+#    control-key-file: '/etc/nsd/nsd_control.key'
+#    control-cert-file: '/etc/nsd/nsd_control.pem'
+#
+#key:
+#
+## pattern : configuration to reproduce on every slaves
+    $nouveau .= "
+pattern:
+\tname: 'slavepattern'
+    ";
+
+    if($v4) {
+        # allow notify & request xfr, v4 & v6
+        $nouveau .= "\tallow-notify: $v4 \"$dnsslavekey\" \n"
+        . "\trequest-xfr: $v4 \"$dnsslavekey\" \n";
+    }
+
+    if($v6) {
+        $nouveau .= "\tallow-notify: $v6 \"$dnsslavekey\" \n"
+        . "\trequest-xfr: $v6 \"$dnsslavekey\" \n";
+    }
+
+    $nouveau .= "\n";
+
     for(@{$slavedzones}) {
 
-        $nouveau .= "zone:\n\n\tname: \"$$_{domain}\"\n"
-        . "\tzonefile: \"slave/$$_{domain}\"\n\n";
-
-        my $v4 = get_v4_from_cfg($$self{primarydnsserver});
-        my $v6 = get_v6_from_cfg($$self{primarydnsserver});
-
-        if($v4) {
-            # allow notify & request xfr, v4 & v6
-            $nouveau .= "\tallow-notify: $v4 $dnsslavekey \n"
-            . "\trequest-xfr: $v4 $dnsslavekey \n\n";
-        }
-
-        if($v6) {
-            $nouveau .= "\tallow-notify: $v6 $dnsslavekey \n"
-            . "\trequest-xfr: $v6 $dnsslavekey \n\n";
-        }
+        $nouveau .= "zone:\n\tname: \"$$_{domain}\"\n"
+        . "\tzonefile: \"slave/$$_{domain}\"\n";
+        $nouveau .= "\tinclude-pattern: 'slavepattern'\n\n";
     }
 
     $data =~ s/$debut.*/$debut\n$nouveau/gsm;
