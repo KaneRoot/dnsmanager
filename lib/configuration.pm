@@ -16,6 +16,7 @@ get_v6_from_cfg
 get_host_from_cfg
 get_user_from_cfg
 get_port_from_cfg
+get_tmpdir_from_uri
 /;
 
 # bundle of exports (tags)
@@ -30,6 +31,7 @@ get_v6_from_cfg
 get_host_from_cfg
 get_user_from_cfg
 get_port_from_cfg
+get_tmpdir_from_uri
         /] );
 
 sub is_conf_file {
@@ -100,6 +102,14 @@ sub get_v6_from_cfg {
 sub get_v4_from_cfg {
     my $cfg = shift;
     $$cfg{domain}{v4} // get_v4_from_name($$cfg{domain}{name})
+}
+
+sub get_tmpdir_from_uri {
+    my $tmpdir = shift;
+    unless($tmpdir) {
+        die 'There is no tmpdir';
+    }
+    URI->new($tmpdir)->path;
 }
 
 sub get_zonedir_from_cfg {

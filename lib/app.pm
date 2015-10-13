@@ -4,6 +4,7 @@ use Moo;
 
 use db;
 use zone;
+use configuration ':all';
 
 has db => ( is => 'rw', builder => '_void');
 
@@ -15,6 +16,9 @@ sub _void { my $x = ''; \$x; }
 sub BUILD {
     my ($self) = @_;
     $$self{db} = db->new(data => $self);
+
+    my $tmpdir = get_tmpdir_from_uri($$self{tmpdir});
+    -f $tmpdir || qx/mkdir -p $tmpdir/;
 
     my $db = $$self{database};
     unless(exists $$db{sgbd} && exists $$db{name}

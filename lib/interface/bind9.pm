@@ -9,16 +9,20 @@ has [ qw/mycfg tmpdir primarydnsserver secondarydnsserver/ ] => qw/is ro require
 sub reload {
     my ($self, $domain) = @_;
 
-    my $cmd = "rndc reload $domain ";
+    my $cmd = "rndc reload $domain";
+    qx/$cmd/;
+    $cmd = "rndc notify $domain";
+    qx/$cmd/;
 
-    my $user = get_user_from_cfg($$self{mycfg});
-    my $host = get_host_from_cfg($$self{mycfg});
-    my $port = get_port_from_cfg($$self{mycfg});
+    #my $cmd = "rndc reload $domain ";
+    #my $user = get_user_from_cfg($$self{mycfg});
+    #my $host = get_host_from_cfg($$self{mycfg});
+    #my $port = get_port_from_cfg($$self{mycfg});
 
-    remotecmd $user, $host, $port, $cmd;
+    #remotecmd $user, $host, $port, $cmd;
 
-    $cmd = "rndc notify $domain ";
-    remotecmd $user, $host, $port, $cmd;
+    #$cmd = "rndc notify $domain ";
+    #remotecmd $user, $host, $port, $cmd;
 }
 
 sub primary_addzone {
@@ -44,11 +48,14 @@ sub primary_addzone {
         $cmd .= " }; notify yes; };\"";
     }
 
-    my $user = get_user_from_cfg($$self{mycfg});
-    my $host = get_host_from_cfg($$self{mycfg});
-    my $port = get_port_from_cfg($$self{mycfg});
+    # if remote rndc
+    #my $user = get_user_from_cfg($$self{mycfg});
+    #my $host = get_host_from_cfg($$self{mycfg});
+    #my $port = get_port_from_cfg($$self{mycfg});
 
-    remotecmd $user, $host, $port, $cmd;
+    #remotecmd $user, $host, $port, $cmd;
+
+    qx/$cmd/;
 }
 
 sub reconfig {
@@ -56,17 +63,19 @@ sub reconfig {
 
     my $cmd = "rndc reconfig ";
 
-    my $user = get_user_from_cfg($$self{mycfg});
-    my $host = get_host_from_cfg($$self{mycfg});
-    my $port = get_port_from_cfg($$self{mycfg});
+    #my $user = get_user_from_cfg($$self{mycfg});
+    #my $host = get_host_from_cfg($$self{mycfg});
+    #my $port = get_port_from_cfg($$self{mycfg});
 
-    remotecmd $user, $host, $port, $cmd;
+    #remotecmd $user, $host, $port, $cmd;
+
+    qx/$cmd/;
 }
 
 sub delzone {
     my ($self, $domain) = @_;
 
-    my $cmd = "rndc delzone $domain ";
+    my $cmd = "sudo rndc delzone $domain ";
 
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});

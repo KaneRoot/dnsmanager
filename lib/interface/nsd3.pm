@@ -15,8 +15,7 @@ sub reload_sec {
 
     $self->_reload_conf($slavedzones);
 
-    my $cmd = "sudo nsdc rebuild && "
-    . " sudo nsdc restart ";
+    my $cmd = "sudo nsdc rebuild && sudo nsdc restart && sudo nsdc patch ";
 
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});
@@ -42,28 +41,36 @@ sub _reload_conf {
     copycat $remote, $f;
 
     my $data = read_file $f;
+
+    # if it's the first time we get the configuration, fresh start
+    $data .= "\n## BEGIN_GENERATED" if( $data !~ /BEGIN_GENERATED/);
+
+    my $v4 = get_v4_from_cfg($$self{primarydnsserver});
+    my $v6 = get_v6_from_cfg($$self{primarydnsserver});
+
     my $debut = "## BEGIN_GENERATED";
+
     my $nouveau = '';
     my $dnsslavekey = get_dnsslavekey_from_cfg($$self{primarydnsserver});
 
     for(@{$slavedzones}) {
 
-        $nouveau .= "zone:\n\n\tname: \"$_\"\n"
-        . "\tzonefile: \"slave/$_\"\n\n";
+        $nouveau .= "zone:\n\tname: \"$$_{domain}\"\n"
+        . "\tzonefile: \"slave/$$_{domain}\"\n";
 
-        my $v4 = get_v4_from_cfg($$self{primarydnsserver});
-        my $v6 = get_v6_from_cfg($$self{primarydnsserver});
+        say "domain : $$_{domain}";
 
         if($v4) {
             # allow notify & request xfr, v4 & v6
-            $nouveau .= "\tallow-notify: $v4 $dnsslavekey \n"
-            . "\trequest-xfr: $v4 $dnsslavekey \n\n";
+            $nouveau .= "\tallow-notify: $v4 \"$dnsslavekey\" \n"
+            . "\trequest-xfr: $v4 \"$dnsslavekey\" \n";
         }
 
         if($v6) {
-            $nouveau .= "\tallow-notify: $v6 $dnsslavekey \n"
-            . "\trequest-xfr: $v6 $dnsslavekey \n\n";
+            $nouveau .= "\tallow-notify: $v6 \"$dnsslavekey\" \n"
+            . "\trequest-xfr: $v6 \"$dnsslavekey\" \n";
         }
+        $nouveau .= "\n";
     }
 
     $data =~ s/$debut.*/$debut\n$nouveau/gsm;
@@ -71,10 +78,9 @@ sub _reload_conf {
     write_file $f, $data;
     copycat $f, $remote;
 
-    my $cmd = "sudo nsdc patch && "
-    . " sudo rm /var/nsd3/ixfr.db";
+    my $cmd = "sudo nsdc patch && sudo rm /var/nsd3/ixfr.db";
 
-    remotecmd $user, $host, $port, $cmd;
+    remotecmd $user, $host, $port, $cmd
 }
 
 sub reconfig {
