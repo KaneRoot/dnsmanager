@@ -1,0 +1,51 @@
+<% include header.tt %>
+<% include sidebar.tt %>
+<% include error.tt %>
+
+<div id="page">
+
+<% IF domains && domains.size %>
+    <h3>Vos domaines :</h3>
+    <table class="table">
+    <% FOREACH domain in domains %>
+        <tr>
+            <td><% domain.domain %></td>
+
+            <td>
+                <a href="/domain/details/<% domain.domain %>" ><button type="button" class="btn btn-primary">Détails</button></a>
+            </td>
+
+            <td>
+                <a href="/domain/del/<% domain.domain %>" ><button type="button" class="btn btn-danger">Supprimer</button></a>
+            </td>
+        </tr>
+    <% END %>
+    </table>
+
+    <br/>
+
+<% ELSE %>
+   <p class="text-danger">Pas encore de nom de domaine ?</p>
+   <p>Réservez-en un ! \o/</p>
+<% END %>
+
+<h3>Ajouter un nouveau domaine :</h3>
+
+<form class="form" action='/domain/add/' method="post" >
+    <% IF domainName.defined %>
+        <input type='text' name='domain' value="<% domainName %>" />
+    <% ELSE %>
+        <input type='text' name='domain' />
+    <% END %>
+    <select name='tld' >
+    <% FOREACH dom in provideddomains %>
+            <option><% dom %></option>
+    <% END %>
+    </select>
+    <input type='submit' name='submit' value="Créer mon domaine!" />
+</form>
+
+</div>
+
+</div> <!-- fin de colonne -->
+</div> <!-- fin de ligne -->

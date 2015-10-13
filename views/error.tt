@@ -1,0 +1,20 @@
+<% IF deferred.errmsg %>
+<div id="errmsg" >
+    <div class="alert alert-danger">
+        <p><strong>Oh !</strong>
+        <% deferred.errmsg %>
+        <span class="glyphicon glyphicon-remove"></span>
+        </p>
+    </div>
+</div>
+<% END %>
+
+<!-- Permettra une mise en forme plus propre. -->
+<% IF deferred.succmsg %>
+<div class="alert alert-success">
+    <p><strong>Bien !</strong>
+    <% deferred.succmsg %>
+    <span class="glyphicon glyphicon-ok"></span>
+    </p>
+</div>
+<% END %>

@@ -1,2 +1,4 @@
 *.swp
 sessions
+init/bind9.cfg.tar.gz
+init/varnamed.tar.gz

@@ -6,16 +6,17 @@ Ce qui permet d'être un remplaçant de DynDNS.
 
 ## Outils
 
-  * [Dancer](http://perldancer.org/)
-  * [DNS::ZoneParse](http://search.cpan.org/~mschilli/DNS-ZoneParse-1.10/lib/DNS/ZoneParse.pm)
+  * [Dancer2](http://perldancer.org/)
+  * [DNS::ZoneParse](https://metacpan.org/pod/DNS::ZoneParse)
   * [Bootstrap](http://twitter.github.io/bootstrap/)
   * [DBD::mysql](https://metacpan.org/module/DBD::mysql)
-  * [Moose](https://metacpan.org/module/ETHER/Moose-2.0802/lib/Moose.pm)
-  * [Crypt::Digest::SHA256](http://search.cpan.org/~mik/CryptX-0.021/lib/Crypt/Digest/SHA256.pm)
+  * [Moo](https://metacpan.org/pod/Moo)
+  * [Crypt::Digest::SHA256](https://metacpan.org/pod/Crypt::Digest::SHA256)
 
 ## TODO
 
   * captcha
   * demander confirmation avant suppression d'une zone
-  * rajouter les types de RR manquants dans l'interface
+  * rajouter les types de RR manquants dans l'interface (remplacement de
+          DNS::ZoneParse, ou amélioration)
   * déléguer les zones
