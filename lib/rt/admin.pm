@@ -4,6 +4,8 @@ use configuration ':all';
 use app;
 use utf8;
 
+use Data::Dump qw( dump );
+
 use Exporter 'import';
 # what we want to export eventually
 our @EXPORT_OK = qw/rt_admin/;
@@ -32,13 +34,14 @@ sub rt_admin {
         $$res{template} = 'administration'; 
         $$res{params} = {
             login => $$session{login}
-            , admin => 1 # we know it, or we couldn't reach this
+            , admin => $$user{admin}
             , domains => $domains
             , alldomains => $alldomains
             , allusers => $allusers 
         };
         $app->disconnect();
     };
+
 
     $res
 }

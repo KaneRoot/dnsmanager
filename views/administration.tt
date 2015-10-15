@@ -15,17 +15,17 @@
                 <th>supprimer utilisateur</th>
             </tr>
 
-        <% FOREACH pair IN alldomains.pairs %>
+        <% FOREACH d IN alldomains %>
             <tr>
-            <td><% pair.key %></td>
-            <td><% pair.value %></td>
+            <td><% d.domain %></td>
+            <td><% d.login %></td>
 
             <td>
-                <a href="/domain/del/<% pair.key %>"><button type="button" class="btn btn-danger">Supprimer le domaine</button></a>
+                <a href="/domain/del/<% d.domain %>"><button type="button" class="btn btn-danger">Supprimer le domaine</button></a>
             </td>
 
             <td>
-                <a href="/user/del/<% pair.value %>"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
+                <a href="/user/del/<% d.login %>"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
             </td>
 
             </tr>
@@ -44,17 +44,17 @@
                 <th>administrateur</th>
             </tr>
 
-        <% FOREACH pair IN allusers.pairs %>
+        <% FOREACH u IN allusers %>
             <tr>
-            <td><% pair.key %></td>
+            <td><% u.login %></td>
 
             <td>
-                <a href="/user/del/<% pair.key %>"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
+                <a href="/user/del/<% u.login %>"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
             </td>
 
             <td>
-            <a href="/user/toggleadmin/<% pair.key %>">
-            <% IF pair.value == 1 %>
+            <a href="/user/toggleadmin/<% u.login %>">
+            <% IF u.admin == 1 %>
                 <button type="button" class="btn btn-danger">Passer utilisateur</button>
             <% ELSE %>
                 <button type="button" class="btn btn-primary">Passer administrateur</button>
