@@ -10,8 +10,10 @@ sub reload {
     my ($self, $domain) = @_;
 
     my $cmd = "rndc reload $domain";
+    say "CMD: $cmd";
     qx/$cmd/;
     $cmd = "rndc notify $domain";
+    say "CMD: $cmd";
     qx/$cmd/;
 
     #my $cmd = "rndc reload $domain ";
@@ -75,13 +77,14 @@ sub reconfig {
 sub delzone {
     my ($self, $domain) = @_;
 
-    my $cmd = "sudo rndc delzone $domain ";
+    my $cmd = "rndc delzone $domain ";
 
     my $user = get_user_from_cfg($$self{mycfg});
     my $host = get_host_from_cfg($$self{mycfg});
     my $port = get_port_from_cfg($$self{mycfg});
 
-    remotecmd $user, $host, $port, $cmd;
+    #remotecmd $user, $host, $port, $cmd;
+    qx/$cmd/;
 
     my $file = get_zonedir_from_cfg($$self{mycfg});
     $file .= "/$domain";
