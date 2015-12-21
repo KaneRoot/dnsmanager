@@ -17,7 +17,7 @@
 
         <% FOREACH d IN alldomains %>
             <tr>
-            <td> <a href="/domain/details/<% d.domain %>/"><% d.domain %></a> </td>
+            <td> <a href="/domain/details/<% d.domain %>"><% d.domain %></a> </td>
             <td><% d.login %></td>
 
             <td>

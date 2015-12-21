@@ -34,13 +34,13 @@
                 <input type="hidden" name="oldname" value="<% rr.name %>"/>
                 <input type="hidden" name="oldtype" value="<% rr.type %>"/>
                 <input type="hidden" name="oldttl" value="<% rr.ttl %>"/>
-                <input type="hidden" name="oldrdata" value="<% rr.rdata %>"/>
+                <textarea type="hidden" style="display:none" name="oldrdata"><% rr.rdata %></textarea>
 
                 <td><input type='text' name='newname' class="form-control" value='<% rr.name %>'/></td>
                 <td><% rr.class %></td>
                 <td><input type='text' name='newtype' size='8' class="form-control" value='<% rr.type %>'/></td>
                 <td><input type='number' name='newttl' size='4' class="form-control" value='<% rr.ttl %>'/></td>
-                <td><input type='text' name='newrdata' class="form-control" value='<% rr.rdata %>'/></td>
+                <td><textarea name='newrdata' class="form-control" rows=1 ><% rr.rdata %></textarea></td>
                 <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' /></td>
 
                 <td>

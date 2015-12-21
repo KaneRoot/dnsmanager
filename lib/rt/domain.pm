@@ -131,8 +131,9 @@ sub rt_dom_mod_entry {
             $str_new .= "$$param{newrdata}";
         }
 
-        say "old : $str_old";
-        say "new : $str_new";
+        say "old rdata : $$param{oldrdata}";
+        say "new rdata : $$param{newrdata}";
+
         $zf->rr_mod( $str_old, $str_new);
         $zone->update( $zf );
 

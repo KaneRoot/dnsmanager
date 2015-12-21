@@ -14,8 +14,10 @@ has [ qw/zonefile/ ] => qw/ is rw required 1/;
 
 sub rr_array_del {
     my ($zones, $rr) = @_;
-    my @z = grep { $_->plain ne $rr->plain } @$zones;
-    [ @z ]
+    my $todel = $rr->plain;
+    utf8::decode($todel);
+
+    [grep { my $v = $_->plain; utf8::decode($v); $v ne $rr->plain } @$zones]
 }
 
 sub rr_array_add {
@@ -67,6 +69,8 @@ sub rr_array_dump {
         }
     }
 
+    utf8::decode($dump);
+
     $dump
 }
 
@@ -105,7 +109,10 @@ sub serial {
 # remove a raw line that represents the RR
 sub rr_del_raw {
     my ($self, $rrline) = @_;
+    utf8::decode($rrline);
+    say "to delete raw : $rrline";
     my $rr = Net::DNS::RR->new($rrline);
+    say "to delete reformed : " . $rr->plain;
     $self->rr_del($rr)
 }
 
@@ -117,6 +124,8 @@ sub rr_del {
 # add a raw line that represents the RR
 sub rr_add_raw {
     my ($self, $rrline) = @_;
+    utf8::decode($rrline);
+    say "to add : $rrline";
     my $rr = Net::DNS::RR->new($rrline);
     $self->rr_add($rr)
 }
@@ -128,10 +137,10 @@ sub rr_add {
 
 sub rr_mod {
     my ($self, $rrline_old, $rrline_new) = @_;
+
     $self->rr_del_raw($rrline_old);
     $self->rr_add_raw($rrline_new);
 }
-
 
 sub rr_array_to_array {
     my ($self) = shift;
@@ -147,6 +156,11 @@ sub rr_array_to_array {
         $$rr{class} = $list[2];
         $$rr{type} = $list[3];
 
+        utf8::decode($$rr{name});
+        utf8::decode($$rr{ttl});
+        utf8::decode($$rr{class});
+        utf8::decode($$rr{type});
+
         if($list[3] =~ /SOA/) {
             $$rr{ns} = $list[4];
             $$rr{postmaster} = $list[5];
@@ -155,16 +169,29 @@ sub rr_array_to_array {
             $$rr{retry} = $list[8];
             $$rr{expire} = $list[9];
             $$rr{minimum} = $list[10];
+
+            utf8::decode($$rr{ns});
+            utf8::decode($$rr{postmaster});
+            utf8::decode($$rr{serial});
+            utf8::decode($$rr{refresh});
+            utf8::decode($$rr{retry});
+            utf8::decode($$rr{expire});
+            utf8::decode($$rr{minimum});
         }
         elsif($list[3] =~ /^(A(AAA)?|CNAME|NS)$/) {
             $$rr{rdata} = $list[4];
+            utf8::decode($$rr{rdata});
         }
         elsif($list[3] =~ /^MX$/) {
             $$rr{priority} = $list[4];
             $$rr{rdata} = $list[5];
+
+            utf8::decode($$rr{priority});
+            utf8::decode($$rr{rdata});
         }
         elsif($list[3] =~ /^TXT$/) {
             $$rr{rdata} = $_->rdstring;
+            utf8::decode($$rr{rdata});
         }
         else {
             die "This RR is not available : " . $_->plain;
