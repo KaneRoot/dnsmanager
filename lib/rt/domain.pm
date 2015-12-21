@@ -52,20 +52,13 @@ sub rt_dom_cli_mod_entry {
             return $res;
         }
 
-        $app->modify_entry( $$param{domain}
-            , {
-                type    => $$param{type}
-                , name  => $$param{name}
-                , host  => $$param{host}
-                , ttl   => $$param{ttl}
-            }
-            , {
-                newtype         => $$param{type}
-                , newname       => $$param{name}
-                , newhost       => $$param{ip}
-                , newttl        => $$param{ttl}
-                , newpriority   => ''
-            });
+        my $zone = $app->get_zone( $$param{domain} );
+        my $zf = $zone->get_zonefile();
+        $zf->rr_mod(
+            "$$param{name} $$param{ttl} $$param{type} $$param{rdata}"
+            , "$$param{name} $$param{ttl} $$param{type} $$param{ip}"
+        );
+        $zone->update( $zf );
 
         $app->disconnect();
     };
@@ -88,12 +81,13 @@ sub rt_dom_mod_entry {
 
     my @missingitems;
 
-    for(qw/type name ttl domain name type host ttl 
-        newtype newhost newname newttl/) {
+    for(qw/domain 
+        oldtype oldname oldrdata oldttl
+        newtype newname newrdata newttl/) {
         push @missingitems, $_ unless($$param{$_});
     }
 
-    if($$param{type} eq 'MX' && ! $$param{newpriority}) {
+    if($$param{oldtype} eq 'MX' && ! $$param{newpriority}) {
         push @missingitems, "newpriority";
     }
 
@@ -102,8 +96,9 @@ sub rt_dom_mod_entry {
         return $res;
     }
 
-    for(qw/type name ttl domain name type host ttl 
-        newpriority newtype newhost newname newttl/) {
+    for(qw/domain 
+        oldtype oldname oldrdata oldttl
+        newtype newname newrdata newttl/) {
         say "$_ : $$param{$_}" if $$param{$_};
     }
 
@@ -124,20 +119,23 @@ sub rt_dom_mod_entry {
             return $res;
         }
 
-        $app->modify_entry( $$param{domain}
-            , {
-                type => $$param{type}
-                , name => $$param{name}
-                , host => $$param{host}
-                , ttl  => $$param{ttl}
-            }
-            , {
-                newtype       => $$param{newtype}
-                , newname     => $$param{newname}
-                , newhost     => $$param{newhost}
-                , newttl      => $$param{newttl}
-                , newpriority => $$param{newpriority}
-            });
+        my $zone = $app->get_zone( $$param{domain} );
+        my $zf = $zone->get_zonefile();
+        my $str_old = 
+        "$$param{oldname} $$param{oldttl} $$param{oldtype} $$param{oldrdata}";
+        my $str_new = "$$param{newname} $$param{newttl} $$param{newtype} ";
+        if($$param{newtype} eq "MX") {
+            $str_new .= "$$param{newpriority} $$param{newrdata}";
+        }
+        else {
+            $str_new .= "$$param{newrdata}";
+        }
+
+        say "old : $str_old";
+        say "new : $str_new";
+        $zf->rr_mod( $str_old, $str_new);
+        $zone->update( $zf );
+
         $app->disconnect();
     };
 
@@ -168,12 +166,13 @@ sub rt_dom_del_entry {
             return $res;
         }
 
-        $app->delete_entry( $$param{domain}, {
-                type => $$param{type},
-                name => $$param{name},
-                host => $$param{host},
-                ttl  => $$param{ttl}
-            });
+        my $zone = $app->get_zone( $$param{domain} );
+        my $zf = $zone->get_zonefile();
+        $zf->rr_del_raw(
+            "$$param{name} $$param{ttl} $$param{type} $$param{rdata}"
+        );
+        $zone->update( $zf );
+
         $app->disconnect();
     };
 
@@ -324,7 +323,8 @@ sub rt_dom_details {
             return $res;
         }
 
-        my $zone = $app->get_domain($$param{domain});
+        my $zone = $app->get_zone( $$param{domain} );
+        my $zf = $zone->get_zonefile();
 
         $app->disconnect();
 
@@ -333,7 +333,7 @@ sub rt_dom_details {
             login           => $$session{login}
             , admin         => $$user{admin}
             , domain        => $$param{domain}
-            , domain_zone   => $zone->output()
+            , domain_zone   => $zf->dump()
             , user_ip       => $$request{address}
         };
 
@@ -341,17 +341,7 @@ sub rt_dom_details {
             $$res{params}{expert} = 1;
         }
         else {
-            $$res{params}{a}        = $zone->a();
-            $$res{params}{aaaa}     = $zone->aaaa();
-            $$res{params}{cname}    = $zone->cname();
-            $$res{params}{ptr}      = $zone->ptr();
-            $$res{params}{mx}       = $zone->mx();
-            $$res{params}{ns}       = $zone->ns();
-
-            for(qw/a aaaa cname ptr mx ns/) {
-                my $t = $_;
-                map { $$_{type} = uc $t } @{$$res{params}{$t}};
-            }
+            $$res{params}{zone} = $zf->rr_array_to_array();
         }
     };
 
@@ -378,7 +368,7 @@ sub rt_dom_update {
 
     my @missingitems;
 
-    for(qw/type name value ttl domain/) {
+    for(qw/name ttl type rdata domain/) {
         push @missingitems, $_ unless($$param{$_});
     }
     
@@ -403,34 +393,29 @@ sub rt_dom_update {
             return $res;
         }
 
-        my $zone = $app->get_domain( $$param{domain} );
+        my $zone = $app->get_zone( $$param{domain} );
+        my $zf = $zone->get_zonefile();
 
-        # TODO better naming convention
-        my $entries;
-        for( $$param{type} ) {
-            if($_ eq 'A')           { $entries = $zone->a }
-            elsif( $_ eq 'AAAA')    { $entries = $zone->aaaa }
-            elsif( $_ eq 'CNAME')   { $entries = $zone->cname }
-            elsif( $_ eq 'MX')      { $entries = $zone->mx }
-            elsif( $_ eq 'PTR')     { $entries = $zone->ptr }
-            elsif( $_ eq 'NS')      { $entries = $zone->ns }
-            elsif( $_ eq 'TXT')     { $entries = $zone->txt } # TODO verify this
+        my $name = $$param{name};
+        $name .= ".$$param{domain}" unless $name =~ /$$param{domain}$/;
+        my $str_new = "$name $$param{ttl} $$param{type} ";
+
+        my $rdata = $$param{rdata};
+
+        if($$param{type} =~ /^(CNAME|MX|NS|PTR)$/ && $rdata !~ /\.$/) {
+            $rdata .= ".$$param{domain}";
         }
 
-        my $new_entry = {
-            name        => $$param{name}
-            , class     => "IN"
-            , host      => $$param{value}
-            , ttl       => $$param{ttl}
-            , ORIGIN    => $zone->origin
-        };
+        if($$param{type} eq "MX") {
+            $str_new .= "$$param{priority} $$param{rdata}";
+        }
+        else {
+            $str_new .= "$$param{rdata}";
+        }
+        $zf->rr_add_raw($str_new);
+        $zf->new_serial();
+        $zone->update( $zf );
 
-        $$new_entry{priority} = $$param{priority} if $$param{type} eq 'MX';
-        push @$entries, $new_entry;
-
-        $zone->new_serial();
-
-        $app->update_domain( $zone , $$param{domain} );
         $app->disconnect();
     };
 
@@ -478,13 +463,9 @@ sub rt_dom_updateraw {
             return $res;
         }
         else {
-            my $success = 
-            $app->update_domain_raw($$param{zoneupdated}, $$param{domain});
-
-            unless($success) {
-                $$res{deferred}{errmsg} = q{Problème de mise à jour du domaine.};
-            }
-
+            my $zone = $app->get_zone( $$param{domain} );
+            my $zf = $zone->update_raw( $$param{zoneupdated} );
+            $zone->update( $zf );
             $$res{route} = '/domain/details/' . $$param{domain};
         }
 

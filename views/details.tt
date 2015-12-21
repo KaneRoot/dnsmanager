@@ -17,94 +17,70 @@
 
     <table class="table" >
         <caption>
-            <td>Name</td>
-            <td>Class</td>
+        <tr>
+            <td>Domaine</td>
             <td>Type</td>
-            <td>Host</td>
+            <td>Cible</td>
             <td>TTL</td>
+        </tr>
         </caption>
 
-        <% FOREACH address in ns %>
+        <% FOREACH rr in zone %>
         <tr>
-            <form action='/domain/mod/<%domain%>/<%address.name%>/NS/<%address.host%>/<%address.ttl%>'>
-                <td><input type='text' name='newname' class="form-control" value='<% address.name %>' /></td>
-                <td><% address.class %></td>
-                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
-                <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
-                <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
-                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
-            </form>
-            <td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/NS/<% address.host %>/<% address.ttl %>';">✘</button></td>
-        </tr>
-        <% END %>
+            <% SWITCH rr.type %>
+            <% CASE [ "A", "AAAA", "TXT", "NS", "CNAME", "PTR" ] %>
 
-        <% FOREACH address in a %>
-        <tr>
-            <form action='/domain/mod/<%domain%>/<%address.name%>/A/<%address.host%>/<%address.ttl%>'>
-                <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
-                <td><% address.class %></td>
-                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
-                <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
-                <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
-                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
-            </form>
-            <td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/A/<% address.host %>/<% address.ttl %>';">✘</button></td>
-        </tr>
-        <% END %>
+            <form method="post" action='/domain/mod/<% domain %>'>
+                <input type="hidden" name="oldname" value="<% rr.name %>"/>
+                <input type="hidden" name="oldtype" value="<% rr.type %>"/>
+                <input type="hidden" name="oldttl" value="<% rr.ttl %>"/>
+                <input type="hidden" name="oldrdata" value="<% rr.rdata %>"/>
 
-        <% FOREACH address in aaaa %>
-        <tr>
-            <form action='/domain/mod/<%domain%>/<%address.name%>/AAAA/<%address.host%>/<%address.ttl%>'>
-                <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
-                <td><% address.class %></td>
-                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
-                <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
-                <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
-                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
-            </form>
-            <td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/AAAA/<% address.host %>/<% address.ttl %>';">✘</button></td>
-        </tr>
-        <% END %>
+                <td><input type='text' name='newname' class="form-control" value='<% rr.name %>'/></td>
+                <td><% rr.class %></td>
+                <td><input type='text' name='newtype' size='8' class="form-control" value='<% rr.type %>'/></td>
+                <td><input type='number' name='newttl' size='4' class="form-control" value='<% rr.ttl %>'/></td>
+                <td><input type='text' name='newrdata' class="form-control" value='<% rr.rdata %>'/></td>
+                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' /></td>
 
-        <% FOREACH address in cname %>
-        <tr>
-            <form  action='/domain/mod/<%domain%>/<%address.name%>/CNAME/<%address.host%>/<%address.ttl%>'>
-                <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
-                <td><% address.class %></td>
-                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
-                <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
-                <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
-                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
+                <td>
+                    <a href='/domain/del/<% domain %>/<% rr.name %>/<% rr.ttl %>/<% rr.type %>/<% rr.rdata %>'>
+                        <button type="button" class="btn btn-primary btn-danger btn-xs">
+                            ✘
+                        </button>
+                    </a>
+                </td>
             </form>
-            <td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/CNAME/<% address.host %>/<% address.ttl %>';">✘</button></td>
-        </tr>
-        <% END %>
 
-        <% FOREACH address in ptr %>
-        <tr>
-            <form  action='/domain/mod/<%domain%>/<%address.name%>/PTR/<%address.host%>/<%address.ttl%>'>
-                <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
-                <td><% address.class %></td>
-                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
-                <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/></td>
-                <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
-                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
-            </form>
-            <td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/PTR/<% address.host %>/<% address.ttl %>';">✘</button></td>
-        </tr>
-        <% END %>
+            <% CASE "MX" %>
 
-        <% FOREACH address in mx %>
-        <tr>
-            <form  action='/domain/mod/<%domain%>/<%address.name%>/MX/<%address.host%>/<%address.ttl%>'>
-                <td><input type='text' name='newname' class="form-control" value='<% address.name %>'/></td>
-                <td><% address.class %></td>
-                <td><input type='text' name='newtype' class="form-control" value='<% address.type %>'/></td>
-                <td><input type='text' name='newhost' class="form-control" value='<% address.host %>'/><input type='number' name='newpriority' class="form-control" value='<%address.priority%>'/></td>
-                <td><input type='number' name='newttl' class="form-control" value='<% address.ttl %>'/></td>
-                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' />
+            <form method="post" action='/domain/mod/<% domain %>'>
+                <input type="hidden" name="oldname" value="<% rr.name %>"/>
+                <input type="hidden" name="oldtype" value="<% rr.type %>"/>
+                <input type="hidden" name="oldttl" value="<% rr.ttl %>"/>
+                <input type="hidden" name="oldrdata" value="<% rr.rdata %>"/>
+                <input type="hidden" name="oldpriority" value="<% rr.priority %>"/>
+
+                <td><input type='text' name='newname' class="form-control" value='<% rr.name %>'/></td>
+                <td><% rr.class %></td>
+                <td><input type='text' name='newtype' class="form-control" value='<% rr.type %>'/></td>
+                <td><input type='number' name='newttl' size='4' class="form-control" value='<% rr.ttl %>'/></td>
+                <td><input type='text' name='newrdata' class="form-control" value='<% rr.rdata %>'/>
+                    <input type='number' name='newpriority' size='4' class="form-control" value='<% rr.priority %>'/></td>
+                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' /></td>
+
+                <td>
+                    <a href='/domain/del/<% domain %>/<% rr.name %>/<% rr.ttl %>/<% rr.type %>/<% rr.rdata %>'>
+                        <button type="button" class="btn btn-primary btn-danger btn-xs">
+                            ✘
+                        </button>
+                    </a>
+                </td>
             </form>
-            <td><button type="button" class="btn btn-primary btn-danger btn-xs" onclick="location.href='http://'+location.host+'/domain/del/<% domain %>/<% address.name %>/MX/<% address.host %>/<% address.ttl %>';">✘</button></td>
+            <% CASE %>
+            <td>Resource Record non pris en charge : <% rr.type %></td>
+            <% END %>
+
         </tr>
         <% END %>
     </table>
@@ -134,6 +110,7 @@
                         <option value="MX">MX</option>
                         <option value="NS">NS</option>
                         <option value="PTR">PTR</option>
+                        <option value="TXT">TXT</option>
                     </select>
 
                 </div>
@@ -147,9 +124,9 @@
             </div>
 
             <div class="form-group">
-                <label for="value" class="col-sm-2 control-label">Valeur</label>
+                <label for="rdata" class="col-sm-2 control-label">Valeur</label>
                 <div class="col-sm-3">
-                    <input type="text" id="value" name="value" class="form-control" placeholder="IP ou ndd" >
+                    <input type="text" id="rdata" name="rdata" class="form-control" placeholder="IP ou ndd" >
                 </div>
                     Votre adresse IP : <% user_ip %>
             </div>

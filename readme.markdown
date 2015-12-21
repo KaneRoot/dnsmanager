@@ -7,7 +7,7 @@ Ce qui permet d'être un remplaçant de DynDNS.
 ## Outils
 
   * [Dancer2](http://perldancer.org/)
-  * [DNS::ZoneParse](https://metacpan.org/pod/DNS::ZoneParse)
+  * [Net::DNS](https://metacpan.org/pod/Net::DNS)
   * [Bootstrap](http://twitter.github.io/bootstrap/)
   * [DBD::mysql](https://metacpan.org/module/DBD::mysql)
   * [Moo](https://metacpan.org/pod/Moo)
@@ -17,6 +17,6 @@ Ce qui permet d'être un remplaçant de DynDNS.
 
   * captcha
   * demander confirmation avant suppression d'une zone
-  * rajouter les types de RR manquants dans l'interface (remplacement de
-          DNS::ZoneParse, ou amélioration)
+  * rajouter les types de RR manquants dans l'interface (amélioration)
   * déléguer les zones
+  * revoir le script de màj automatique d'IP

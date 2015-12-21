@@ -84,17 +84,17 @@ get '/' => sub {
 
 prefix '/domain' => sub {
 
-    any ['post', 'get'] => '/updateraw/:domain' => sub {
+    post '/updateraw/:domain' => sub {
         what_is_next rt_dom_updateraw 
         get_session( qw/login passwd/ )
         , get_param( qw/domain zoneupdated/)
         , get_request( qw/address referer/ );
     };
 
-    any ['post', 'get'] => '/update/:domain' => sub {
+    post '/update/:domain' => sub {
         what_is_next rt_dom_update
         get_session( qw/login passwd/ )
-        , get_param( qw/type name value ttl priority domain/ );
+        , get_param( qw/domain name type priority rdata ttl/ );
     };
 
     get '/details/:domain' => sub {
@@ -117,25 +117,26 @@ prefix '/domain' => sub {
         , get_request( qw/address referer/ );
     };
 
-    get '/del/:domain/:name/:type/:host/:ttl' => sub {
+    get '/del/:domain/:name/:ttl/:type/:rdata' => sub {
         what_is_next rt_dom_del_entry
         get_session( qw/login passwd/ )
-        , get_param( qw/domain name type host ttl/ )
+        , get_param( qw/domain name type ttl rdata/ )
         , get_request( qw/address referer/ );
     };
 
-    get '/mod/:domain/:name/:type/:host/:ttl' => sub {
+    post '/mod/:domain' => sub {
         what_is_next rt_dom_mod_entry
         get_session( qw/login passwd/ )
-        , get_param( qw/type name ttl domain name type host ttl 
-        newpriority newtype newhost newname newttl / )
+        , get_param( qw/domain 
+            oldpriority oldtype oldname oldttl oldrdata
+            newpriority newtype newname newttl newrdata/ )
         , get_request( qw/address referer/ );
     };
 
-    get '/cli/:login/:pass/:domain/:name/:type/:host/:ttl/:ip' => sub {
+    get '/cli/:login/:pass/:domain/:name/:type/:rdata/:ttl/:ip' => sub {
         what_is_next rt_dom_cli_mod_entry
         get_session( qw/login/ )
-        , get_param( qw/passwd domain name type host ttl ip/ );
+        , get_param( qw/passwd domain name type rdata ttl ip/ );
     };
 };
 

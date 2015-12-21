@@ -70,7 +70,7 @@ sub is_owning_domain {
 
 # DOMAIN
 
-sub _get_zone {
+sub get_zone {
     my ($self, $domain) = @_; 
 
 #    say "";
@@ -93,41 +93,13 @@ sub _get_zone {
 sub add_domain {
     my ($self, $login, $domain) = @_;
     $self->db->add_domain($login, $domain);
-    $self->_get_zone($domain)->addzone()
+    $self->get_zone($domain)->addzone()
 }
 
 sub delete_domain {
     my ($self, $domain) = @_; 
     $self->db->delete_domain($domain);
-    $self->_get_zone($domain)->del()
-}
-
-sub modify_entry {
-    my ($self, $domain, $entryToModify, $newEntry) = @_;
-    my $zone = $self->_get_zone($domain)->modify_entry( 
-        $entryToModify, $newEntry );
-    $self->update_domain($zone, $domain)
-}
-
-sub delete_entry {
-    my ($self, $domain, $entryToDelete) = @_;
-    my $zone = $self->_get_zone($domain)->delete_entry( $entryToDelete );
-    $self->update_domain($zone, $domain)
-}
-
-sub update_domain_raw {
-    my ($self, $zone, $domain) = @_; 
-    $self->_get_zone($domain)->update_raw($zone)
-}
-
-sub update_domain {
-    my ($self, $zone, $domain) = @_; 
-    $self->_get_zone($domain)->update($zone)
-}
-
-sub get_domain {
-    my ($self, $domain) = @_; 
-    $self->_get_zone($domain)->get()
+    $self->get_zone($domain)->del()
 }
 
 sub get_domains {

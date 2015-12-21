@@ -10,7 +10,7 @@ use getiface ':all';
 use copycat ':all';
 use fileutil ':all';
 use configuration ':all';
-use Data::Dump qw( dump );
+#use Data::Dump qw( dump );
 
 use zonefile;
 
@@ -86,103 +86,17 @@ sub get_remote_zf_ {
     "$$self{dnsi}{mycfg}{zonedir}/$$self{domain}"
 }
 
-sub are_same_records_ {
-    my ($a, $b) = @_;
-
-    #debug({ a => $a });
-    #debug({ b => $b });
-
-    #$a->{priority} eq $b->{priority} &&
-    (   $$a{name} eq $$b{name} && 
-        $$a{host} eq $$b{host} &&
-        $$a{ttl} ==  $$b{ttl} )
-}
-
-# returns the lists of domains of a certain type
-sub get_records_ {
-    my ($zone, $entry) = @_;
-
-    for( lc $$entry{type} ) {
-        if      ($_ eq 'a')      { return $zone->a     }
-        elsif   ($_ eq 'aaaa')   { return $zone->aaaa  }
-        elsif   ($_ eq 'cname')  { return $zone->cname }
-        elsif   ($_ eq 'ns')     { return $zone->ns    }
-        elsif   ($_ eq 'mx')     { return $zone->mx    }
-        elsif   ($_ eq 'ptr')    { return $zone->ptr   }
-    }
-
-    die 'Impossible to get the entry type.'
-}
-
 sub reload_secondary_dns_servers {
     my $self = shift;
     $_->reload_sec($$self{slavedzones}) for(@{$$self{dnsisec}})
 }
 
-sub delete_entry {
-    my ($self, $entryToDelete) = @_;
-
-    my $zone = $self->get();
-
-    my $records = get_records_ $zone, $entryToDelete;
-
-    if( defined $records ) {
-        foreach my $i ( 0 .. scalar @{$records}-1 ) {
-            if(are_same_records_($records->[$i], $entryToDelete)) {
-                delete $records->[$i];
-            }
-        }
-    }
-
-    $zone
-}
-
-sub modify_entry {
-    my ($self, $entryToModify, $newEntry) = @_;
-
-    my $zone = $self->get();
-
-    my $records = get_records_ $zone, $entryToModify;
-
-    if( defined $records ) {
-
-        foreach my $i ( 0 .. scalar @{$records}-1 ) {
-
-            if(are_same_records_($records->[$i], $entryToModify)) {
-
-                say "ENTRY TO MODIFY";
-
-                say $records->[$i]->{name} . ' = ' . $newEntry->{newname};
-                say $records->[$i]->{host} . ' = ' . $newEntry->{newhost};
-                say $records->[$i]->{ttl}  . ' = ' . $newEntry->{newttl};
-                #say $records->[$i]->{type} . ' = ' . $newEntry->{newtype};
-
-                $records->[$i]->{name} = $newEntry->{newname};
-                $records->[$i]->{host} = $newEntry->{newhost};
-                $records->[$i]->{ttl}  = $newEntry->{newttl};
-                #$records->[$i]->{type}  = $newEntry->{newtype};
-
-                if( $$newEntry{newtype} eq 'MX' ) {
-                    say 
-                    $records->[$i]->{priority}.' = '.$newEntry->{newpriority};
-                    $records->[$i]->{priority} = $newEntry->{newpriority};
-                }
-            }
-        }
-    }
-
-    dump($records);
-
-    $zone
-}
-
-sub get {
+sub get_zonefile {
     my $self = shift;
     my $file = $self->get_remote_zf_();
     my $dest = $self->get_ztmp_file_();
 
     copycat ($file, $dest);
-
     zonefile->new(domain => $$self{domain}, zonefile => $dest);
 }
 
@@ -212,7 +126,7 @@ sub addzone {
     $zonefile->new_serial(); # update the serial number
 
     # write the new zone tmpfile to disk 
-    write_file $f->path, $zonefile->output();
+    write_file $f->path, $zonefile->dump();
 
     my $file = $self->get_remote_zf_();
     copycat ($tmpfile, $file); # put the final zone on the server
@@ -239,7 +153,7 @@ sub update {
     my $tmpfile = $self->get_ztmp_file_();
 
     # write the new zone tmpfile to disk 
-    write_file $tmpfile, $zonefile->output();
+    write_file $tmpfile, $zonefile->dump();
 
     my $file = $self->get_remote_zf_();
     copycat ($tmpfile, $file); # put the final zone on the server
@@ -258,11 +172,10 @@ sub update_raw {
     my $zonefile;
     my $file = $self->get_ztmp_file_();
 
-    # write the updated zone file to disk 
+    # write the updated zone file to disk
     write_file $file, $zonetext;
 
-    eval { $zonefile = zonefile->new(zonefile => $file
-            , domain => $$self{domain}); };
+    eval { $zonefile = zonefile->new(zonefile => $file); };
 
     if( $@ ) {
         unlink($file);
@@ -271,7 +184,7 @@ sub update_raw {
 
     unlink($file);
 
-    $self->update($zonefile)
+    $zonefile
 }
 
 sub del {
