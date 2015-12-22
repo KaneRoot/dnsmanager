@@ -148,10 +148,16 @@ prefix '/domain' => sub {
         , get_request( qw/address referer/ );
     };
 
+    get '/cliup/:login/:pass/:domain/:name/:type/:rdata' => sub {
+        what_is_next rt_dom_cli_autoupdate
+        get_session( qw// )
+        , get_param( qw/login pass domain name type rdata/ );
+    };
+
     get '/cli/:login/:pass/:domain/:name/:type/:rdata/:ttl/:ip' => sub {
         what_is_next rt_dom_cli_mod_entry
-        get_session( qw/login/ )
-        , get_param( qw/passwd domain name type rdata ttl ip/ );
+        get_session( qw// )
+        , get_param( qw/login pass domain name type rdata ttl ip/ );
     };
 };
 

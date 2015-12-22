@@ -143,6 +143,12 @@ sub rr_mod {
     $self->rr_add_raw($rrline_new);
 }
 
+sub rr_search {
+    my ($self, $name, $type) = @_;
+    my $rrlisttmp = $self->rr_array_to_array();
+    [ grep { $$_{name} eq $name && $$_{type} eq $type } @$rrlisttmp ]
+}
+
 sub rr_array_to_array {
     my ($self) = shift;
     my $rr_list;

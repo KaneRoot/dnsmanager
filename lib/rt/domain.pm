@@ -14,6 +14,7 @@ use Exporter 'import';
 # what we want to export eventually
 our @EXPORT_OK = qw/
 rt_dom_cli_mod_entry
+rt_dom_cli_autoupdate
 rt_dom_mod_entry
 rt_dom_del_entry
 rt_dom_del
@@ -26,6 +27,7 @@ rt_dom_updateraw
 # bundle of exports (tags)
 our %EXPORT_TAGS = ( all => [qw/
 rt_dom_cli_mod_entry
+rt_dom_cli_autoupdate
 rt_dom_mod_entry
 rt_dom_del_entry
 rt_dom_del
@@ -34,6 +36,86 @@ rt_dom_details
 rt_dom_add_entry
 rt_dom_updateraw
         /] ); 
+
+sub rt_dom_cli_autoupdate {
+    my ($session, $param, $request) = @_;
+    my $res;
+
+    my @missingitems;
+    my @items = qw/login pass domain name type rdata/;
+
+    for(@items) {
+        push @missingitems, $_ unless($$param{$_});
+    }
+
+    if(@missingitems != 0) {
+        say "Il manque : " . join ', ', @missingitems;
+        return $res;
+    }
+
+    for(@items) {
+        say "::::::::: $_ : $$param{$_}" if $$param{$_};
+    }
+
+    if(! is_ipv4($$param{rdata}) && ! is_ipv6($$param{rdata})) {
+        say "Attention, ceci n'est pas une adresse IP :  $$param{rdata}.";
+        return $res;
+    }
+
+    eval {
+        my $pass = encrypt($$param{pass});
+        my $app = app->new(get_cfg());
+
+        my $user = $app->auth($$param{login}, $pass);
+
+        unless ( $user && ( $$user{admin} || 
+                $app->is_owning_domain($$user{login}, $$param{domain}))) {
+            $app->disconnect();
+            say q{Donnée privée, petit coquin. ;) };
+            return $res;
+        }
+
+        my $zone = $app->get_zone( $$param{domain} );
+        my $zf = $zone->get_zonefile();
+
+        my $name = $$param{name};
+
+        if($name =~ /$$param{domain}$/) {
+            $name .= '.';
+        }
+
+        if($name !~ /\.$/) {
+            $name .= ".$$param{domain}."
+        }
+
+        my $rr_list = $zf->rr_search($name, $$param{type});
+        my $rr;
+        if(@$rr_list) {
+            $rr = pop @$rr_list;
+        }
+        else {
+            say "Pas d'entrée au nom $name de type $$param{type} trouvée.";
+            return $res;
+        }
+
+        my $str_old = "$$rr{name} $$rr{ttl} $$rr{type} $$rr{rdata}";
+        my $str_new = "$$rr{name} $$rr{ttl} $$rr{type} $$param{rdata}";
+
+        say "old : $str_old";
+        say "new : $str_new";
+
+        $zf->rr_mod($str_old, $str_new);
+        $zone->update( $zf );
+
+        $app->disconnect();
+    };
+
+    if ($@) {
+        say "Problème : $@";
+    }
+
+    $res
+}
 
 sub rt_dom_cli_mod_entry {
     my ($session, $param, $request) = @_;
@@ -138,8 +220,8 @@ sub rt_dom_mod_entry {
             && ! is_domain_name ($rdata))
         {
             $$res{deferred}{errmsg} = 
-            "Une entrée CNAME doit avoir un nom de domaine "
-            . "(pas une URL, pas de http://) : $rdata n'est pas correct.";
+            "Une entrée $$param{type} doit avoir un nom de domaine "
+            . "(pas une URL, pas de http://) : '$rdata' n'est pas correct.";
             $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
             return $res;
         }
@@ -488,12 +570,12 @@ sub rt_dom_add_entry {
         my $str_new = "$name $$param{ttl} $$param{type} ";
         my $rdata = $$param{rdata};
 
-        if ($$param{type} =~ /^(CNAME|MX|NS|PTR)$/i
+        if ($$param{type} =~ /^(CNAME|MX|NS|PTR|SRV)$/i
             && ! is_domain_name ($rdata))
         {
             $$res{deferred}{errmsg} = 
-            "Une entrée CNAME doit avoir un nom de domaine "
-            . "(pas une URL, pas de http://) : $rdata n'est pas correct.";
+            "Une entrée $$param{type} doit avoir un nom de domaine "
+            . "(pas une URL, pas de http://) : '$rdata' n'est pas correct.";
             $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
             return $res;
         }

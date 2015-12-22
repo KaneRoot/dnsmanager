@@ -16,7 +16,11 @@
             </td>
 
             <td>
-                <a href="/domain/del/<% domain.domain %>" ><button type="button" class="btn btn-danger">Supprimer</button></a>
+                <a href="/domain/del/<% domain.domain %>" >
+                    <button type="button" class="btn btn-danger">
+                        Supprimer
+                    </button>
+                </a>
             </td>
         </tr>
     <% END %>
@@ -29,21 +33,27 @@
    <p>Réservez-en un ! \o/</p>
 <% END %>
 
-<h3>Ajouter un nouveau domaine :</h3>
+<div class="row">
+    <div class="col-sm-4 col-sm-offset-1">
+        <h3>Ajouter un nouveau domaine :</h3>
 
-<form class="form" action='/domain/add/' method="post" >
-    <% IF domainName.defined %>
-        <input type='text' name='domain' value="<% domainName %>" />
-    <% ELSE %>
-        <input type='text' name='domain' />
-    <% END %>
-    <select name='tld' >
-    <% FOREACH dom in provideddomains %>
-            <option><% dom %></option>
-    <% END %>
-    </select>
-    <input type='submit' name='submit' value="Créer mon domaine!" />
-</form>
+        <form class="form" action='/domain/add/' method="post" >
+            <% IF domainName.defined %>
+            <input type='text' name='domain' value="<% domainName %>" />
+            <% ELSE %>
+            <input type='text' name='domain' />
+            <% END %>
+            <select name='tld' class='form-control' >
+                <% FOREACH dom in provideddomains %>
+                <option><% dom %></option>
+                <% END %>
+            </select>
+            <input type='submit' name='submit' value="Créer mon domaine!"
+                                               class='btn btn-primary' />
+        </form>
+
+    </div>
+</div>
 
 </div>
 

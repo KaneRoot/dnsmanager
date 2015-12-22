@@ -64,7 +64,7 @@
                 <td><% rr.type %></td>
                 <td><input type='number' name='newttl'      class="form-control" value='<% rr.ttl %>' size='4' /></td>
                 <td><input type='text'   name='newrdata'    class="form-control" value='<% rr.rdata %>'/>
-                    <input type='number' name='newpriority' class="form-control" value='<% rr.priority %>' size='4' /></td>
+                    Priorité <input type='number' name='newpriority' class="form-control" value='<% rr.priority %>' size='4' /></td>
                 <td><input type='submit' id='submit'        class="btn btn-success btn-xs" value='✔' /></td>
 
                 <td>
@@ -244,7 +244,6 @@
                             <input type="text" id="mxname" name="name" class="form-control" placeholder="www">
                         </div>
                     </div>
-                    <br>
 
                     <input type="hidden" name="type" value='MX'/>
 
@@ -254,7 +253,6 @@
                             <input type="number" id="mxinput_ttl" name="ttl" class="form-control" value="3600" placeholder="3600" >
                         </div>
                     </div>
-                    <br>
 
                     <div class="form-group">
                         <label for="mxpriority" class="col-sm-6 control-label">Priorité</label>
@@ -262,7 +260,6 @@
                             <input type="text" id="mxpriority" name="priority" class="form-control" value="10" >
                         </div>
                     </div>
-                    <br>
 
                     <div class="form-group">
                         <label for="mxrdata" class="col-sm-6 control-label">Cible</label>
