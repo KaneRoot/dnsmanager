@@ -3,15 +3,29 @@ use strict;
 use warnings;
 use v5.14;
 
-our $ndd = "netlib.re";
-our $domain = "montest.netlib.re";
-our $name = "www";
-our $ttl = "3600";
-our $login = "test";
-our $pass = "test";
+# the website sending your current IP address
+our $checkip = "http://t.karchnu.fr/ip.php";
+
+# Domain name of the service provider (like netlib.re)
+our $nddservice = "netlib.re";
+
+# Your domain
+our $domain = "test.netlib.re";
+
+# Login and password to connect to the website
+our $login = "idtest";
+our $pass = "mdptest";
+
+# Your entry to change
+our $name = 'www';
+our $type = 'A';    # could be AAAA
+
+# The CA certificate, to authenticate the website (should be provided)
+# Check your service provider for updates
+our $cacert = "ca.cert";
 
 sub get_ip {
-    my @tmp_ip = split "\n", `wget -nv -O - http://t.karchnu.fr/ip.php`;
+    my @tmp_ip = split "\n", `wget -nv -O - $checkip`;
     my $ip;
 
     for(@tmp_ip) {
@@ -25,35 +39,14 @@ sub get_ip {
 
 sub update {
     my $ip = get_ip;
-    my $type;
 
-    if($ip =~ /:/) {
-        $type = "AAAA";
-    }
-    else {
-        $type = "A";
-    }
-    
-    my $todig;
-    if($name =~ '@') {
-        $todig = $domain;
-    }
-    else {
-        $todig = "$name.$domain";
-    }
+    say "UPDATE :: domain $name.$domain => IP $ip, type $type";
 
-    my $oldhost = `dig +short $todig`;
-    chomp $oldhost;
-
-    say "domain $domain";
-    say "name $name";
-    say "type $type";
-    say "oldhost $oldhost";
-    say "ttl $ttl";
-    say "ip $ip";
-
-    #say "wget -O - https://$ndd/domain/cli/$login/$pass/$domain/$name/$type/$oldhost/$ttl/$ip --ca-certificate=ca.cert";
-    say `wget -O - https://$ndd/domain/cli/$login/$pass/$domain/$name/$type/$oldhost/$ttl/$ip --ca-certificate=ca.cert`;
+    my $cmd = "wget -O - ";
+    $cmd .=
+    "https://$nddservice/domain/cliup/$login/$pass/$domain/$name/$type/$ip ";
+    $cmd .= "--ca-certificate=$cacert";
+    say `$cmd`;
 }
 
 update;
