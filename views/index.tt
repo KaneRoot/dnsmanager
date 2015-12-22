@@ -35,7 +35,7 @@
                 <p>
                 Vous pouvez mettre à jour l'adresse IP d'un nom de domaine de façon dynamique (style dyndns).
                 Venez découvrir ça ! 
-                Téléchargez <a href="http://documents.arn-fai.net/netlib.re.tar.gz">ce script</a>, et c'est en place en 2 minutes !
+                Téléchargez <a href="https://github.com/KaneRoot/dnsmanager/tree/master/cli/daemon">ce script</a>, et c'est en place en 2 minutes !
                 </p>
 
             </div>
