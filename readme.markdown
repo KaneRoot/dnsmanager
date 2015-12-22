@@ -1,8 +1,21 @@
-Gérer la création de zones par des utilisateurs.
-Les utilisateurs s'enregistrent, crééent des zones et les modifient comme ils le souhaitent.
-Des administrateurs peuvent supprimer des utilisateurs avec leurs zones.
-Les utilisateurs peuvent mettre leur adresse IP à jour de façon automatique grâce à un script.
-Ce qui permet d'être un remplaçant de DynDNS.
+# DNSmanager
+
+Ce projet est un programme de gestion de zones DNS à partir d'un site web
+simple, permettant à chacun d'avoir un nom sur **Internet**. Il est lié au
+service en ligne [netlib.re](https://netlib.re/). Ce service en ligne peut
+remplacer avantageusement DynDNS puisqu'il est basé sur du code libre, et une
+association s'occupe de son maintien ([Alsace Réseau
+Neutre](https://www.arn-fai.net), éthique++).
+
+De manière factuelle :
+
+- des utilisateurs peuvent s'enregistrer puis
+  - ajouter, supprimer, modifier des zones DNS
+  - mettre à jour un enregistrement A ou AAAA automatiquement via un script
+
+- des administrateurs sont là pour
+  - supprimer des zones, des utilisateurs
+  - vous aider sur IRC (#arn sur irc.geeknode.org) ! \o/
 
 ## Outils
 
@@ -15,8 +28,5 @@ Ce qui permet d'être un remplaçant de DynDNS.
 
 ## TODO
 
-  * captcha
-  * demander confirmation avant suppression d'une zone
-  * rajouter les types de RR manquants dans l'interface (amélioration)
   * déléguer les zones
-  * revoir le script de màj automatique d'IP
+  * captcha ?
