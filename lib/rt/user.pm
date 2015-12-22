@@ -78,7 +78,7 @@ sub rt_user_login {
     };
 
     if( $@ ) {
-        $$res{deferred}{errmsg} = q{Impossible de se connecter ! } . $@;
+        $$res{deferred}{errmsg} = q{Impossible de se connecter ! };
         $$res{sessiondestroy} = 1;
         $$res{route} = '/';
     }
@@ -200,7 +200,7 @@ sub rt_user_add {
     };
 
     if($@) {
-        $$res{deferred}{errmsg} = q{Ce pseudo est déjà pris.} . $@;
+        $$res{deferred}{errmsg} = q{Ce pseudo est déjà pris.};
         $$res{route} = '/user/subscribe';
         return $res;
     }

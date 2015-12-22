@@ -12,16 +12,80 @@
             Salut <% login %> !
             <hr />
 
-            <div class="list-group">
-                <a href="/user/logout" class="list-group-item active">Déconnexion</a>
-                <a href='/user/home' class="list-group-item active">Ma page</a>
+            <div class="btn-group-vertical" role="group">
+                <a href="/user/logout">
+                    <button type="button"
+                            class="btn btn-default btn-lg list-group-item">
+                        Déconnexion
+                    </button>
+                </a>
+                <a href='/user/home'>
+                    <button type="button"
+                            class="btn btn-default btn-lg list-group-item">
+                        Ma page
+                    </button>
+                </a>
 
                 <% IF admin == 1 %>
-                <a href='/admin' class="list-group-item ">Administration</a>
+                <a href='/admin'>
+                    <button type="button"
+                            class="btn btn-default btn-lg list-group-item">
+                        Administration
+                    </button>
+                </a>
                 <% END %>
 
                 <% IF domain.defined %>
-                <a href="/domain/del/<% domain %>" class="list-group-item ">Supprimer la zone</a>
+                <!-- Button trigger modal -->
+                <button type="button"
+                        class="btn btn-danger btn-lg"
+                        data-toggle="modal"
+                        data-target="#suppressionZoneModal">
+                    Supprimer la zone
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="suppressionZoneModal"
+                                        tabindex="-1"
+                                        role="dialog"
+                                        aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+
+                                <button type="button" class="close"
+                                                      data-dismiss="modal"
+                                                      aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+
+                                <h4 class="modal-title"
+                                    id="suppressionZoneModalLabel">
+                                    Voulez-vous vraiment supprimer la zone ?
+                                </h4>
+                            </div>
+
+                            <div class="modal-body">
+                                Supprimer sa zone est irréversible.
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default"
+                                                      data-dismiss="modal">
+                                    Non j'aime ma zone !
+                                </button>
+                                <a href="/domain/del/<% domain %>">
+                                    <button type="button"
+                                            class="btn btn-danger">
+                                        Supprimer la zone
+                                    </button>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
                 <% END %>
             </div>
 

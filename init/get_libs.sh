@@ -13,7 +13,6 @@ cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mloca
 
 cpanm Dancer2
 cpanm Dancer2::Plugin::Deferred
-#cpanm Dancer::Plugin::FlashMessage
 cpanm YAML::XS
 cpanm Data::Dump 
 cpanm File::Basename 
@@ -34,4 +33,6 @@ cpanm Net::OpenSSH
 cpanm Template
 cpanm Net::SSH
 cpanm Date::Calc
+cpanm Data::Validate::IP
+
 # cpanm Template::Toolkit non trouvé

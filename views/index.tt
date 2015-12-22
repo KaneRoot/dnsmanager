@@ -6,66 +6,67 @@
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
-        <h1>Bienvenue sur netlib.re !</h1>
-        <p>Netlib.re vous donne un nom de domaine, gratuitement et simplement.</p>
-        <p><a href="/user/subscribe" class="btn btn-primary btn-lg" role="button">S'enregistrer &raquo;</a></p>
-    <h3><a href="" ></a></h3>
+        <div class="container">
+            <h1>Bienvenue sur netlib.re !</h1>
+            <p>Netlib.re vous donne un nom de domaine, gratuitement et simplement.</p>
+            <p><a href="/user/subscribe" class="btn btn-primary btn-lg" role="button">S'enregistrer &raquo;</a></p>
+        </div>
     </div>
 
     <br />
 
     <div class="container-fluid">
 
-    <div class="row">
-    <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-6">
 
-    <h2>Ce qui est proposé</h2>
+                <h2>Ce qui est proposé</h2>
 
-    <p>
-        Vous pouvez réserver un nom de domaine et l'administrer sur ce site.
-        Gratuitement, sans contrepartie.
-        Nous ne fournissons pas d'hébergement, juste un nom.
-    </p>
+                <p>
+                Vous pouvez réserver un nom de domaine et l'administrer sur ce site.
+                Gratuitement, sans contrepartie.
+                Nous ne fournissons pas d'hébergement, juste un nom.
+                </p>
+
+            </div>
+            <div class="col-md-6">
+                <h2>Mises à jour automatiques</h2>
+
+                <p>
+                Vous pouvez mettre à jour l'adresse IP d'un nom de domaine de façon dynamique (style dyndns).
+                Venez découvrir ça ! 
+                Téléchargez <a href="http://documents.arn-fai.net/netlib.re.tar.gz">ce script</a>, et c'est en place en 2 minutes !
+                </p>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+
+                <h2>Pourquoi ?</h2>
+                <p>
+                Internet doit rester un lieu où l'utilisateur crée le contenu. 
+                Ce projet vous donne un nom, ne restez pas dans l'ombre, <strong>créez</strong> !
+                </p>
+
+                <p>
+                Aucune connaissance requise !
+                </p>
+
+            </div>
+            <div class="col-md-6">
+
+                <h2>Nous contacter</h2>
+
+                <p>Si vous êtes intéressé, n'hésitez pas à venir nous parler.</p>
+                <p>IRC: <a href="http://irc.lc/geeknode/arn">#arn sur irc.geeknode.org:6667</a></p>
+
+            </div>
+        </div>
 
     </div>
-    <div class="col-md-6">
-    <h2>Mises à jour automatiques</h2>
 
-    <p>
-        Vous pouvez mettre à jour l'adresse IP d'un nom de domaine de façon dynamique (style dyndns).
-	Venez découvrir ça ! 
-	Téléchargez <a href="http://documents.arn-fai.net/netlib.re.tar.gz">ce script</a>, et c'est en place en 2 minutes !
-    </p>
-
-    </div>
-    </div>
-
-    <div class="row">
-    <div class="col-md-6">
-
-    <h2>Pourquoi ?</h2>
-    <p>
-        Internet doit rester un lieu où l'utilisateur crée le contenu. 
-        Ce projet vous donne un nom, ne restez pas dans l'ombre, <strong>créez</strong> !
-    </p>
-
-    <p>
-        Aucune connaissance requise !
-    </p>
-
-    </div>
-    <div class="col-md-6">
-
-    <h2>Nous contacter</h2>
-
-    <p>Si vous êtes intéressé, n'hésitez pas à venir nous parler.</p>
-    <p>IRC: <a href="http://irc.lc/geeknode/arn">#arn sur irc.geeknode.org:6667</a></p>
-
-    </div>
-    </div>
-
-    </div>
-    
 </div>
 
 </div> <!-- fin de colonne -->

@@ -8,6 +8,7 @@ use app;
 use utf8;
 use Dancer ':syntax';
 use Data::Dump qw( dump );
+use Data::Validate::IP qw(is_ipv4 is_ipv6);
 
 use Exporter 'import';
 # what we want to export eventually
@@ -18,7 +19,7 @@ rt_dom_del_entry
 rt_dom_del
 rt_dom_add
 rt_dom_details
-rt_dom_update
+rt_dom_add_entry
 rt_dom_updateraw
 /;
 
@@ -30,7 +31,7 @@ rt_dom_del_entry
 rt_dom_del
 rt_dom_add
 rt_dom_details
-rt_dom_update
+rt_dom_add_entry
 rt_dom_updateraw
         /] ); 
 
@@ -80,15 +81,22 @@ sub rt_dom_mod_entry {
     }
 
     my @missingitems;
+    my @items = qw/domain type
+    oldname oldrdata oldttl
+    newname newrdata newttl/;
 
-    for(qw/domain 
-        oldtype oldname oldrdata oldttl
-        newtype newname newrdata newttl/) {
-        push @missingitems, $_ unless($$param{$_});
+    if($$param{type} && $$param{type} eq 'MX') {
+        push @items, qw/oldpriority newpriority/;
     }
 
-    if($$param{oldtype} eq 'MX' && ! $$param{newpriority}) {
-        push @missingitems, "newpriority";
+    if($$param{type} && $$param{type} eq 'SRV') {
+        push @items, qw/
+        oldpriority oldweight oldport
+        newpriority newweight newport/;
+    }
+
+    for(@items) {
+        push @missingitems, $_ unless($$param{$_});
     }
 
     if(@missingitems != 0) {
@@ -96,13 +104,73 @@ sub rt_dom_mod_entry {
         return $res;
     }
 
-    for(qw/domain 
-        oldtype oldname oldrdata oldttl
-        newtype newname newrdata newttl/) {
-        say "$_ : $$param{$_}" if $$param{$_};
+    for(@items) {
+        say "::::::::: $_ : $$param{$_}" if $$param{$_};
     }
 
     eval {
+
+        unless( $$param{domain} ) {
+            $$res{deferred}{errmsg} = q<Domaine non renseigné.>;
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
+
+        my $rdata = $$param{newrdata};
+
+        if ($$param{type} eq 'A' && ! is_ipv4($rdata)) {
+            $$res{deferred}{errmsg} = 
+            "Il faut une adresse IPv4 pour un enregistrement de type A."
+            . " Ceci n'est pas une adresse IPv4 : $rdata";
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
+
+        if ($$param{type} eq 'AAAA' && ! is_ipv6($rdata)) {
+            $$res{deferred}{errmsg} = 
+            "Il faut une adresse IPv6 pour un enregistrement de type AAAA."
+            . " Ceci n'est pas une adresse IPv6 : $rdata";
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
+
+        if ($$param{type} =~ /^(CNAME|MX|NS|PTR|SRV)$/i
+            && ! is_domain_name ($rdata))
+        {
+            $$res{deferred}{errmsg} = 
+            "Une entrée CNAME doit avoir un nom de domaine "
+            . "(pas une URL, pas de http://) : $rdata n'est pas correct.";
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
+
+        if($$param{type} =~ /^(CNAME|MX|NS|PTR)$/ && $rdata !~ /\.$/) {
+            $rdata .= ".$$param{domain}.";
+        }
+
+        my $str_old = "$$param{oldname} $$param{oldttl} $$param{type} ";
+        my $str_new = "$$param{newname} $$param{newttl} $$param{type} ";
+
+        if($$param{type} eq "MX") {
+            $str_old .= "$$param{oldpriority} $$param{oldrdata}";
+            $str_new .= "$$param{newpriority} $$param{newrdata}";
+        }
+        elsif ($$param{type} eq "SRV") {
+            $str_old .= "$$param{oldpriority} $$param{oldweight} "
+            ."$$param{oldport} $$param{oldrdata}";
+            $str_new .= "$$param{newpriority} $$param{newweight} "
+            ."$$param{newport} $rdata";
+        }
+        else {
+            $str_old .= "$$param{oldrdata}";
+            $str_new .= "$rdata";
+        }
+
+        say "str_old : $str_old";
+        say "str_new : $str_new";
+
+        # Do the modification of the entry
+
         my $app = app->new(get_cfg());
         my $user = $app->auth($$session{login}, $$session{passwd});
 
@@ -113,32 +181,19 @@ sub rt_dom_mod_entry {
             return $res;
         }
 
-        unless( $$param{domain} ) {
-            $$res{deferred}{errmsg} = q<Domaine non renseigné.>;
-            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
-            return $res;
-        }
-
         my $zone = $app->get_zone( $$param{domain} );
         my $zf = $zone->get_zonefile();
-        my $str_old = 
-        "$$param{oldname} $$param{oldttl} $$param{oldtype} $$param{oldrdata}";
-        my $str_new = "$$param{newname} $$param{newttl} $$param{newtype} ";
-        if($$param{newtype} eq "MX") {
-            $str_new .= "$$param{newpriority} $$param{newrdata}";
-        }
-        else {
-            $str_new .= "$$param{newrdata}";
-        }
-
-        say "old rdata : $$param{oldrdata}";
-        say "new rdata : $$param{newrdata}";
 
         $zf->rr_mod( $str_old, $str_new);
         $zone->update( $zf );
 
         $app->disconnect();
     };
+
+    if($@) {
+        $$res{deferred}{errmsg} = q{Modification impossible. } . $@;
+        return $res;
+    }
 
     $res
 }
@@ -161,17 +216,47 @@ sub rt_dom_del_entry {
             return $res;
         }
 
-        unless( $$param{domain} ) {
-            $$res{deferred}{errmsg} = q{Domaine non renseigné.};
+        my @missingitems;
+        my @items = qw/domain name ttl type rdata/;
+
+        if ($$param{type} && $$param{type} eq 'SRV') {
+            push @items, qw/priority weight port/;
+        }
+        elsif ($$param{type} && $$param{type} eq 'MX') {
+            push @items, qw/priority/;
+        }
+
+        for(@items) {
+            push @missingitems, $_ unless($$param{$_});
+        }
+
+        for(@items) {
+            say "::::::::: $_ : $$param{$_}" if $$param{$_};
+        }
+
+        if(@missingitems != 0) {
+            $$res{deferred}{errmsg} = "Il manque : " . join ', ', @missingitems;
             $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
             return $res;
         }
 
         my $zone = $app->get_zone( $$param{domain} );
         my $zf = $zone->get_zonefile();
-        $zf->rr_del_raw(
-            "$$param{name} $$param{ttl} $$param{type} $$param{rdata}"
-        );
+
+        my $str_del = "$$param{name} $$param{ttl} $$param{type} ";
+
+        if( $$param{type} eq 'SRV') {
+            $str_del .=
+            "$$param{priority} $$param{weight} $$param{port} $$param{rdata}";
+        }
+        elsif ($$param{type} eq 'MX') {
+            $str_del .= "$$param{priority} $$param{rdata}";
+        }
+        else {
+            $str_del .= "$$param{rdata}";
+        }
+
+        $zf->rr_del_raw( $str_del );
         $zone->update( $zf );
 
         $app->disconnect();
@@ -348,7 +433,7 @@ sub rt_dom_details {
 
     if($@) {
         $app->disconnect() if $app;
-        $$res{deferred}{errmsg} = $@;
+        $$res{deferred}{errmsg} = q{Une erreur est survenue. } . $@;
         $$res{route} = '/';
         return $res;
     }
@@ -356,8 +441,8 @@ sub rt_dom_details {
     $res
 }
 
-sub rt_dom_update {
-    my ($session, $param) = @_;
+sub rt_dom_add_entry {
+    my ($session, $param, $request) = @_;
     my $res;
 
     unless( $$session{login} && $$param{domain} ) {
@@ -368,13 +453,18 @@ sub rt_dom_update {
     $$res{route} = '/domain/details/'. $$param{domain};
 
     my @missingitems;
+    my @items = qw/domain type name ttl rdata/;
 
-    for(qw/name ttl type rdata domain/) {
-        push @missingitems, $_ unless($$param{$_});
+    if($$param{type} && $$param{type} eq 'MX') {
+        push @items, qw/priority/;
     }
-    
-    if($$param{type} eq 'MX' && ! $$param{priority}) {
-        push @missingitems, "priority";
+
+    if($$param{type} && $$param{type} eq 'SRV') {
+        push @items, qw/priority weight port/;
+    }
+
+    for(@items) {
+        push @missingitems, $_ unless($$param{$_});
     }
 
     if(@missingitems != 0) {
@@ -383,6 +473,64 @@ sub rt_dom_update {
     }
 
     eval {
+        # Perform tests on the different entries
+
+        my $name = $$param{name};
+
+        if($name =~ /$$param{domain}$/) {
+            $name .= '.';
+        }
+
+        if($name !~ /\.$/) {
+            $name .= ".$$param{domain}."
+        }
+
+        my $str_new = "$name $$param{ttl} $$param{type} ";
+        my $rdata = $$param{rdata};
+
+        if ($$param{type} =~ /^(CNAME|MX|NS|PTR)$/i
+            && ! is_domain_name ($rdata))
+        {
+            $$res{deferred}{errmsg} = 
+            "Une entrée CNAME doit avoir un nom de domaine "
+            . "(pas une URL, pas de http://) : $rdata n'est pas correct.";
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
+
+        if ($$param{type} eq 'A' && ! is_ipv4($rdata)) {
+            $$res{deferred}{errmsg} =
+            "Il faut une adresse IPv4 pour un enregistrement de type A."
+            . " Ceci n'est pas une adresse IPv4 : $rdata";
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
+
+        if ($$param{type} eq 'AAAA' && ! is_ipv6($rdata)) {
+            $$res{deferred}{errmsg} = 
+            "Il faut une adresse IPv6 pour un enregistrement de type AAAA."
+            . " Ceci n'est pas une adresse IPv6 : $rdata";
+            $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
+            return $res;
+        }
+
+        if($$param{type} =~ /^(CNAME|MX|NS|PTR|SRV)$/ && $rdata !~ /\.$/) {
+            $rdata .= ".$$param{domain}.";
+        }
+
+        if($$param{type} eq "MX") {
+            $str_new .= "$$param{priority} $rdata";
+        }
+        elsif ($$param{type} eq "SRV") {
+            $str_new .=
+            "$$param{priority} $$param{weight} $$param{port} $rdata";
+        }
+        else {
+            $str_new .= "$rdata";
+        }
+
+        # Add the entry
+
         my $app = app->new(get_cfg());
         my $user = $app->auth($$session{login}, $$session{passwd});
 
@@ -396,23 +544,6 @@ sub rt_dom_update {
 
         my $zone = $app->get_zone( $$param{domain} );
         my $zf = $zone->get_zonefile();
-
-        my $name = $$param{name};
-        $name .= ".$$param{domain}" unless $name =~ /$$param{domain}$/;
-        my $str_new = "$name $$param{ttl} $$param{type} ";
-
-        my $rdata = $$param{rdata};
-
-        if($$param{type} =~ /^(CNAME|MX|NS|PTR)$/ && $rdata !~ /\.$/) {
-            $rdata .= ".$$param{domain}";
-        }
-
-        if($$param{type} eq "MX") {
-            $str_new .= "$$param{priority} $$param{rdata}";
-        }
-        else {
-            $str_new .= "$$param{rdata}";
-        }
         $zf->rr_add_raw($str_new);
         $zf->new_serial();
         $zone->update( $zf );
@@ -421,7 +552,7 @@ sub rt_dom_update {
     };
 
     if ( $@ ) {
-        $$res{deferred}{errmsg} = q{Problème de mise à jour du domaine. }. $@;
+        $$res{deferred}{errmsg} = q{Problème à l'ajout d'une entrée. }. $@;
     }
 
     $res

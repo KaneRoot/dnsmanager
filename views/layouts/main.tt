@@ -1,31 +1,32 @@
 <!doctype html>
 <html lang="fr" >
-<head>
-<meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
-<title>DNSManager</title>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
+    <title>DNSManager</title>
 
-<script type="text/javascript">/* <![CDATA[ */
-    !window.jQuery && document.write('<script type="text/javascript" src="/js/jquery.min.js"><\/script>')
+    <script type="text/javascript">/* <![CDATA[ */
+!window.jQuery && document.write('<script type="text/javascript" src="/js/jquery.min.js"><\/script>')
 /* ]]> */</script>
 
-<link rel="stylesheet" href="/css/bootstrap.min.css">
 <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
 <script src="/js/bootstrap.min.js"></script>
+<script src="/js/npm.js"></script>
 
-</head>
+    </head>
 
-<body>
+    <body>
 
-<% content %>
+        <% content %>
 
-<div class="row">
-    <div class="col-sm-8 col-sm-offset-3">
-        <div class="well" id="footer">
-            Fièrement aidé par <a href="http://perldancer.org/">Dancer</a> <% dancer_version %> ♥<br/>
-            Le code est disponible <a href="https://github.com/KaneRoot/dnsmanager">ici</a> ! \o/
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-3">
+                <div class="well" id="footer">
+                    Fièrement aidé par <a href="http://perldancer.org/">Dancer</a> <% dancer_version %> ♥<br/>
+                    Le code est disponible <a href="https://github.com/KaneRoot/dnsmanager">ici</a> ! \o/
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-</body>
+    </body>
 
 </html>

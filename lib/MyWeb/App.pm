@@ -92,9 +92,10 @@ prefix '/domain' => sub {
     };
 
     post '/update/:domain' => sub {
-        what_is_next rt_dom_update
+        what_is_next rt_dom_add_entry
         get_session( qw/login passwd/ )
-        , get_param( qw/domain name type priority rdata ttl/ );
+        , get_param( qw/domain type name ttl priority weight port rdata/ )
+        , get_request( qw/referer/ );
     };
 
     get '/details/:domain' => sub {
@@ -117,6 +118,20 @@ prefix '/domain' => sub {
         , get_request( qw/address referer/ );
     };
 
+    get '/del/:domain/:name/:ttl/:type/:priority/:rdata' => sub {
+        what_is_next rt_dom_del_entry
+        get_session( qw/login passwd/ )
+        , get_param( qw/domain name ttl type priority rdata/ )
+        , get_request( qw/address referer/ );
+    };
+
+    get '/del/:domain/:name/:ttl/:type/:priority/:weight/:port/:rdata' => sub {
+        what_is_next rt_dom_del_entry
+        get_session( qw/login passwd/ )
+        , get_param( qw/domain name ttl type priority weight port rdata/ )
+        , get_request( qw/address referer/ );
+    };
+
     get '/del/:domain/:name/:ttl/:type/:rdata' => sub {
         what_is_next rt_dom_del_entry
         get_session( qw/login passwd/ )
@@ -127,9 +142,9 @@ prefix '/domain' => sub {
     post '/mod/:domain' => sub {
         what_is_next rt_dom_mod_entry
         get_session( qw/login passwd/ )
-        , get_param( qw/domain 
-            oldpriority oldtype oldname oldttl oldrdata
-            newpriority newtype newname newttl newrdata/ )
+        , get_param( qw/domain type
+            oldpriority oldname oldttl oldrdata oldweight oldport
+            newpriority newname newttl newrdata newweight newport/ )
         , get_request( qw/address referer/ );
     };
 

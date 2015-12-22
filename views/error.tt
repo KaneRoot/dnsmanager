@@ -1,20 +1,17 @@
 <% IF deferred.errmsg %>
-<div id="errmsg" >
-    <div class="alert alert-danger">
-        <p><strong>Oh !</strong>
-        <% deferred.errmsg %>
-        <span class="glyphicon glyphicon-remove"></span>
-        </p>
-    </div>
+<!-- <span class="glyphicon glyphicon-remove"></span> -->
+<div id="errmsg" class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Oh !</strong> <% deferred.errmsg %>
 </div>
 <% END %>
 
 <!-- Permettra une mise en forme plus propre. -->
 <% IF deferred.succmsg %>
-<div class="alert alert-success">
+<div class="alert alert-success alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     <p><strong>Bien !</strong>
     <% deferred.succmsg %>
     <span class="glyphicon glyphicon-ok"></span>
-    </p>
 </div>
 <% END %>

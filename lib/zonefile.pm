@@ -125,8 +125,9 @@ sub rr_del {
 sub rr_add_raw {
     my ($self, $rrline) = @_;
     utf8::decode($rrline);
-    say "to add : $rrline";
+    say "to add raw : $rrline";
     my $rr = Net::DNS::RR->new($rrline);
+    say "to add reformed : " . $rr->plain;
     $self->rr_add($rr)
 }
 
@@ -193,8 +194,23 @@ sub rr_array_to_array {
             $$rr{rdata} = $_->rdstring;
             utf8::decode($$rr{rdata});
         }
+        elsif($list[3] =~ /^SRV$/) {
+            # _service._proto.name.     TTL   class SRV priority weight port target.
+            # _sip._tcp.example.com.    86400 IN    SRV 10       60     5060 bigbox.example.com.
+            $$rr{priority} = $list[4];
+            $$rr{weight} = $list[5];
+            $$rr{port} = $list[6];
+            $$rr{rdata} = $list[7];
+
+            utf8::decode($$rr{priority});
+            utf8::decode($$rr{weight});
+            utf8::decode($$rr{port});
+            utf8::decode($$rr{rdata});
+        }
         else {
-            die "This RR is not available : " . $_->plain;
+            $$rr{rdata} = $_->rdstring;
+            utf8::decode($$rr{rdata});
+            say "This RR is not available : " . $_->plain;
         }
 
         push @$rr_list, $rr;

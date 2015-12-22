@@ -20,8 +20,8 @@
         <tr>
             <td>Domaine</td>
             <td>Type</td>
-            <td>Cible</td>
             <td>TTL</td>
+            <td>Cible</td>
         </tr>
         </caption>
 
@@ -32,13 +32,12 @@
 
             <form method="post" action='/domain/mod/<% domain %>'>
                 <input type="hidden" name="oldname" value="<% rr.name %>"/>
-                <input type="hidden" name="oldtype" value="<% rr.type %>"/>
                 <input type="hidden" name="oldttl" value="<% rr.ttl %>"/>
+                <input type="hidden" name="type" value="<% rr.type %>"/>
                 <textarea type="hidden" style="display:none" name="oldrdata"><% rr.rdata %></textarea>
 
                 <td><input type='text' name='newname' class="form-control" value='<% rr.name %>'/></td>
-                <td><% rr.class %></td>
-                <td><input type='text' name='newtype' size='8' class="form-control" value='<% rr.type %>'/></td>
+                <td><% rr.type %></td>
                 <td><input type='number' name='newttl' size='4' class="form-control" value='<% rr.ttl %>'/></td>
                 <td><textarea name='newrdata' class="form-control" rows=1 ><% rr.rdata %></textarea></td>
                 <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' /></td>
@@ -55,22 +54,50 @@
             <% CASE "MX" %>
 
             <form method="post" action='/domain/mod/<% domain %>'>
-                <input type="hidden" name="oldname" value="<% rr.name %>"/>
-                <input type="hidden" name="oldtype" value="<% rr.type %>"/>
-                <input type="hidden" name="oldttl" value="<% rr.ttl %>"/>
-                <input type="hidden" name="oldrdata" value="<% rr.rdata %>"/>
-                <input type="hidden" name="oldpriority" value="<% rr.priority %>"/>
+                <input type="hidden" name="oldname" value='<% rr.name %>'/>
+                <input type="hidden" name="type" value="<% rr.type %>"/>
+                <input type="hidden" name="oldttl" value='<% rr.ttl %>'/>
+                <input type="hidden" name="oldrdata" value='<% rr.rdata %>'/>
+                <input type="hidden" name="oldpriority" value='<% rr.priority %>'/>
 
-                <td><input type='text' name='newname' class="form-control" value='<% rr.name %>'/></td>
-                <td><% rr.class %></td>
-                <td><input type='text' name='newtype' class="form-control" value='<% rr.type %>'/></td>
-                <td><input type='number' name='newttl' size='4' class="form-control" value='<% rr.ttl %>'/></td>
-                <td><input type='text' name='newrdata' class="form-control" value='<% rr.rdata %>'/>
-                    <input type='number' name='newpriority' size='4' class="form-control" value='<% rr.priority %>'/></td>
-                <td><input type='submit' id='submit' class="btn btn-success btn-xs" value='✔' /></td>
+                <td><input type='text'   name='newname'     class="form-control" value='<% rr.name %>'/></td>
+                <td><% rr.type %></td>
+                <td><input type='number' name='newttl'      class="form-control" value='<% rr.ttl %>' size='4' /></td>
+                <td><input type='text'   name='newrdata'    class="form-control" value='<% rr.rdata %>'/>
+                    <input type='number' name='newpriority' class="form-control" value='<% rr.priority %>' size='4' /></td>
+                <td><input type='submit' id='submit'        class="btn btn-success btn-xs" value='✔' /></td>
 
                 <td>
-                    <a href='/domain/del/<% domain %>/<% rr.name %>/<% rr.ttl %>/<% rr.type %>/<% rr.rdata %>'>
+                    <a href='/domain/del/<% domain %>/<% rr.name %>/<% rr.ttl %>/<% rr.type %>/<% rr.priority %>/<% rr.rdata %>'>
+                        <button type="button" class="btn btn-primary btn-danger btn-xs">
+                            ✘
+                        </button>
+                    </a>
+                </td>
+            </form>
+
+            <% CASE "SRV" %>
+
+            <form method="post" action='/domain/mod/<% domain %>'>
+                <input type="hidden" name="oldname" value='<% rr.name %>'/>
+                <input type="hidden" name="type" value="<% rr.type %>"/>
+                <input type="hidden" name="oldttl" value='<% rr.ttl %>'/>
+                <input type="hidden" name="oldpriority" value='<% rr.priority %>'/>
+                <input type="hidden" name="oldweight" value='<% rr.weight %>'/>
+                <input type="hidden" name="oldport" value='<% rr.port %>'/>
+                <input type="hidden" name="oldrdata" value='<% rr.rdata %>'/>
+
+                <td><input type='text'   name='newname'     class="form-control" value='<% rr.name %>'/></td>
+                <td><% rr.type %></td>
+                <td><input type='number' name='newttl'      class="form-control" value='<% rr.ttl %>' size='4' /></td>
+                <td><input type='text'   name='newrdata'    class="form-control" value='<% rr.rdata %>'/>
+                    Priorité <input type='number' name='newpriority' class="form-control" value='<% rr.priority %>' size='4' />
+                    Poids <input type='number' name='newweight' class="form-control" value='<% rr.weight %>' size='4' />
+                    Port <input type='number' name='newport' class="form-control" value='<% rr.port %>' size='4' /></td>
+                <td><input type='submit' id='submit'        class="btn btn-success btn-xs" value='✔' /></td>
+
+                <td>
+                    <a href='/domain/del/<% domain %>/<% rr.name %>/<% rr.ttl %>/<% rr.type %>/<% rr.priority %>/<% rr.weight %>/<% rr.port %>/<% rr.rdata %>'>
                         <button type="button" class="btn btn-primary btn-danger btn-xs">
                             ✘
                         </button>
@@ -88,65 +115,173 @@
 
 
     <hr />
-    <form class="form-horizontal" role="form" action='/domain/update/<% domain %>' method='post' >
+    <div class="row">
+        <div class="col-md-4">
+            <form class="form-horizontal" role="form" action='/domain/update/<% domain %>' method='post' >
 
-        <fieldset>
-            <legend>Ajout d'un enregistrement</legend>
+                <fieldset>
+                    <legend>Ajout d'un enregistrement</legend>
 
-            <div class="form-group">
-                <label for="name" class="col-sm-2 control-label">Nom</label>
-                <div class="col-sm-3">
-                    <input type="text" id="name" name="name" class="form-control" placeholder="www">
-                </div>
-            </div>
+                    <div class="form-group">
+                        <label for="type" class="col-sm-6 control-label">Type</label>
+                        <div class="col-sm-6">
+                            <select class="form-control" name="type" id="type" >
+                                <option value="A">A</option>
+                                <option value="AAAA">AAAA</option>
+                                <option value="CNAME">CNAME</option>
+                                <option value="NS">NS</option>
+                                <!-- <option value="PTR">PTR</option> -->
+                                <option value="TXT">TXT</option>
+                            </select>
+                        </div>
+                    </div>
 
-            <div class="form-group">
-                <label for="type" class="col-sm-2 control-label">Type</label>
-                <div class="col-sm-3">
-                    <select class="form-control" name="type" id="type" >
-                        <option value="A">A</option>
-                        <option value="AAAA">AAAA</option>
-                        <option value="CNAME">CNAME</option>
-                        <option value="MX">MX</option>
-                        <option value="NS">NS</option>
-                        <option value="PTR">PTR</option>
-                        <option value="TXT">TXT</option>
-                    </select>
+                    <div class="form-group">
+                        <label for="name" class="col-sm-6 control-label">Nom</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="name" name="name" class="form-control" placeholder="www">
+                        </div>
+                    </div>
 
-                </div>
-            </div>
+                    <div class="form-group">
+                        <label for="input_ttl" class="col-sm-6 control-label">TTL</label>
+                        <div class="col-sm-6">
+                            <input type="number" id="input_ttl" name="ttl" class="form-control" value="3600" placeholder="3600" >
+                        </div>
+                    </div>
 
-            <div class="form-group">
-                <label for="priority" class="col-sm-2 control-label">Priorité (MX)</label>
-                <div class="col-sm-3">
-                    <input type="text" id="priority" name="priority" class="form-control" value="10" >
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="rdata" class="col-sm-2 control-label">Valeur</label>
-                <div class="col-sm-3">
-                    <input type="text" id="rdata" name="rdata" class="form-control" placeholder="IP ou ndd" >
-                </div>
+                    <!-- <p>
                     Votre adresse IP : <% user_ip %>
-            </div>
+                    </p> -->
 
-            <div class="form-group">
-                <label for="input_ttl" class="col-sm-2 control-label">TTL</label>
-                <div class="col-sm-3">
-                    <input type="number" id="input_ttl" name="ttl" class="form-control" value="3600" placeholder="3600" >
+                    <div class="form-group">
+                        <label for="rdata" class="col-sm-6 control-label">Valeur</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="rdata" name="rdata" class="form-control" placeholder="IP ou ndd" >
+                        </div>
+                    </div>
+
+                </fieldset>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-6">
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
                 </div>
-            </div>
-        </fieldset>
 
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-3">
-                <button type="submit" class="btn btn-primary">Ajouter</button>
-            </div>
+            </form>
         </div>
 
-    </form>
+        <div class="col-md-4">
+            <form class="form-horizontal" role="form" action='/domain/update/<% domain %>' method='post' >
 
+                <fieldset>
+                    <legend>Ajout d'un enregistrement SRV</legend>
+
+                    <div class="form-group">
+                        <label for="srvname" class="col-sm-6 control-label">Nom</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="srvname" name="name" class="form-control" placeholder="www">
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="type" value='SRV'/>
+
+                    <div class="form-group">
+                        <label for="srvinput_ttl" class="col-sm-6 control-label">TTL</label>
+                        <div class="col-sm-6">
+                            <input type="number" id="srvinput_ttl" name="ttl" class="form-control" value="3600" placeholder="3600" >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="srvpriority" class="col-sm-6 control-label">Priorité</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="srvpriority" name="priority" class="form-control" value="10" >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="srvweight" class="col-sm-6 control-label">Poids</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="srvweight" name="weight" class="form-control" placeholder="60" >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="srvport" class="col-sm-6 control-label">Port</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="srvport" name="port" class="form-control" value="5000" >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="srvrdata" class="col-sm-6 control-label">Cible</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="srvrdata" name="rdata" class="form-control" placeholder="exemple.com." >
+                        </div>
+                    </div>
+
+                </fieldset>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-6">
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <form class="form-horizontal" role="form" action='/domain/update/<% domain %>' method='post' >
+
+                <fieldset>
+                    <legend>Ajout d'un enregistrement MX</legend>
+
+                    <div class="form-group">
+                        <label for="mxname" class="col-sm-6 control-label">Nom</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="mxname" name="name" class="form-control" placeholder="www">
+                        </div>
+                    </div>
+                    <br>
+
+                    <input type="hidden" name="type" value='MX'/>
+
+                    <div class="form-group">
+                        <label for="mxinput_ttl" class="col-sm-6 control-label">TTL</label>
+                        <div class="col-sm-6">
+                            <input type="number" id="mxinput_ttl" name="ttl" class="form-control" value="3600" placeholder="3600" >
+                        </div>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="mxpriority" class="col-sm-6 control-label">Priorité</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="mxpriority" name="priority" class="form-control" value="10" >
+                        </div>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="mxrdata" class="col-sm-6 control-label">Cible</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="mxrdata" name="rdata" class="form-control" placeholder="exemple.com." >
+                        </div>
+                    </div>
+
+                </fieldset>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-4">
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
 
     <% END %>
 
