@@ -9,6 +9,7 @@ use utf8;
 use Dancer ':syntax';
 use Data::Dump qw( dump );
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
+use MIME::Base64 qw(encode_base64 decode_base64);
 
 use Exporter 'import';
 # what we want to export eventually
@@ -66,7 +67,19 @@ sub rt_dom_cli_autoupdate {
         my $pass = encrypt($$param{pass});
         my $app = app->new(get_cfg());
 
-        my $user = $app->auth($$param{login}, $pass);
+        my $user;
+
+        eval {
+            $user = $app->auth($$param{login}, $pass);
+        };
+
+        # if the mdp is in base64
+        # useful for cli and http GET messages
+        if( $@ ) {
+            my $passb64 = decode_base64($$param{pass});
+            $pass = encrypt($passb64);
+            $user = $app->auth($$param{login}, $pass);
+        }
 
         unless ( $user && ( $$user{admin} || 
                 $app->is_owning_domain($$user{login}, $$param{domain}))) {

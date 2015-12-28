@@ -36,7 +36,6 @@
 <div class="row">
     <div class="col-sm-4 col-sm-offset-1">
         <h3>Ajouter un nouveau domaine :</h3>
-
         <form class="form" action='/domain/add/' method="post" >
             <% IF domainName.defined %>
             <input type='text' name='domain' value="<% domainName %>" />
@@ -51,9 +50,20 @@
             <input type='submit' name='submit' value="Créer mon domaine!"
                                                class='btn btn-primary' />
         </form>
+    </div>
+
+    <div class="col-sm-4 col-sm-offset-1">
+        <h3>Changer son mot de passe :</h3>
+
+        <form class="form" action='/user/changepasswd' method="post" >
+            <input type='password' name='password'/>
+            <input type='submit' name='submit' value="Changer mon mot de passe"
+                                               class='btn btn-primary' />
+        </form>
 
     </div>
 </div>
+
 
 </div>
 

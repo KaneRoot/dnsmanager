@@ -35,6 +35,7 @@ sub what_is_next {
     }
 
     for(keys %{$$res{addsession}}) {
+        say "ajout de la session $_ : $$res{addsession}{$_}";
         session $_ => $$res{addsession}{$_};
     }
 
@@ -198,6 +199,12 @@ prefix '/user' => sub {
     get '/subscribe' => sub {
         what_is_next rt_user_subscribe
         get_session( qw/login/ );
+    };
+
+    post '/changepasswd' => sub {
+        what_is_next rt_user_changepasswd
+        get_session( qw/login/ )
+        , get_param( qw/password/ );
     };
 
     get '/toggleadmin/:user' => sub {

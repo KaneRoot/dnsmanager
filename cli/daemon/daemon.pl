@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use v5.14;
 
+use MIME::Base64 qw(encode_base64);
+
 # the website sending your current IP address
 our $checkip = "http://t.karchnu.fr/ip.php";
 
@@ -17,7 +19,7 @@ our $login = "idtest";
 our $pass = "mdptest";
 
 # Your entry to change
-our $name = 'www';
+our $name = 'www';  # here, the entry is www.test.netlib.re
 our $type = 'A';    # could be AAAA
 
 # The CA certificate, to authenticate the website (should be provided)
@@ -41,12 +43,15 @@ sub update {
     my $ip = get_ip;
 
     say "UPDATE :: domain $name.$domain => IP $ip, type $type";
+    my $passb64 = encode_base64($pass);
+    chomp $passb64;
 
     my $cmd = "wget -O - ";
     $cmd .=
-    "https://$nddservice/domain/cliup/$login/$pass/$domain/$name/$type/$ip ";
+    "https://$nddservice/domain/cliup/$login/$passb64/$domain/$name/$type/$ip ";
     $cmd .= "--ca-certificate=$cacert";
-    say `$cmd`;
+    say "CMD :: $cmd";
+    `$cmd`;
 }
 
 update;

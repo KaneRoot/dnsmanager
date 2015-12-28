@@ -15,6 +15,7 @@ rt_user_login
 rt_user_del
 rt_user_toggleadmin
 rt_user_subscribe
+rt_user_changepasswd
 rt_user_add
 rt_user_home
 /;
@@ -25,6 +26,7 @@ our %EXPORT_TAGS = ( all => [qw/
         rt_user_del
         rt_user_toggleadmin
         rt_user_subscribe
+        rt_user_changepasswd
         rt_user_add
         rt_user_home
         /] ); 
@@ -169,6 +171,37 @@ sub rt_user_subscribe {
     $res
 }
 
+sub rt_user_changepasswd {
+    my ($session, $param, $request) = @_;
+    my $res;
+
+    unless ( $$session{login} && $$param{password} ) {
+        $$res{deferred}{errmsg} = q{Identifiant ou mot de passe non renseigné.};
+        $$res{route} = '/user/home';
+        return $res;
+    }
+
+    eval {
+        my $pass = encrypt($$param{password});
+        my $app = app->new(get_cfg());
+
+        $app->update_passwd($$session{login}, $pass);
+        $app->disconnect();
+
+        $$res{deferred}{succmsg} = q{Changement de mot de passe effectué !};
+        $$res{addsession}{passwd} = $pass;
+        $$res{route} = '/user/home';
+    };
+
+    if($@) {
+        $$res{deferred}{errmsg} = q{Changement de mot de passe impossible !.};
+        $$res{route} = '/user/subscribe';
+        return $res;
+    }
+
+    $res
+}
+
 sub rt_user_add {
     my ($session, $param, $request) = @_;
     my $res;
@@ -245,7 +278,7 @@ sub rt_user_home {
 
     if( $@ ) {
         $$res{sessiondestroy} = 1;
-        $$res{deferred}{errmsg} = q{On a chié quelque-part.} . $@;
+        $$res{deferred}{errmsg} = q{Problème d'authentification.} . $@;
         $$res{route} = '/';
     }
 
