@@ -16,7 +16,7 @@
             </td>
 
             <td>
-                <a href="/domain/del/<% domain.domain %>" >
+                <a href="/domain/del/<% domain.domain %>" onclick="return confirm('Êtes-vous sûr ?');">
                     <button type="button" class="btn btn-danger">
                         Supprimer
                     </button>
