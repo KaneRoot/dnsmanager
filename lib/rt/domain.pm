@@ -372,7 +372,7 @@ sub rt_dom_del_entry {
         # si le type est CNAME, MX, NS ou PTR
         # le rdata doit être un domaine
         # si ce domaine n'est pas absolu, rajouter ".domain."
-        if($$param{type} =~ /^(CNAME|MX|NS|PTR)$/) {
+        if($$param{type} =~ /^(CNAME|SRV|MX|NS|PTR)$/) {
             $rdata =~ s/@/$$param{domain}./;
             $rdata .= ".$$param{domain}." if $rdata !~ /\.$/;
         }
