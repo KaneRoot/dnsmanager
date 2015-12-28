@@ -30,20 +30,15 @@ our $type = 'A';    # could be AAAA
 our $cacert = "ca.cert";
 
 sub get_ip {
-    my @tmp_ip = split "\n", `wget -nv -O - $checkip`;
-    my $ip;
-
-    for(@tmp_ip) {
-        if($_ =~ /^[0-9.]+$/ || $_ =~ /^[0-9a-f:]+$/) {
-            $ip = $_;
-        }
+    for (split "\n", `wget -nv -O - $checkip`) {
+        /^[0-9.]+$/ || /^[0-9a-f:]+$/ and return $_
     }
-
-    $ip;
+    undef
 }
 
 sub update {
     my $ip = get_ip;
+    die "Can't get your IP address !" unless $ip;
 
     say "UPDATE :: domain $name.$domain => IP $ip, type $type";
     my $passb64 = encode_base64($pass);
