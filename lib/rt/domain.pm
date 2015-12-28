@@ -93,6 +93,8 @@ sub rt_dom_cli_autoupdate {
 
         my $name = $$param{name};
 
+        $name =~ s/@/$$param{domain}./;
+
         if($name =~ /$$param{domain}$/) {
             $name .= '.';
         }
@@ -211,58 +213,78 @@ sub rt_dom_mod_entry {
             return $res;
         }
 
-        my $rdata = $$param{newrdata};
+        my $oldname = $$param{oldname};
+        my $newname = $$param{newname};
+        my $oldrdata = $$param{oldrdata};
+        my $newrdata = $$param{newrdata};
 
-        if ($$param{type} eq 'A' && ! is_ipv4($rdata)) {
+        $oldname =~ s/@/$$param{domain}./g;
+        $newname =~ s/@/$$param{domain}./g;
+
+        if ($$param{type} eq 'A' && ! is_ipv4($newrdata)) {
             $$res{deferred}{errmsg} = 
             "Il faut une adresse IPv4 pour un enregistrement de type A."
-            . " Ceci n'est pas une adresse IPv4 : $rdata";
+            . " Ceci n'est pas une adresse IPv4 : $newrdata";
             $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
             return $res;
         }
 
-        if ($$param{type} eq 'AAAA' && ! is_ipv6($rdata)) {
+        if ($$param{type} eq 'AAAA' && ! is_ipv6($newrdata)) {
             $$res{deferred}{errmsg} = 
             "Il faut une adresse IPv6 pour un enregistrement de type AAAA."
-            . " Ceci n'est pas une adresse IPv6 : $rdata";
+            . " Ceci n'est pas une adresse IPv6 : $newrdata";
             $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
             return $res;
+        }
+
+        # si le type est A, AAAA, SRV, TXT, CNAME, MX, NS
+        # le name doit être un domaine
+        # si ce domaine n'est pas absolu, rajouter ".domain."
+        if($$param{type} =~ /^(A|AAAA|SRV|TXT|CNAME|MX|NS)$/) {
+            $newname .= ".$$param{domain}." if($newname !~ /\.$/);
+            $oldname .= ".$$param{domain}." if($oldname !~ /\.$/);
+        }
+
+        # si le type est CNAME, MX, NS ou PTR
+        # le rdata doit être un domaine
+        # si ce domaine n'est pas absolu, rajouter ".domain."
+        if($$param{type} =~ /^(CNAME|MX|NS|PTR)$/) {
+            $oldrdata =~ s/@/$$param{domain}./;
+            $newrdata =~ s/@/$$param{domain}./;
+            $oldrdata .= ".$$param{domain}." if($oldrdata !~ /\.$/);
+            $newrdata .= ".$$param{domain}." if($newrdata !~ /\.$/);
         }
 
         if ($$param{type} =~ /^(CNAME|MX|NS|PTR|SRV)$/i
-            && ! is_domain_name ($rdata))
+            && ! is_domain_name ($newrdata))
         {
             $$res{deferred}{errmsg} = 
             "Une entrée $$param{type} doit avoir un nom de domaine "
-            . "(pas une URL, pas de http://) : '$rdata' n'est pas correct.";
+            . "(pas une URL, pas de http://) : '$newrdata' n'est pas correct.";
             $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
             return $res;
         }
 
-        if($$param{type} =~ /^(CNAME|MX|NS|PTR)$/ && $rdata !~ /\.$/) {
-            $rdata .= ".$$param{domain}.";
-        }
-
-        my $str_old = "$$param{oldname} $$param{oldttl} $$param{type} ";
-        my $str_new = "$$param{newname} $$param{newttl} $$param{type} ";
+        my $str_old = "$oldname $$param{oldttl} $$param{type} ";
+        my $str_new = "$newname $$param{newttl} $$param{type} ";
 
         if($$param{type} eq "MX") {
-            $str_old .= "$$param{oldpriority} $$param{oldrdata}";
-            $str_new .= "$$param{newpriority} $$param{newrdata}";
+            $str_old .= "$$param{oldpriority} $oldrdata";
+            $str_new .= "$$param{newpriority} $newrdata";
         }
         elsif ($$param{type} eq "SRV") {
             $str_old .= "$$param{oldpriority} $$param{oldweight} "
-            ."$$param{oldport} $$param{oldrdata}";
+            ."$$param{oldport} $oldrdata";
             $str_new .= "$$param{newpriority} $$param{newweight} "
-            ."$$param{newport} $rdata";
+            ."$$param{newport} $newrdata";
         }
         else {
-            $str_old .= "$$param{oldrdata}";
-            $str_new .= "$rdata";
+            $str_old .= "$oldrdata";
+            $str_new .= "$newrdata";
         }
 
-        say "str_old : $str_old";
-        say "str_new : $str_new";
+        say "::: ___ str_old : $str_old";
+        say "::: ___ str_new : $str_new";
 
         # Do the modification of the entry
 
@@ -335,20 +357,40 @@ sub rt_dom_del_entry {
             return $res;
         }
 
+        my $rdata = $$param{rdata};
+        my $name = $$param{name};
+
+        $name =~ s/@/$$param{domain}./;
+
+        # si le type est A, AAAA, SRV, TXT, CNAME, MX, NS
+        # le name doit être un domaine
+        # si ce domaine n'est pas absolu, rajouter ".domain."
+        if($$param{type} =~ /^(A|AAAA|SRV|TXT|CNAME|MX|NS)$/ && $name !~ /\.$/){
+            $name .= ".$$param{domain}.";
+        }
+
+        # si le type est CNAME, MX, NS ou PTR
+        # le rdata doit être un domaine
+        # si ce domaine n'est pas absolu, rajouter ".domain."
+        if($$param{type} =~ /^(CNAME|MX|NS|PTR)$/) {
+            $rdata =~ s/@/$$param{domain}./;
+            $rdata .= ".$$param{domain}." if $rdata !~ /\.$/;
+        }
+
         my $zone = $app->get_zone( $$param{domain} );
         my $zf = $zone->get_zonefile();
 
-        my $str_del = "$$param{name} $$param{ttl} $$param{type} ";
+        my $str_del = "$name $$param{ttl} $$param{type} ";
 
         if( $$param{type} eq 'SRV') {
             $str_del .=
-            "$$param{priority} $$param{weight} $$param{port} $$param{rdata}";
+            "$$param{priority} $$param{weight} $$param{port} $rdata";
         }
         elsif ($$param{type} eq 'MX') {
-            $str_del .= "$$param{priority} $$param{rdata}";
+            $str_del .= "$$param{priority} $rdata";
         }
         else {
-            $str_del .= "$$param{rdata}";
+            $str_del .= "$rdata";
         }
 
         $zf->rr_del_raw( $str_del );
@@ -522,7 +564,7 @@ sub rt_dom_details {
             $$res{params}{expert} = 1;
         }
         else {
-            $$res{params}{zone} = $zf->rr_array_to_array();
+            $$res{params}{zone} = $zf->rr_array_to_array_stripped();
         }
     };
 
@@ -572,6 +614,8 @@ sub rt_dom_add_entry {
 
         my $name = $$param{name};
 
+        $name =~ s/@/$$param{domain}./;
+
         if($name =~ /$$param{domain}$/) {
             $name .= '.';
         }
@@ -582,6 +626,11 @@ sub rt_dom_add_entry {
 
         my $str_new = "$name $$param{ttl} $$param{type} ";
         my $rdata = $$param{rdata};
+
+        if($$param{type} =~ /^(CNAME|MX|NS|PTR|SRV)$/) {
+            $rdata =~ s/@/$$param{domain}./;
+            $rdata .= ".$$param{domain}." if( $rdata !~ /\.$/);
+        }
 
         if ($$param{type} =~ /^(CNAME|MX|NS|PTR|SRV)$/i
             && ! is_domain_name ($rdata))
@@ -607,10 +656,6 @@ sub rt_dom_add_entry {
             . " Ceci n'est pas une adresse IPv6 : $rdata";
             $$res{route} = ($$request{referer}) ? $$request{referer} : '/';
             return $res;
-        }
-
-        if($$param{type} =~ /^(CNAME|MX|NS|PTR|SRV)$/ && $rdata !~ /\.$/) {
-            $rdata .= ".$$param{domain}.";
         }
 
         if($$param{type} eq "MX") {

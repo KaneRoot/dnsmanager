@@ -16,7 +16,6 @@ sub rr_array_del {
     my ($zones, $rr) = @_;
     my $todel = $rr->plain;
     utf8::decode($todel);
-
     [grep { my $v = $_->plain; utf8::decode($v); $v ne $rr->plain } @$zones]
 }
 
@@ -138,7 +137,6 @@ sub rr_add {
 
 sub rr_mod {
     my ($self, $rrline_old, $rrline_new) = @_;
-
     $self->rr_del_raw($rrline_old);
     $self->rr_add_raw($rrline_new);
 }
@@ -147,6 +145,39 @@ sub rr_search {
     my ($self, $name, $type) = @_;
     my $rrlisttmp = $self->rr_array_to_array();
     [ grep { $$_{name} eq $name && $$_{type} eq $type } @$rrlisttmp ]
+}
+
+sub search_domain {
+    my ($self) = @_;
+    my $rr_list = $self->rr_array_to_array();
+
+    my $soa = [ grep { $$_{type} eq "SOA" } @$rr_list ];
+
+    for(@$soa) {
+        return $$_{name};
+    }
+
+    die "No SOA in this domain.";
+}
+
+# to get all the records in relative
+sub rr_array_to_array_stripped {
+    my $self = shift;
+    my $rr_list = $self->rr_array_to_array();
+
+    my $domain = $self->search_domain();
+
+    for (@$rr_list) {
+        $$_{name} =~ s/\.?$domain$//;
+        $$_{name} = "@" if($$_{name} =~ /^$/);
+
+        if($$_{type} =~ /^(CNAME|SRV|MX)$/) {
+            $$_{rdata} =~ s/\.?$domain$//;
+            $$_{rdata} = "@" if($$_{rdata} =~ /^$/);
+        }
+    }
+
+    $rr_list;
 }
 
 sub rr_array_to_array {
@@ -220,7 +251,6 @@ sub rr_array_to_array {
         }
 
         push @$rr_list, $rr;
-
     }
 
     $rr_list

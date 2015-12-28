@@ -19,7 +19,10 @@ our $login = "idtest";
 our $pass = "mdptest";
 
 # Your entry to change
-our $name = 'www';  # here, the entry is www.test.netlib.re
+#
+# here, the entry is www.test.netlib.re
+# put "@" in $name to change your $type record on $domain directly
+our $name = 'www';
 our $type = 'A';    # could be AAAA
 
 # The CA certificate, to authenticate the website (should be provided)
