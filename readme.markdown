@@ -1,11 +1,22 @@
-# DNSmanager
+# DNSmanager (en)
+
+This project is about managing DNS zones with a simple website, provinding a
+name to anyone on the Internet. It is binded to the [netlib.re][netlibre]
+project. This service let you manage your dynamic IP address with your domain so
+you don't need DynDNS anymore, and it's all libre software !
+
+The association managing the infrastructure behind this service is [Alsace
+Réseau Neutre][arn] which is an ethical ISP based in Alsace, France. Don't be
+shy, go ask your questions !
+
+# DNSmanager (fr)
 
 Ce projet est un programme de gestion de zones DNS à partir d'un site web
 simple, permettant à chacun d'avoir un nom sur **Internet**. Il est lié au
-service en ligne [netlib.re](https://netlib.re/). Ce service en ligne peut
+service en ligne [netlib.re][netlibre]. Ce service en ligne peut
 remplacer avantageusement DynDNS puisqu'il est basé sur du code libre, et une
 association s'occupe de son maintien ([Alsace Réseau
-Neutre](https://www.arn-fai.net), éthique++).
+Neutre][arn], éthique++).
 
 De manière factuelle :
 
@@ -28,5 +39,9 @@ De manière factuelle :
 
 ## TODO
 
-  * déléguer les zones
+  * zone delegation
+  * REST API
   * captcha ?
+
+[netlibre]: https://netlib.re/
+[arn]: https://www.arn-fai.net
