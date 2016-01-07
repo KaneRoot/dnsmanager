@@ -25,12 +25,11 @@ our $pass = "mdptest";
 our $name = 'www';
 our $type = 'A';    # could be AAAA
 
-# The CA certificate, to authenticate the website (should be provided)
-# Check your service provider for updates
-our $cacert = "ca.cert";
+our $wget = `which wget`; chomp $wget;
+die "There is no wget on this computer." unless $wget;
 
 sub get_ip {
-    for (split "\n", `wget -nv -O - $checkip`) {
+    for (split "\n", `$wget -nv -O - $checkip`) {
         /^[0-9.]+$/ || /^[0-9a-f:]+$/ and return $_
     }
     undef
@@ -44,10 +43,9 @@ sub update {
     my $passb64 = encode_base64($pass);
     chomp $passb64;
 
-    my $cmd = "wget -O - ";
+    my $cmd = "$wget -O - ";
     $cmd .=
-    "https://$nddservice/domain/cliup/$login/$passb64/$domain/$name/$type/$ip ";
-    $cmd .= "--ca-certificate=$cacert";
+    "https://$nddservice/domain/cliup/$login/$passb64/$domain/$name/$type/$ip";
     say "CMD :: $cmd";
     `$cmd`;
 }
