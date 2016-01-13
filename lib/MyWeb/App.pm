@@ -15,11 +15,19 @@ use utf8;
 use YAML::XS;
 use configuration ':all';
 use util ':all';
+
 use rt::root ':all';
 use rt::domain ':all';
 use rt::user ':all';
 use rt::admin ':all';
+
+use rt::rootfake ':all';
+use rt::domainfake ':all';
+use rt::userfake ':all';
+use rt::adminfake ':all';
 use app;
+
+our $isviewtest = is_view_test(get_cfg());
 
 our $VERSION = '0.1';
 
@@ -79,6 +87,7 @@ sub get_session {
 }
 
 get '/' => sub { 
+    return what_is_next rt_root_fake if $isviewtest;
     what_is_next rt_root 
     get_session( qw/login passwd/ );
 };
@@ -86,6 +95,9 @@ get '/' => sub {
 prefix '/domain' => sub {
 
     post '/updateraw/:domain' => sub {
+        return what_is_next rt_dom_updateraw_fake
+        "" , "" , get_request( qw/address referer/ ) 
+        if $isviewtest;
         what_is_next rt_dom_updateraw 
         get_session( qw/login passwd/ )
         , get_param( qw/domain zoneupdated/)
@@ -93,6 +105,9 @@ prefix '/domain' => sub {
     };
 
     post '/update/:domain' => sub {
+        return what_is_next rt_dom_add_entry_fake
+        "" , "", get_request( qw/referer/ )
+        if $isviewtest;
         what_is_next rt_dom_add_entry
         get_session( qw/login passwd/ )
         , get_param( qw/domain type name ttl priority weight port rdata/ )
@@ -100,6 +115,9 @@ prefix '/domain' => sub {
     };
 
     get '/details/:domain' => sub {
+        return what_is_next rt_dom_details_fake ""
+        , get_param( qw/expert/ )
+        , get_request( qw/address referer/ ) if $isviewtest;
         what_is_next rt_dom_details
         get_session( qw/login passwd/ )
         , get_param( qw/domain expert/ )
@@ -107,12 +125,16 @@ prefix '/domain' => sub {
     };
 
     post '/add/' => sub {
+        return what_is_next rt_dom_add_fake if $isviewtest;
         what_is_next rt_dom_add
         get_session( qw/login passwd/ )
         , get_param( qw/domain tld/ );
     };
 
     get '/del/:domain' => sub {
+        return what_is_next rt_dom_del_fake
+        "" , "", get_request( qw/address referer/ )
+        if $isviewtest;
         what_is_next rt_dom_del
         get_session( qw/login passwd/ )
         , get_param( qw/domain/ )
@@ -120,6 +142,9 @@ prefix '/domain' => sub {
     };
 
     get '/del/:domain/:name/:ttl/:type/:priority/:rdata' => sub {
+        return what_is_next rt_dom_del_entry_fake
+        "" , "", get_request( qw/address referer/ )
+        if $isviewtest;
         what_is_next rt_dom_del_entry
         get_session( qw/login passwd/ )
         , get_param( qw/domain name ttl type priority rdata/ )
@@ -127,6 +152,9 @@ prefix '/domain' => sub {
     };
 
     get '/del/:domain/:name/:ttl/:type/:priority/:weight/:port/:rdata' => sub {
+        return what_is_next rt_dom_del_entry_fake
+        "" , "", get_request( qw/address referer/ )
+        if $isviewtest;
         what_is_next rt_dom_del_entry
         get_session( qw/login passwd/ )
         , get_param( qw/domain name ttl type priority weight port rdata/ )
@@ -134,6 +162,9 @@ prefix '/domain' => sub {
     };
 
     get '/del/:domain/:name/:ttl/:type/:rdata' => sub {
+        return what_is_next rt_dom_del_entry_fake
+        "" , "", get_request( qw/address referer/ )
+        if $isviewtest;
         what_is_next rt_dom_del_entry
         get_session( qw/login passwd/ )
         , get_param( qw/domain name type ttl rdata/ )
@@ -141,6 +172,9 @@ prefix '/domain' => sub {
     };
 
     post '/mod/:domain' => sub {
+        return what_is_next rt_dom_mod_entry_fake
+        "" , "", get_request( qw/address referer/ )
+        if $isviewtest;
         what_is_next rt_dom_mod_entry
         get_session( qw/login passwd/ )
         , get_param( qw/domain type
@@ -150,12 +184,14 @@ prefix '/domain' => sub {
     };
 
     get '/cliup/:login/:pass/:domain/:name/:type/:rdata' => sub {
+        return what_is_next rt_dom_cli_autoupdate_fake if $isviewtest;
         what_is_next rt_dom_cli_autoupdate
         get_session( qw// )
         , get_param( qw/login pass domain name type rdata/ );
     };
 
     get '/cli/:login/:pass/:domain/:name/:type/:rdata/:ttl/:ip' => sub {
+        return what_is_next rt_dom_cli_mod_entry_fake if $isviewtest;
         what_is_next rt_dom_cli_mod_entry
         get_session( qw// )
         , get_param( qw/login pass domain name type rdata ttl ip/ );
@@ -163,6 +199,7 @@ prefix '/domain' => sub {
 };
 
 any ['get', 'post'] => '/admin' => sub {
+    return what_is_next rt_admin_fake if $isviewtest;
     what_is_next rt_admin
     get_session( qw/login passwd/ );
 };
@@ -170,6 +207,7 @@ any ['get', 'post'] => '/admin' => sub {
 prefix '/user' => sub {
 
     get '/home' => sub {
+        return what_is_next rt_user_home_fake if $isviewtest;
         what_is_next rt_user_home
         get_session( qw/login passwd/ )
         , get_param( qw// )
@@ -182,6 +220,9 @@ prefix '/user' => sub {
     };
 
     get '/del/:user' => sub {
+        return what_is_next rt_user_del_fake
+        "" , "", get_request( qw/address referer/ )
+        if $isviewtest;
         what_is_next rt_user_del
         get_session( qw/login passwd/ )
         , get_param( qw/user/ )
@@ -190,6 +231,7 @@ prefix '/user' => sub {
 
     # add a user => registration
     post '/add/' => sub {
+        return what_is_next rt_user_add_fake if $isviewtest;
         what_is_next rt_user_add
         get_session( qw// )
         , get_param( qw/login password password2/ )
@@ -197,17 +239,22 @@ prefix '/user' => sub {
     };
 
     get '/subscribe' => sub {
+        return what_is_next rt_user_subscribe_fake if $isviewtest;
         what_is_next rt_user_subscribe
         get_session( qw/login/ );
     };
 
     post '/changepasswd' => sub {
+        return what_is_next rt_user_changepasswd_fake if $isviewtest;
         what_is_next rt_user_changepasswd
         get_session( qw/login/ )
         , get_param( qw/password/ );
     };
 
     get '/toggleadmin/:user' => sub {
+        return what_is_next rt_user_toggleadmin_fake
+        "" , "", get_request( qw/referer/ )
+        if $isviewtest;
         what_is_next rt_user_toggleadmin
         get_session( qw/login passwd/ )
         , get_param( qw/user/ )
@@ -215,6 +262,9 @@ prefix '/user' => sub {
     };
 
     post '/login' => sub {
+        return what_is_next rt_user_login_fake
+        "" , "", get_request( qw/referer/ )
+        if $isviewtest;
         what_is_next rt_user_login
         get_session( qw/login/ )
         , get_param( qw/login password/ )

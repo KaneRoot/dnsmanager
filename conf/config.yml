@@ -7,6 +7,9 @@ tld:
 
 tmpdir: file:///media/fast/
 
+# uncomment it if you want to only test the application views
+#isviewtest: true
+
 database:
     sgbd: mysql # other options : see DBI module
     name: dnsmanager

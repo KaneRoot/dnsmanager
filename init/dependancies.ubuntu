@@ -1,0 +1,8 @@
+cpanminus
+libssl1.0.0
+libssl-dev
+make
+gcc
+libdbi-perl
+libdbd-mysql-perl
+mysql-server

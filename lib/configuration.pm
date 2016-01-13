@@ -17,6 +17,7 @@ get_host_from_cfg
 get_user_from_cfg
 get_port_from_cfg
 get_tmpdir_from_uri
+is_view_test
 /;
 
 # bundle of exports (tags)
@@ -32,6 +33,7 @@ get_host_from_cfg
 get_user_from_cfg
 get_port_from_cfg
 get_tmpdir_from_uri
+is_view_test
         /] );
 
 sub is_conf_file {
@@ -119,6 +121,12 @@ sub get_zonedir_from_cfg {
         . 'in the primaryserver configuration in config.yml.';
     }
     URI->new($$cfg{zonedir})->path;
+}
+
+# in production by default, get the isviewtest value elsewise
+sub is_view_test {
+    my $cfg = shift;
+    $$cfg{isviewtest}
 }
 
 sub get_host_from_cfg {

@@ -29,7 +29,10 @@ our $wget = `which wget`; chomp $wget;
 die "There is no wget on this computer." unless $wget;
 
 sub get_ip {
-    for (split "\n", `$wget -nv -O - $checkip`) {
+    my $typeip = ($type =~ /AAAA/) ? '-6' : '-4';
+    my $cmd = "wget $typeip -nv -O - $checkip";
+    say "get IP : $cmd";
+    for (split "\n", `$cmd`) {
         /^[0-9.]+$/ || /^[0-9a-f:]+$/ and return $_
     }
     undef
