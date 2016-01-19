@@ -31,6 +31,11 @@ our $isviewtest = is_view_test(get_cfg());
 
 our $VERSION = '0.1';
 
+get '/info' => sub {
+       my $str = "This is : " . config->{appname} . "<br>";
+       $str .= "environment : " . config->{environment} . "<br>";
+};
+
 sub what_is_next {
     my ($res) = @_;
 
