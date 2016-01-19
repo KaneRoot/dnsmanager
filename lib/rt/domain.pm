@@ -118,9 +118,13 @@ sub rt_dom_cli_autoupdate {
 
         say "old : $str_old";
         say "new : $str_new";
-
-        $zf->rr_mod($str_old, $str_new);
-        $zone->update( $zf );
+        if($$rr{rdata} eq $$param{rdata}) {
+            say "SAME";
+        }
+        else {
+            $zf->rr_mod($str_old, $str_new);
+            $zone->update( $zf );
+        }
 
         $app->disconnect();
     };
