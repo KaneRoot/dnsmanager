@@ -96,7 +96,21 @@ sub get_zonefile {
     my $file = $self->get_remote_zf_();
     my $dest = $self->get_ztmp_file_();
 
-    copycat ($file, $dest);
+    my $path = $dest;
+
+    # dest is the filename
+    if($dest =~ "://") {
+        my $fileuri = URI->new($dest);
+        $path = $fileuri->path;
+    }
+
+    if( -f $path ) {
+        say "FILE $path already exists : do not copy from ns server";
+    }
+    else {
+        copycat ($file, $dest);
+    }
+
     zonefile->new(domain => $$self{domain}, zonefile => $dest);
 }
 
