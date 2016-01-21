@@ -3,6 +3,8 @@ package MyWeb::App;
 use v5.14;
 use strict;
 use warnings;
+use utf8;
+use open qw/:std :utf8/;
 
 use Dancer2;
 use Dancer2::Plugin::Deferred;
@@ -10,7 +12,6 @@ use File::Basename;
 #use Storable qw( freeze thaw );
 #$Storable::Deparse = true;
 #$Storable::Eval=true;
-use utf8;
 
 use YAML::XS;
 use configuration ':all';

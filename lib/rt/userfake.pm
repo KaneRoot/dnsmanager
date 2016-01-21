@@ -5,6 +5,7 @@ use configuration ':all';
 use encryption ':all';
 use app;
 use utf8;
+use open qw/:std :utf8/
 
 use YAML::XS;
 

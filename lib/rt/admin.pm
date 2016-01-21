@@ -3,6 +3,7 @@ package rt::admin;
 use configuration ':all';
 use app;
 use utf8;
+use open qw/:std :utf8/
 
 use Data::Dump qw( dump );
 

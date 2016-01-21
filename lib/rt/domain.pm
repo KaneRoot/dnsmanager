@@ -6,6 +6,7 @@ use encryption ':all';
 use util ':all';
 use app;
 use utf8;
+use open qw/:std :utf8/
 use Dancer ':syntax';
 use Data::Dump qw( dump );
 use Data::Validate::IP qw(is_ipv4 is_ipv6);

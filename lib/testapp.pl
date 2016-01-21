@@ -2,9 +2,10 @@
 use v5.14;
 use strict;
 use warnings;
+use utf8;
+use open qw/:std :utf8/;
 
 use File::Basename;
-use utf8;
 use YAML::XS;
 use configuration ':all';
 use util ':all';

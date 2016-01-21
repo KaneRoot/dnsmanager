@@ -2,6 +2,7 @@
 use v5.14;
 use autodie;
 use utf8;
+use open qw/:std :utf8/;
 use Modern::Perl;
 
 use Data::Dump qw( dump );
