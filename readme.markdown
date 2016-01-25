@@ -99,6 +99,73 @@ Puis pour faire vos tests :
   * API REST
   * captcha ?
 
+# Un point sur le code
+
+Le code de dnsmanager est composé de la manière suivante :
+
+* `cli/` : regroupe les commandes à utiliser en ligne de commande, afin
+  d'administrer facilement la base de donnée et les zones, et faire des tests.
+  Il y a également le code du démon qui tourne sur les machines clientes pour
+  gérer la mise à jour de l'adresse IP dynamique.
+
+* `conf/` : contient la configuration du serveur, à savoir `conf.yml` pour
+  indiquer où sont les serveurs de nom, comment y accéder pour mettre à
+  jour les zones, quel est le répertoire à utiliser pour mettre les fichiers
+  temporaires… et `reserved.zone` qui indique quelles sont les zones réservées
+  par l'administrateur (ex: on ne veut pas que quelqu'un enregistre www.NDD).
+
+* `init/` : regroupe les scripts permettant de mettre en place le serveur et la
+  base de données.
+
+* `lib/` : contient la majorité du code, qui est découpée en MVC, à savoir :
+
+  * `lib/MyWeb/App.pm` : le contrôleur, s'occupe des routes
+  * `lib/rt/App.pm` : les routes, qui font office de modèles, effectuent les
+  actions à entreprendre (ajout, suppression, modification de zone et
+  d'utilisateur)
+
+Mais `lib` contient également toute la bibliothèque logicielle qui effectue les
+actions, avec principalement une interface à l'authentification, la
+récupération, modification et la suppression de zones et d'utilisateurs avec le
+fichier `lib/app.pm`.
+
+* `lib/configuration.pm` : gère la configuration du serveur
+* `lib/copycat.pm` : copie des fichiers entre les serveurs
+* `lib/db.pm` : gère les interactions avec la base de données
+* `lib/encryption.pm` : chiffre les données
+* `lib/fileutil.pm` : fonctions utilitaires pour gérer les fichiers
+* `lib/getiface.pm` : récupère l'interface logicielle pour gérer un type de
+  serveur de noms (Bind9, NSD, Knot…), les interfaces sont dans `lib/interface/`
+* `lib/remotecmd.pm` : effectue une commande à distance (comme recharger un
+  fichier de configuration dans Bind9)
+* `lib/util.pm` : quelques fonctions utilitaires
+* `lib/zone.pm` : gère les zones DNS (en général, s'occupe de recharger les
+  configuration, mettre à jour les zones, etc)
+* `lib/zonefile.pm` : gère les fichiers de zone
+
+* `public/` : les fichers statics du serveur web
+* `views/` : les différentes vues de l'application
+ 
+# La délégation de zone
+
+Le principe de délégation est de laisser une personne héberger elle-même
+son serveur DNS.
+Elle va gérer elle-même sa zone, on aura juste un enregistrement de sa zone
+"bla.netlib.re." qui pointera vers son adresse IP via un enregistrement de
+type NS et un autre de type A.
+Ces enregistrements devront se faire directement dans notre zone DNS
+(netlib.re. ou codelib.re.).
+
+Pour gérer la délégation de zone, il l faut :
+* mémoriser que la personne a une zone déléguée, non gérée par notre interface
+  actuelle mais par une autre interface à faire, ce qui implique de toucher à la
+  BDD
+* qu'elle puisse ajouter son (ses) adresse(s) IP pour la délégation
+* ajouter un enregistrement de type NS dans notre zone (net|code)lib.re
+* mettre à jour le numéro de série de notre zone
+* indiquer à notre serveur primaire de reload la zone
+
+
 [netlibre]: https://netlib.re/
 [arn]: https://www.arn-fai.net
 [perlbrew]: http://perlbrew.pl/
