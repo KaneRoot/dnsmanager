@@ -24,6 +24,7 @@ sub _scp_put {
     my $ssh = Net::OpenSSH->new($co);
     say "scp put $src $dest";
     $ssh->scp_put($src, $dest) or die "scp failed: " . $ssh->error;
+    undef $ssh;
 }
 
 sub _scp_get {
@@ -32,6 +33,7 @@ sub _scp_get {
     my $ssh = Net::OpenSSH->new($co);
     say "scp get $src $dest";
     $ssh->scp_get($src, $dest) or die "scp failed: " . $ssh->error;
+    undef $ssh;
 }
 
 # SUPPORT
