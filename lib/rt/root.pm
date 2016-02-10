@@ -3,7 +3,7 @@ package rt::root;
 use configuration ':all';
 use app;
 use utf8;
-use open qw/:std :utf8/
+use open qw/:std :utf8/;
 
 use Exporter 'import';
 # what we want to export eventually
