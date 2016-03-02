@@ -9,7 +9,7 @@
         <div class="container">
             <h1>Bienvenue sur netlib.re !</h1>
             <p>Netlib.re vous donne un nom de domaine, gratuitement et simplement.</p>
-            <p><a href="/user/subscribe" class="btn btn-primary btn-lg" role="button">S'enregistrer &raquo;</a></p>
+            <p><a href="/user/subscribe" class="btn btn-primary btn-lg" role="button">S'enregistrer &raquo;</a></p>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
                 <p>
                 Vous pouvez mettre à jour l'adresse IP d'un nom de domaine de façon dynamique (style dyndns).
                 Venez découvrir ça ! 
-                Téléchargez <a href="https://github.com/KaneRoot/dnsmanager/tree/master/cli/daemon">ce script</a>, et c'est en place en 2 minutes !
+                Téléchargez <a href="https://github.com/KaneRoot/dnsmanager/tree/master/cli/daemon">ce script</a>, et c'est en place en 2 minutes !
                 </p>
 
             </div>
@@ -47,7 +47,7 @@
                 <h2>Pourquoi ?</h2>
                 <p>
                 Internet doit rester un lieu où l'utilisateur crée le contenu. 
-                Ce projet vous donne un nom, ne restez pas dans l'ombre, <strong>créez</strong> !
+                Ce projet vous donne un nom, ne restez pas dans l'ombre, <strong>créez</strong> !
                 </p>
 
                 <p>
@@ -60,7 +60,7 @@
                 <h2>Nous contacter</h2>
 
                 <p>Si vous êtes intéressé, n'hésitez pas à venir nous parler.</p>
-                <p>IRC: <a href="http://irc.lc/geeknode/arn">#arn sur irc.geeknode.org:6667</a></p>
+                <p>IRC : <a href="http://irc.lc/geeknode/arn">#arn sur irc.geeknode.org:6667</a></p>
 
             </div>
         </div>
