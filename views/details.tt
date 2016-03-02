@@ -105,7 +105,7 @@
                 </td>
             </form>
             <% CASE %>
-            <td>Resource Record non pris en charge : <% rr.type %></td>
+            <td>Resource Record non pris en charge : <% rr.type %></td>
             <% END %>
 
         </tr>
