@@ -90,7 +90,7 @@
 
             <h3>Les mises à jour automatiques</h3>
             <p>Si vous souhaitez une mise à jour de l'adresse IP indiquée dans votre zone, aucun problème !
-            <a href='https://git.karchnu.fr/Karchnu/dnsmanager/raw/0c0cedddb0aea0cfe2fb546b01e5862b4d613fe5/cli/daemon/daemon.pl' >Téléchargez l'application</a> (clique droit, enregistrer sous), modifiez le fichier pour y mettre vos informations puis appelez ce programme régulièrement.
+            <a href='https://git.karchnu.fr/Karchnu/dnsmanager/raw/0c0cedddb0aea0cfe2fb546b01e5862b4d613fe5/cli/daemon/daemon.pl' >Téléchargez l'application</a> (clic droit, enregistrer sous), modifiez le fichier pour y mettre vos informations puis appelez ce programme régulièrement.
             <div id="errmsg" class="alert alert-danger" role="alert">
                 <strong>Mettre à jour l'adresse IP toutes les 5 minutes ne sert à rien.</strong>
             </div>
