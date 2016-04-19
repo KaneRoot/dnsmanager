@@ -4,66 +4,103 @@
 
 <div id="page">
 
-<% IF domains && domains.size %>
-    <h3>Vos domaines :</h3>
-    <table class="table">
-    <% FOREACH domain in domains %>
-        <tr>
-            <td><% domain.domain %></td>
 
-            <td>
-                <a href="/domain/details/<% domain.domain %>" ><button type="button" class="btn btn-primary">Détails</button></a>
-            </td>
+    <div class="row">
+        <div class="col-sm-5">
+            <% IF domains && domains.size %>
+            <h3>Vos domaines</h3>
+            <table class="table">
+                <% FOREACH domain in domains %>
+                <tr>
+                    <td><% domain.domain %></td>
 
-            <td>
-                <a href="/domain/del/<% domain.domain %>" onclick="return confirm('Êtes-vous sûr ?');">
-                    <button type="button" class="btn btn-danger">
-                        Supprimer
-                    </button>
-                </a>
-            </td>
-        </tr>
-    <% END %>
-    </table>
+                    <td>
+                        <a href="/domain/details/<% domain.domain %>" ><button type="button" class="btn btn-primary">Détails</button></a>
+                    </td>
 
-    <br/>
-
-<% ELSE %>
-   <p class="text-danger">Pas encore de nom de domaine ?</p>
-   <p>Réservez-en un ! \o/</p>
-<% END %>
-
-<div class="row">
-    <div class="col-sm-4 col-sm-offset-1">
-        <h3>Ajouter un nouveau domaine :</h3>
-        <form class="form" action='/domain/add/' method="post" >
-            <% IF domainName.defined %>
-            <input type='text' name='domain' value="<% domainName %>" />
-            <% ELSE %>
-            <input type='text' name='domain' />
-            <% END %>
-            <select name='tld' class='form-control' >
-                <% FOREACH dom in provideddomains %>
-                <option><% dom %></option>
+                    <td>
+                        <a href="/domain/del/<% domain.domain %>" onclick="return confirm('Êtes-vous sûr ?');">
+                            <button type="button" class="btn btn-danger">
+                                Supprimer
+                            </button>
+                        </a>
+                    </td>
+                </tr>
                 <% END %>
-            </select>
-            <input type='submit' name='submit' value="Créer mon domaine!"
-                                               class='btn btn-primary' />
-        </form>
+            </table>
+
+            <br/>
+
+            <% ELSE %>
+            <p class="text-danger">Pas encore de nom de domaine ?</p>
+            <p>Réservez-en un ! \o/</p>
+            <% END %>
+
+            <h3>Nouveau domaine</h3>
+            <hr />
+            <form class="form-inline" role="form" action='/domain/add/' method="post">
+                <div class="input-group">
+                    <div class="form-group">
+                <% IF domainName.defined %>
+                <input  size="15" class="form-control" type='text' name='domain' value="<% domainName %>" />
+                <% ELSE %>
+                <input  size="15" class="form-control" type='text' name='domain' placeholder='domaine' />
+                <% END %>
+                    </div>
+
+                    <div class="form-group">
+                        <select name='tld' class='form-control' >
+                            <% FOREACH dom in provideddomains %>
+                            <option><% dom %></option>
+                            <% END %>
+                        </select>
+                    </div>
+                    <input type='submit' name='submit' value="Créer mon domaine!"
+                                                       class='btn btn-primary' />
+                </div>
+            </form>
+
+            <br/>
+
+            <h3>Nouveau mot de passe</h3>
+            <hr />
+            <form class="form" action='/user/changepasswd' method="post" >
+                <input type='password' name='password'/>
+                <input type='submit' name='submit' value="Changer mon mot de passe"
+                                                   class='btn btn-primary' />
+            </form>
+
+        </div>
+
+        <div class="col-sm-5 col-sm-offset-1">
+            <h3>Rappels sur l'administration d'un domaine</h3>
+            <ul>
+                <li>
+                    Ne supprimez <b>jamais</b> les entrées de type NS ou SOA.
+                    Si vous ne savez pas ce que vous faites, ne les touchez pas.
+                </li>
+                <li>Ce n'est pas grave de se tromper !</li>
+                <li>
+                    Si vous avez un doute, n'hésitez pas à nous contacter :
+                    <ul>
+                        <li>IRC : <a href='http://irc.lc/geeknode/arn'>#arn sur irc.geeknode.org</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>Les mises à jour automatiques</h3>
+            <p>Si vous souhaitez une mise à jour de l'adresse IP indiquée dans votre zone, aucun problème !
+            <a href='https://git.karchnu.fr/Karchnu/dnsmanager/raw/0c0cedddb0aea0cfe2fb546b01e5862b4d613fe5/cli/daemon/daemon.pl' >Téléchargez l'application</a> (clique droit, enregistrer sous), modifiez le fichier pour y mettre vos informations puis appelez ce programme régulièrement.
+            <div id="errmsg" class="alert alert-danger" role="alert">
+                <strong>Mettre à jour l'adresse IP toutes les 5 minutes ne sert à rien.</strong>
+            </div>
+            Il est préférable de mettre à jour une fois par heure maximum.
+            Voici un exemple de configuration de cron : <strong>$ crontab -e</strong>
+            <div class="alert alert-success" role="alert">
+                <p><strong>0 * * * * perl /path/to/script</strong></p>
+            </div>
+        </div>
     </div>
-
-    <div class="col-sm-4 col-sm-offset-1">
-        <h3>Changer son mot de passe :</h3>
-
-        <form class="form" action='/user/changepasswd' method="post" >
-            <input type='password' name='password'/>
-            <input type='submit' name='submit' value="Changer mon mot de passe"
-                                               class='btn btn-primary' />
-        </form>
-
-    </div>
-</div>
-
 
 </div>
 
