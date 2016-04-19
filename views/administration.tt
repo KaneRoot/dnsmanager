@@ -21,11 +21,11 @@
             <td><% d.login %></td>
 
             <td>
-                <a href="/domain/del/<% d.domain %>"><button type="button" class="btn btn-danger">Supprimer le domaine</button></a>
+                <a href="/domain/del/<% d.domain %>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer le domaine ?');"><button type="button" class="btn btn-danger">Supprimer le domaine</button></a>
             </td>
 
             <td>
-                <a href="/user/del/<% d.login %>"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
+                <a href="/user/del/<% d.login %>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer l\'utilisateur ?');"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
             </td>
 
             </tr>
@@ -49,7 +49,7 @@
             <td><% u.login %></td>
 
             <td>
-                <a href="/user/del/<% u.login %>"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
+                <a href="/user/del/<% u.login %>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer l\'utilisateur ?');"><button type="button" class="btn btn-danger">Supprimer l'utilisateur</button></a>
             </td>
 
             <td>
