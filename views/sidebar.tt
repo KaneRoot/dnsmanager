@@ -41,7 +41,7 @@
                         class="btn btn-danger btn-lg"
                         data-toggle="modal"
                         data-target="#suppressionZoneModal">
-                    Supprimer la zone
+                    Supprimer
                 </button>
 
                 <!-- Modal -->
