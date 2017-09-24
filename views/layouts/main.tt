@@ -10,6 +10,7 @@
 
 <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
 <link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/dnsmanager.css">
 <script src="/js/bootstrap.min.js"></script>
 <script src="/js/npm.js"></script>
 
@@ -17,16 +18,19 @@
 
     <body>
 
-        <% content %>
+        <div class="container">
+            <% content %>
 
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-3">
-                <div class="well" id="footer">
-                    Fièrement aidé par <a href="http://perldancer.org/">Dancer</a> <% dancer_version %> ♥<br/>
-                    Le code est disponible <a href="https://github.com/KaneRoot/dnsmanager">ici</a> ! \o/
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="well" id="footer">
+                        Fièrement aidé par <a href="http://perldancer.org/">Dancer</a> <% dancer_version %> ♥<br/>
+                        Le code est disponible <a href="https://github.com/KaneRoot/dnsmanager">ici</a> ! \o/
+                    </div>
                 </div>
             </div>
-        </div>
+        </div> <!-- Fin du container footer -->
+
     </body>
 
 </html>

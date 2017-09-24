@@ -6,7 +6,7 @@
 
 
     <div class="row">
-        <div class="col-sm-5">
+        <div class="col-md-12">
             <% IF domains && domains.size %>
             <h3>Vos domaines</h3>
             <table class="table">
@@ -35,20 +35,21 @@
             <p class="text-danger">Pas encore de nom de domaine ?</p>
             <p>Réservez-en un ! \o/</p>
             <% END %>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-md-12">
             <h3>Nouveau domaine</h3>
             <hr />
             <form class="form-inline" role="form" action='/domain/add/' method="post">
-                <div class="input-group">
                     <div class="form-group">
-                <% IF domainName.defined %>
-                <input  size="15" class="form-control" type='text' name='domain' value="<% domainName %>" />
-                <% ELSE %>
-                <input  size="15" class="form-control" type='text' name='domain' placeholder='domaine' />
-                <% END %>
-                    </div>
+                        <% IF domainName.defined %>
+                        <input  size="15" class="form-control" type='text' name='domain' value="<% domainName %>" />
+                        <% ELSE %>
+                        <input  size="15" class="form-control" type='text' name='domain' placeholder='domaine' />
+                        <% END %>
 
-                    <div class="form-group">
                         <select name='tld' class='form-control' >
                             <% FOREACH dom in provideddomains %>
                             <option><% dom %></option>
@@ -57,22 +58,31 @@
                     </div>
                     <input type='submit' name='submit' value="Créer mon domaine!"
                                                        class='btn btn-primary' />
-                </div>
             </form>
+        </div>
+    </div>
 
-            <br/>
+    <br/>
 
+    <!-- Mot de passe -->
+    <div class="row">
+        <div class="col-md-12">
             <h3>Nouveau mot de passe</h3>
             <hr />
-            <form class="form" action='/user/changepasswd' method="post" >
-                <input type='password' name='password'/>
+            <form class="form-inline" action='/user/changepasswd' method="post" >
+                <div class="form-group">
+                <input class="form-control" type='password' name='password'/>
                 <input type='submit' name='submit' value="Changer mon mot de passe"
                                                    class='btn btn-primary' />
+                </div>
             </form>
-
         </div>
+    </div>
 
-        <div class="col-sm-5 col-sm-offset-1">
+    <br/>
+
+    <div class="row">
+        <div class="col-md-5 col-xs-12">
             <h3>Rappels sur l'administration d'un domaine</h3>
             <ul>
                 <li>
@@ -87,7 +97,9 @@
                     </ul>
                 </li>
             </ul>
+        </div>
 
+        <div class="col-md-5 col-sm-offset-1 col-xs-12">
             <h3>Les mises à jour automatiques</h3>
             <p>Si vous souhaitez une mise à jour de l'adresse IP indiquée dans votre zone, aucun problème !
             <a href='https://git.karchnu.fr/Karchnu/dnsmanager/raw/0c0cedddb0aea0cfe2fb546b01e5862b4d613fe5/cli/daemon/daemon.pl' >Téléchargez l'application</a> (clic droit, enregistrer sous), modifiez le fichier pour y mettre vos informations puis appelez ce programme régulièrement.
