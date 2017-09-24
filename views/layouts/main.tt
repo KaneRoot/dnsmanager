@@ -10,6 +10,7 @@
 
 <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
 <link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/dnsmanager.css">
 <script src="/js/bootstrap.min.js"></script>
 <script src="/js/npm.js"></script>
 
@@ -19,7 +20,7 @@
 
         <div class="container">
             <% content %>
-            
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="well" id="footer">
