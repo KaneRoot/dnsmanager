@@ -1,0 +1,12 @@
+.input-menu-mobile {
+    width: 200px;
+    margin: 0 0 10px 10px;
+}
+
+.sidebar-group {
+    width: 100%;
+}
+
+.sidebar-group > a > button {
+    margin-bottom: 10px !important;
+}
