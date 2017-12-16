@@ -1,12 +1,12 @@
 # DNSmanager (en)
 
-This project is about managing DNS zones with a simple website, provinding a
-name to anyone on the Internet. It is binded to the [netlib.re][netlibre]
+This project is about managing DNS zones with a simple website, providing a
+name to anyone on the Internet. It is bound to the [netlib.re][netlibre]
 project. This service let you manage your dynamic IP address with your domain so
 you don't need DynDNS anymore, and it's all libre software !
 
 The association managing the infrastructure behind this service is [Alsace
-Réseau Neutre][arn] which is an ethical ISP based in Alsace, France. Don't be
+Réseau Neutre][arn], which is an ethical ISP based in Alsace, France. Don't be
 shy, go ask your questions !
 
 ## Tools
