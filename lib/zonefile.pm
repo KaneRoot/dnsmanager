@@ -243,6 +243,15 @@ sub rr_array_to_array {
             utf8::decode($$rr{weight});
             utf8::decode($$rr{port});
             utf8::decode($$rr{rdata});
+        }        
+        elsif($list[3] =~ /^CAA$/) {
+            # domain_name 10800 IN CAA 128 issue "letsencrypt.org"
+            $$rr{weight} = $list[4];
+            $$rr{issue} = $list[5];
+            $$rr{certificateAutority} = $list[6];            
+            utf8::decode($$rr{weight});             
+            utf8::decode($$rr{issue});
+            utf8::decode($$rr{certificateAutority});
         }
         else {
             $$rr{rdata} = $_->rdstring;
