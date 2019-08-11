@@ -18,6 +18,10 @@ our $domain = "test.netlib.re";
 our $login = "idtest";
 our $pass = "mdptest";
 
+# Saving our previous IP to update only on change
+our $filename = 'saved_ip.txt';
+our $saved_ip = "0.0.0.0";
+
 # Your entry to change
 #
 # here, the entry is www.test.netlib.re
@@ -38,9 +42,26 @@ sub get_ip {
     undef
 }
 
+# Saving IP to file
+sub save_ip {
+    open(my $fhw, '>', $filename) or die "Could not open file '$filename' $!";
+    $saved_ip = get_ip;
+    print $fhw "$saved_ip";
+    close $fhw;
+}
+
+# Loading IP from file
+sub load_ip {
+    open(my $fho, '<:encoding(UTF-8)', $filename) or die "Could not open file '$filename' $!";
+    $saved_ip = <$fho>;
+}
+
 sub update {
     my $ip = get_ip;
     die "Can't get your IP address !" unless $ip;
+    
+    load_ip;
+    if ($saved_ip ne $ip) {
 
     say "UPDATE :: domain $name.$domain => IP $ip, type $type";
     my $passb64 = encode_base64($pass);
@@ -51,6 +72,8 @@ sub update {
     "https://$nddservice/domain/cliup/$login/$passb64/$domain/$name/$type/$ip";
     say "CMD :: $cmd";
     `$cmd`;
+    save_ip;
+    }
 }
 
 update;
